@@ -7,7 +7,11 @@
 		{
 			"Name": "Magic_Project",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"UMG",
+				"Engine"
+			]
 		}
 	],
 	"Plugins": [
