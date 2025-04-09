@@ -4,14 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "MyGameModeBase.generated.h"
+#include "KandaGameModeBase.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MAGIC_PROJECT_API AMyGameModeBase : public AGameModeBase
+class MAGIC_PROJECT_API AKandaGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+public:
+
+	AKandaGameModeBase();
 };

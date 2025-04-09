@@ -42,4 +42,11 @@ private:
 	/** SpringArmの先端に配置するカメラ */
 	UPROPERTY(VisibleAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> Camera;
+
+private:
+		// 速度
+		float Speed = 300.0f;
+
+		// 体力
+		float Health = 100.0f;
 };
