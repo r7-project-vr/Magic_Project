@@ -30,6 +30,28 @@ AKandaPawn::AKandaPawn()
 
 	// Simulate Physics‚ð—LŒø‚É‚·‚é
 	Sphere->SetSimulatePhysics(true);
+
+	// SpringArm‚ð’Ç‰Á‚·‚é
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
+	SpringArm->SetupAttachment(RootComponent);
+
+	// Šp“x‚ð•ÏX‚·‚é FRotator(Pitch(Y), Yaw(Z), Roll(X))
+	SpringArm->SetRelativeRotation(FRotator(-30.0f, 0.0f, 0.0f));
+
+	// Spring Arm‚Ì’·‚³‚ð’²®‚·‚é
+	SpringArm->TargetArmLength = 450.0f;
+
+	// SpringArm‚©‚ç‚ÌŠp“x‚ðŒp³‚µ‚È‚¢
+	SpringArm->bInheritPitch = false;
+	SpringArm->bInheritYaw = false;
+	SpringArm->bInheritRoll = false;
+
+	// Camera‚ÌLag‚ð—LŒø‚É‚·‚é
+	SpringArm->bEnableCameraLag = true;
+
+	// Camera‚ð’Ç‰Á‚·‚é
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
+	Camera->SetupAttachment(SpringArm);
 }
 
 // Called when the game starts or when spawned
