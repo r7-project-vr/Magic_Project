@@ -9,7 +9,7 @@
 // MyActor.h
 
 UCLASS()
-class YOURPROJECT_API AMyActor : public AActor
+class MAGIC_PROJECT_API AMyActor : public AActor
 {
     GENERATED_BODY()
 
