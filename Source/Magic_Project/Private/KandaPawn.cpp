@@ -2,6 +2,10 @@
 
 
 #include "KandaPawn.h"
+#include "InputMappingContext.h"
+#include "InputActionValue.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -52,6 +56,15 @@ AKandaPawn::AKandaPawn()
 	// Cameraを追加する
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	Camera->SetupAttachment(SpringArm);
+
+	// Input Mapping Context「IMC_TestPad」を読み込む
+	DefaultMappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/Kanda/Input/IMC_TestPad"));
+
+	// Input Action「IA_InputMove」を読み込む
+	ControlMove = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_InputMove"));
+
+	// Input Action「IA_GoMagic」を読み込む
+	ControlMagic = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_GoMagic"));
 }
 
 // Called when the game starts or when spawned
@@ -59,6 +72,14 @@ void AKandaPawn::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	//Add Input Mapping Context
+	if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
 }
 
 // Called every frame
@@ -73,5 +94,36 @@ void AKandaPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	// Set up action bindings
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
+
+		// ControlBallとIA_ControlのTriggeredをBindする
+		EnhancedInputComponent->BindAction(ControlMove, ETriggerEvent::Triggered, this, &AKandaPawn::ControlPlayer);
+
+		// ControlBallとIA_ControlのTriggeredをBindする
+		EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Triggered, this, &AKandaPawn::GoMagic);
+	}
 }
+
+//コントローラー
+void AKandaPawn::ControlPlayer(const FInputActionValue& Value)
+{
+	// inputのValueはVector2Dに変換できる
+	const FVector2D V = Value.Get<FVector2D>();
+
+	//座標移動
+	FVector PreLocation = GetActorLocation();
+	FVector NewLocation = PreLocation + FVector(V.Y, V.X, 0.0f) * AddMovePoint;
+	SetActorLocation(NewLocation);
+}
+
+//魔法を撃つ
+void AKandaPawn::GoMagic(const FInputActionValue& Value)
+{
+	if (const bool v = Value.Get<bool>() && CanMagic) 
+	{
+		UE_LOG(LogTemp, Log, TEXT("魔法を撃ったYO！"));
+	}
+}
+
 

@@ -4,11 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "InputActionValue.h"
 #include "KandaPawn.generated.h"
 
 class UStaticMeshComponent;
 class USpringArmComponent;
 class UCameraComponent;
+class UInputMappingContext; 
+class UInputAction;
 
 UCLASS()
 class MAGIC_PROJECT_API AKandaPawn : public APawn
@@ -42,4 +45,28 @@ private:
 	/** SpringArmの先端に配置するカメラ */
 	UPROPERTY(VisibleAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> Camera;
+
+	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputMappingContext> DefaultMappingContext;
+
+	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> ControlMove;
+
+	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> ControlMagic;
+
+protected:
+
+	//playerコントロール
+	void ControlPlayer(const FInputActionValue& Value);
+
+	//魔法コントロール
+	void GoMagic(const FInputActionValue& Value);
+
+private:
+		// 移動倍率
+		float AddMovePoint = 10.0f;
+
+		// 魔法実行フラグ
+		bool CanMagic = true;//とりあえず
 };
