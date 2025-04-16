@@ -2,6 +2,10 @@
 
 
 #include "KandaPawn.h"
+#include "InputMappingContext.h"
+#include "InputActionValue.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -52,6 +56,12 @@ AKandaPawn::AKandaPawn()
 	// Cameraを追加する
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	Camera->SetupAttachment(SpringArm);
+
+	// Input Mapping Context「IMC_TestPad」を読み込む
+	DefaultMappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/Kanda/Input/IMC_TestPad"));
+
+	// Input Action「IA_InputMove」を読み込む
+	ControlAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_InputMove"));
 }
 
 // Called when the game starts or when spawned
@@ -59,6 +69,14 @@ void AKandaPawn::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	//Add Input Mapping Context
+	if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
 }
 
 // Called every frame
@@ -73,5 +91,25 @@ void AKandaPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	// Set up action bindings
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
+
+		// ControlBallとIA_ControlのTriggeredをBindする
+		EnhancedInputComponent->BindAction(ControlAction, ETriggerEvent::Triggered, this, &AKandaPawn::ControlPlayer);
+	}
 }
+
+//コントローラー
+void AKandaPawn::ControlPlayer(const FInputActionValue& Value)
+{
+	// inputのValueはVector2Dに変換できる
+	const FVector2D V = Value.Get<FVector2D>();
+
+	// Vectorを計算する
+	FVector ForceVector = FVector(V.Y, V.X, 0.0f) * Speed;
+
+	// Sphereに力を加える
+	Sphere->AddForce(ForceVector, NAME_None, true);
+}
+
 

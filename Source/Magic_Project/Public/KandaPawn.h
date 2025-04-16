@@ -4,11 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "InputActionValue.h"
 #include "KandaPawn.generated.h"
 
 class UStaticMeshComponent;
 class USpringArmComponent;
 class UCameraComponent;
+class UInputMappingContext; 
+class UInputAction;
 
 UCLASS()
 class MAGIC_PROJECT_API AKandaPawn : public APawn
@@ -22,6 +25,9 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	//playerコントロール
+	void ControlPlayer(const FInputActionValue& Value);
 
 public:	
 	// Called every frame
@@ -42,6 +48,12 @@ private:
 	/** SpringArmの先端に配置するカメラ */
 	UPROPERTY(VisibleAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> Camera;
+
+	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputMappingContext> DefaultMappingContext;
+
+	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> ControlAction;
 
 private:
 		// 速度
