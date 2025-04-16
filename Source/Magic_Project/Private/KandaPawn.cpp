@@ -61,7 +61,10 @@ AKandaPawn::AKandaPawn()
 	DefaultMappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/Kanda/Input/IMC_TestPad"));
 
 	// Input Action「IA_InputMove」を読み込む
-	ControlAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_InputMove"));
+	ControlMove = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_InputMove"));
+
+	// Input Action「IA_GoMagic」を読み込む
+	ControlMagic = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_GoMagic"));
 }
 
 // Called when the game starts or when spawned
@@ -95,7 +98,10 @@ void AKandaPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
 
 		// ControlBallとIA_ControlのTriggeredをBindする
-		EnhancedInputComponent->BindAction(ControlAction, ETriggerEvent::Triggered, this, &AKandaPawn::ControlPlayer);
+		EnhancedInputComponent->BindAction(ControlMove, ETriggerEvent::Triggered, this, &AKandaPawn::ControlPlayer);
+
+		// ControlBallとIA_ControlのTriggeredをBindする
+		EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Triggered, this, &AKandaPawn::GoMagic);
 	}
 }
 
@@ -105,11 +111,19 @@ void AKandaPawn::ControlPlayer(const FInputActionValue& Value)
 	// inputのValueはVector2Dに変換できる
 	const FVector2D V = Value.Get<FVector2D>();
 
-	// Vectorを計算する
-	FVector ForceVector = FVector(V.Y, V.X, 0.0f) * Speed;
+	//座標移動
+	FVector PreLocation = GetActorLocation();
+	FVector NewLocation = PreLocation + FVector(V.Y, V.X, 0.0f) * AddMovePoint;
+	SetActorLocation(NewLocation);
+}
 
-	// Sphereに力を加える
-	Sphere->AddForce(ForceVector, NAME_None, true);
+//魔法を撃つ
+void AKandaPawn::GoMagic(const FInputActionValue& Value)
+{
+	if (const bool v = Value.Get<bool>() && CanMagic) 
+	{
+		UE_LOG(LogTemp, Log, TEXT("魔法を撃ったYO！"));
+	}
 }
 
 

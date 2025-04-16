@@ -26,9 +26,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	//playerコントロール
-	void ControlPlayer(const FInputActionValue& Value);
-
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -53,12 +50,23 @@ private:
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;
 
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> ControlAction;
+	TObjectPtr<UInputAction> ControlMove;
+
+	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> ControlMagic;
+
+protected:
+
+	//playerコントロール
+	void ControlPlayer(const FInputActionValue& Value);
+
+	//魔法コントロール
+	void GoMagic(const FInputActionValue& Value);
 
 private:
-		// 速度
-		float Speed = 300.0f;
+		// 移動倍率
+		float AddMovePoint = 10.0f;
 
-		// 体力
-		float Health = 100.0f;
+		// 魔法実行フラグ
+		bool CanMagic = true;//とりあえず
 };
