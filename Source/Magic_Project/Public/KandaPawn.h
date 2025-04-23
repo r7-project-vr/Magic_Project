@@ -10,6 +10,7 @@
 class UStaticMeshComponent;
 class USpringArmComponent;
 class UCameraComponent;
+class UArrowComponent;
 class UInputMappingContext; 
 class UInputAction;
 
@@ -55,6 +56,12 @@ private:
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> ControlMagic;
 
+	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> LookAction;
+
+	UPROPERTY(VisibleAnywhere, Category = Control, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UArrowComponent> Arrow;
+
 protected:
 
 	//playerコントロール
@@ -62,6 +69,9 @@ protected:
 
 	//魔法コントロール
 	void GoMagic(const FInputActionValue& Value);
+
+	// カメラコントロール
+	void Look(const FInputActionValue& Value);
 
 private:
 		// 移動倍率
