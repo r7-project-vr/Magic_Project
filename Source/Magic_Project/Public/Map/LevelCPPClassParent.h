@@ -6,3 +6,5 @@
 #include "Engine/LevelScriptActor.h"
 #include "LevelCPPClassParent.generated.h"
 
+UCLASS()
+class 
