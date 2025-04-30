@@ -4,7 +4,9 @@
 #include "KandaPawn.h"
 #include "InputMappingContext.h"
 #include "InputActionValue.h"
+#include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
+#include "Components/ArrowComponent.h" 
 #include "EnhancedInputSubsystems.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -40,15 +42,18 @@ AKandaPawn::AKandaPawn()
 	SpringArm->SetupAttachment(RootComponent);
 
 	// 角度を変更する FRotator(Pitch(Y), Yaw(Z), Roll(X))
-	SpringArm->SetRelativeRotation(FRotator(-30.0f, 0.0f, 0.0f));
+	//SpringArm->SetRelativeRotation(FRotator(-30.0f, 0.0f, 0.0f));
 
 	// Spring Armの長さを調整する
 	SpringArm->TargetArmLength = 450.0f;
 
+	// pawnの角度を利用する
+	SpringArm->bUsePawnControlRotation = true;
+
 	// SpringArmからの角度を継承しない
-	SpringArm->bInheritPitch = false;
-	SpringArm->bInheritYaw = false;
-	SpringArm->bInheritRoll = false;
+	// SpringArm->bInheritPitch = false;
+	// SpringArm->bInheritYaw = false;
+	// SpringArm->bInheritRoll = false;
 
 	// CameraのLagを有効にする
 	SpringArm->bEnableCameraLag = true;
@@ -65,6 +70,19 @@ AKandaPawn::AKandaPawn()
 
 	// Input Action「IA_GoMagic」を読み込む
 	ControlMagic = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_GoMagic"));
+
+	// Input Action「IA_Look」を読み込む
+	LookAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_Look"));
+
+	// Arrowを追加する
+	Arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
+	Arrow->SetupAttachment(Camera);
+
+	// Sphereの頭上に移動するようにLocationを設定する
+	Arrow->SetRelativeLocation(FVector(400.0f, 0.0f, 130.0f));
+
+	// Arrowを表示されるようにする
+	Arrow->bHiddenInGame = false;
 }
 
 // Called when the game starts or when spawned
@@ -102,6 +120,9 @@ void AKandaPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 		// ControlBallとIA_ControlのTriggeredをBindする
 		EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Triggered, this, &AKandaPawn::GoMagic);
+
+		// LookとIA_LookのTriggeredをBindする
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AKandaPawn::Look);
 	}
 }
 
@@ -113,7 +134,7 @@ void AKandaPawn::ControlPlayer(const FInputActionValue& Value)
 
 	//座標移動
 	FVector PreLocation = GetActorLocation();
-	FVector NewLocation = PreLocation + FVector(V.Y, V.X, 0.0f) * AddMovePoint;
+	FVector NewLocation = PreLocation + Arrow->GetComponentToWorld().TransformVectorNoScale(FVector(V.Y, V.X, 0.0f) * AddMovePoint);
 	SetActorLocation(NewLocation);
 }
 
@@ -123,6 +144,29 @@ void AKandaPawn::GoMagic(const FInputActionValue& Value)
 	if (const bool v = Value.Get<bool>() && CanMagic) 
 	{
 		UE_LOG(LogTemp, Log, TEXT("魔法を撃ったYO！"));
+	}
+}
+
+// カメラコントローラー
+void AKandaPawn::Look(const FInputActionValue& Value)
+{
+	// inputのValueはVector2Dに変換できる
+	FVector2D v = Value.Get<FVector2D>();
+
+	if (Controller != nullptr)
+	{
+		// add yaw and pitch input to controller
+		AddControllerYawInput(v.X);
+		AddControllerPitchInput(v.Y);
+
+		// Pawnが持っているControlの角度を取得する
+		FRotator controlRotate = GetControlRotation();
+
+		// controllerのPitchの角度を制限する
+		double LimitPitchAngle = FMath::ClampAngle(controlRotate.Pitch, -40.0f, -10.0f);
+
+		// PlayerControllerの角度を設定する
+		UGameplayStatics::GetPlayerController(this, 0)->SetControlRotation(FRotator(controlRotate.Pitch, controlRotate.Yaw, 0.0f));
 	}
 }
 
