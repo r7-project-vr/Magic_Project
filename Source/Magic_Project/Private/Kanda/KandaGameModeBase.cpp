@@ -3,8 +3,10 @@
 
 #include "Kanda/KandaGameModeBase.h"
 #include "KandaPawn.h"
+#include "Kanda/VRActor_ver1.h"
 
 AKandaGameModeBase::AKandaGameModeBase()
 {
-	DefaultPawnClass = AKandaPawn::StaticClass();
+	//DefaultPawnClass = AKandaPawn::StaticClass();
+	DefaultPawnClass = AVRActor_ver1::StaticClass();
 }
