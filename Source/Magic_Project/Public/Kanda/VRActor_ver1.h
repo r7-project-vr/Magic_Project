@@ -70,7 +70,10 @@ protected:
 private:
 
 	// 移動倍率
-	float AddMovePoint = 10.0f;
+	float MoveSpeedPoint = 10.0f;
+
+	// 移動方向
+	FRotator MoveRotator;
 
 	// 魔法実行フラグ
 	bool CanMagic = true;//とりあえず

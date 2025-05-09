@@ -7,6 +7,6 @@
 
 AKandaGameModeBase::AKandaGameModeBase()
 {
-	//DefaultPawnClass = AKandaPawn::StaticClass();
-	DefaultPawnClass = AVRActor_ver1::StaticClass();
+	DefaultPawnClass = AKandaPawn::StaticClass();
+	//DefaultPawnClass = AVRActor_ver1::StaticClass();
 }

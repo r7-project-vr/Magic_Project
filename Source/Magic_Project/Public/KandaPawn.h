@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Kanda/KandaTestMagic.h"				// テスト用魔法クラス
 #include "GameFramework/Pawn.h"
 #include "InputActionValue.h"
 #include "KandaPawn.generated.h"
@@ -73,10 +74,16 @@ protected:
 	// カメラコントロール
 	void Look(const FInputActionValue& Value);
 
+	// csvファイル出力
+	void WritePlayerInfoToCSV(KandaTestMagic* m_);
+
 private:
 		// 移動倍率
 		float AddMovePoint = 10.0f;
 
 		// 魔法実行フラグ
 		bool CanMagic = true;//とりあえず
+
+		KandaTestMagic* test;
+		FString MagicFilePath;
 };

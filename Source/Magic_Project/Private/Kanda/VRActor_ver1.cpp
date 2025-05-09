@@ -21,7 +21,7 @@ AVRActor_ver1::AVRActor_ver1()
 
 	// Cameraを追加する
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
-	//Camera->SetupAttachment(SpringArm);
+	// Camera->SetupAttachment(RootComponent);
 
 	// Input Mapping Context「IMC_TestPad」を読み込む
 	DefaultMappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/Kanda/Input/IMC_TestPad"));
@@ -37,7 +37,7 @@ AVRActor_ver1::AVRActor_ver1()
 
 	// Arrowを追加する
 	Arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
-	Arrow->SetupAttachment(Camera);
+	Arrow->SetupAttachment(RootComponent);
 
 	// Sphereの頭上に移動するようにLocationを設定する
 	Arrow->SetRelativeLocation(FVector(400.0f, 0.0f, 130.0f));
@@ -65,7 +65,6 @@ void AVRActor_ver1::BeginPlay()
 void AVRActor_ver1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
@@ -93,9 +92,9 @@ void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
 	// inputのValueはVector2Dに変換できる
 	const FVector2D V = Value.Get<FVector2D>();
 
-	//座標移動
 	FVector PreLocation = GetActorLocation();
-	FVector NewLocation = PreLocation + Arrow->GetComponentToWorld().TransformVectorNoScale(FVector(V.Y, V.X, 0.0f) * AddMovePoint);
+	FVector NewLocation = PreLocation + Arrow->GetComponentToWorld().TransformVectorNoScale(FVector(V.Y, V.X, 0.0f) * MoveSpeedPoint);
+
 	SetActorLocation(NewLocation);
 }
 
@@ -123,11 +122,12 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 		// Pawnが持っているControlの角度を取得する
 		FRotator controlRotate = GetControlRotation();
 
-		// controllerのPitchの角度を制限する
-		double LimitPitchAngle = FMath::ClampAngle(controlRotate.Pitch, -40.0f, -10.0f);
+		// カメラをまわす
+		SetActorRotation(controlRotate);
 
-		// PlayerControllerの角度を設定する
-		UGameplayStatics::GetPlayerController(this, 0)->SetControlRotation(FRotator(controlRotate.Pitch, controlRotate.Yaw, 0.0f));
+		// 移動方向を指定する
+		FRotator ArrowRotate = FRotator(0,controlRotate.Yaw, 0);
+		Arrow->SetWorldRotation(ArrowRotate);
 	}
 }
 
