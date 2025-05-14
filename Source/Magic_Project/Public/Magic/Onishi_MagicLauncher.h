@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "NiagaraSystem.h"
+#include "Components/StaticMeshComponent.h"
 #include "Onishi_MagicLauncher.generated.h"
 
 UCLASS()
@@ -29,8 +30,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	FVector MoveDirection = FVector(1.0f, 0.0f, 0.0f); // X•ûŒü
-
-	float Sum_deltaTime = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
 	UNiagaraSystem* DestroyEffect;

@@ -18,6 +18,7 @@ void AOnishi_MagicLauncher::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	//破壊までのタイマーを始める（3つ目の引数で指定（単位は秒））
 	FTimerHandle DestroyTimerHandle;
 	GetWorldTimerManager().SetTimer(DestroyTimerHandle,this,&AOnishi_MagicLauncher::HandleAutoDestroy,2.0f,false);
 }
@@ -27,6 +28,7 @@ void AOnishi_MagicLauncher::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//自動で前に進む
 	FVector NewLocation = GetActorLocation() + (MoveDirection.GetSafeNormal() * MoveSpeed * DeltaTime);
 	SetActorLocation(NewLocation);
 
@@ -36,6 +38,7 @@ void AOnishi_MagicLauncher::Tick(float DeltaTime)
 void AOnishi_MagicLauncher::HandleAutoDestroy()
 {
 	// エフェクト再生（あれば）
+	//継承先のBPで指定できる（詳細のウィンドウで）
 	if (DestroyEffect)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
