@@ -24,6 +24,14 @@ void AOnishi_MagicLauncher::BeginPlay()
 
 	//最初の位置を決定
 	SetActorLocation(StartLocation);
+
+	//飛ぶエフェクトの再生
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		GetWorld(),
+		FlyingEffect,
+		GetActorLocation(),
+		FRotator(0,-90,0)
+	);
 }
 
 // Called every frame
@@ -46,7 +54,7 @@ void AOnishi_MagicLauncher::HandleAutoDestroy()
 			GetWorld(),
 			DestroyEffect,
 			GetActorLocation(),
-			GetActorRotation()
+			MoveDirection.Rotation()
 		);
 	}
 
