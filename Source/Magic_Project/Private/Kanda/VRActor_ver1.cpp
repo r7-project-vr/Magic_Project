@@ -120,6 +120,7 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 	{
 		UE_LOG(LogTemp, Log, TEXT("魔法を撃ったYO！"));
 
+		WritePlayerInfoToCSV(this);
 #if true
 		// 魔法アクターを取得
 		{
@@ -158,6 +159,7 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 	}
 }
 
+// csv出力
 void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 {
 	FString MagicName = "魔法プロト";
@@ -175,4 +177,3 @@ void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 	FFileHelper::SaveStringToFile(CSVContent, *MagicFilePath, FFileHelper::EEncodingOptions::AutoDetect,
 		&IFileManager::Get(), EFileWrite::FILEWRITE_Append);
 }
-
