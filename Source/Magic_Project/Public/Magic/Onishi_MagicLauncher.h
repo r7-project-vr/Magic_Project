@@ -29,11 +29,20 @@ public:
 	float MoveSpeed = 200.0f; // cm/s
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	FVector MoveDirection = FVector(1.0f, 0.0f, 0.0f); // X方向
+	FVector MoveDirection = FVector(1.0f, 0.0f, 0.0f); // 仮指定X方向
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
 	UNiagaraSystem* DestroyEffect;
 
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Movement")
+	FVector StartLocation = FVector(0, 0, 0);
+
+public:
 	UFUNCTION()
 	void HandleAutoDestroy();
+
+	//魔法を発射するときに呼び出し
+	//向き/現在位置/魔法のエフェクト(path)を指定
+	UFUNCTION()
+	void LaunchMagic(FVector Facing, FVector NowLocation, FString EffectPath);
 };

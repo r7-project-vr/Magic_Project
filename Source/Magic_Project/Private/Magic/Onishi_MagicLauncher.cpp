@@ -21,6 +21,9 @@ void AOnishi_MagicLauncher::BeginPlay()
 	//破壊までのタイマーを始める（3つ目の引数で指定（単位は秒））
 	FTimerHandle DestroyTimerHandle;
 	GetWorldTimerManager().SetTimer(DestroyTimerHandle,this,&AOnishi_MagicLauncher::HandleAutoDestroy,2.0f,false);
+
+	//最初の位置を決定
+	SetActorLocation(StartLocation);
 }
 
 // Called every frame
@@ -31,8 +34,6 @@ void AOnishi_MagicLauncher::Tick(float DeltaTime)
 	//自動で前に進む
 	FVector NewLocation = GetActorLocation() + (MoveDirection.GetSafeNormal() * MoveSpeed * DeltaTime);
 	SetActorLocation(NewLocation);
-
-	
 }
 
 void AOnishi_MagicLauncher::HandleAutoDestroy()
@@ -51,4 +52,10 @@ void AOnishi_MagicLauncher::HandleAutoDestroy()
 
 	// アクターを削除
 	Destroy();
+}
+
+void AOnishi_MagicLauncher::LaunchMagic(FVector Facing, FVector NowLocation, FString EffectPath) {
+	MoveDirection = Facing;
+	StartLocation = NowLocation;
+	DestroyEffect = LoadObject<UNiagaraSystem>(nullptr, *EffectPath);
 }
