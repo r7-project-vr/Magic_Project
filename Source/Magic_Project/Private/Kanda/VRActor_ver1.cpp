@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "KandaPawn.h"
+#include "Kanda/VRActor_ver1.h"
 #include "InputMappingContext.h"
 #include "InputActionValue.h"
 #include "Kismet/GameplayStatics.h"
@@ -11,59 +11,17 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
-#include "GameFramework/Actor.h"				// ファイル関係
-#include "Misc/FileHelper.h"					// ファイル関係
-#include "HAL/PlatformFilemanager.h"			// ファイル関係
+
 
 // Sets default values
-AKandaPawn::AKandaPawn()
+AVRActor_ver1::AVRActor_ver1()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// StaticMeshComponentを追加し、RootComponentに設定する
-	Sphere = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
-	RootComponent = Sphere;
-
-	// StaticMeshをLaodしてStaticMeshComponentのStaticMeshに設定する
-	UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere"));
-
-	// StaticMeshをStaticMeshComponentに設定する
-	Sphere->SetStaticMesh(Mesh);
-
-	// MaterialをStaticMeshに設定する
-	UMaterial* Material = LoadObject<UMaterial>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial"));
-
-	// MaterialをStaticMeshComponentに設定する
-	Sphere->SetMaterial(0, Material);
-
-	// Simulate Physicsを有効にする
-	Sphere->SetSimulatePhysics(true);
-
-	// SpringArmを追加する
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
-	SpringArm->SetupAttachment(RootComponent);
-
-	// 角度を変更する FRotator(Pitch(Y), Yaw(Z), Roll(X))
-	//SpringArm->SetRelativeRotation(FRotator(-30.0f, 0.0f, 0.0f));
-
-	// Spring Armの長さを調整する
-	SpringArm->TargetArmLength = 450.0f;
-
-	// pawnの角度を利用する
-	SpringArm->bUsePawnControlRotation = true;
-
-	// SpringArmからの角度を継承しない
-	// SpringArm->bInheritPitch = false;
-	// SpringArm->bInheritYaw = false;
-	// SpringArm->bInheritRoll = false;
-
-	// CameraのLagを有効にする
-	SpringArm->bEnableCameraLag = true;
-
 	// Cameraを追加する
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
-	Camera->SetupAttachment(SpringArm);
+	// Camera->SetupAttachment(RootComponent);
 
 	// Input Mapping Context「IMC_TestPad」を読み込む
 	DefaultMappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/Kanda/Input/IMC_TestPad"));
@@ -79,7 +37,7 @@ AKandaPawn::AKandaPawn()
 
 	// Arrowを追加する
 	Arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
-	Arrow->SetupAttachment(Camera);
+	Arrow->SetupAttachment(RootComponent);
 
 	// Sphereの頭上に移動するようにLocationを設定する
 	Arrow->SetRelativeLocation(FVector(400.0f, 0.0f, 130.0f));
@@ -87,10 +45,13 @@ AKandaPawn::AKandaPawn()
 	// Arrowを表示されるようにする
 	Arrow->bHiddenInGame = false;
 
+	// scの定義
+	FString magic = "/Game/test.test_C";
+	static ConstructorHelpers::FObjectFinder< UClass > found(*magic); // 上記で設定したパスのオブジェクトを取得する
+	sc = found.Object; // 上記で発見したオブジェクトのクラスを取得する
+
 	// テスト用
 	{
-		test = nullptr;
-
 		// 現在時刻の取得
 		FDateTime Now = FDateTime::Now();
 		FString FormattedTime = Now.ToString(TEXT("%Y_%m_%d__%H_%M"));
@@ -101,7 +62,7 @@ AKandaPawn::AKandaPawn()
 }
 
 // Called when the game starts or when spawned
-void AKandaPawn::BeginPlay()
+void AVRActor_ver1::BeginPlay()
 {
 	Super::BeginPlay();
 	
@@ -116,14 +77,13 @@ void AKandaPawn::BeginPlay()
 }
 
 // Called every frame
-void AKandaPawn::Tick(float DeltaTime)
+void AVRActor_ver1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
-void AKandaPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
@@ -131,42 +91,52 @@ void AKandaPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
 
 		// ControlBallとIA_ControlのTriggeredをBindする
-		EnhancedInputComponent->BindAction(ControlMove, ETriggerEvent::Triggered, this, &AKandaPawn::ControlPlayer);
+		EnhancedInputComponent->BindAction(ControlMove, ETriggerEvent::Triggered, this, &AVRActor_ver1::ControlPlayer);
 
 		// ControlBallとIA_ControlのTriggeredをBindする
-		EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Triggered, this, &AKandaPawn::GoMagic);
+		EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Triggered, this, &AVRActor_ver1::GoMagic);
 
 		// LookとIA_LookのTriggeredをBindする
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AKandaPawn::Look);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
 	}
+
 }
 
-//コントローラー
-void AKandaPawn::ControlPlayer(const FInputActionValue& Value)
+void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
 {
 	// inputのValueはVector2Dに変換できる
 	const FVector2D V = Value.Get<FVector2D>();
 
-	//座標移動
 	FVector PreLocation = GetActorLocation();
-	FVector NewLocation = PreLocation + Arrow->GetComponentToWorld().TransformVectorNoScale(FVector(V.Y, V.X, 0.0f) * AddMovePoint);
+	FVector NewLocation = PreLocation + Arrow->GetComponentToWorld().TransformVectorNoScale(FVector(V.Y, V.X, 0.0f) * MoveSpeedPoint);
+
 	SetActorLocation(NewLocation);
 }
 
 //魔法を撃つ
-void AKandaPawn::GoMagic(const FInputActionValue& Value)
+void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 {
 	if (const bool v = Value.Get<bool>() && CanMagic)
 	{
 		UE_LOG(LogTemp, Log, TEXT("魔法を撃ったYO！"));
-		KandaTestMagic* magic = new KandaTestMagic();
-		WritePlayerInfoToCSV(magic);
-		delete magic;
+
+		WritePlayerInfoToCSV(this);
+#if true
+		// 魔法アクターを取得
+		{
+			if (sc != nullptr)
+			{
+				AActor* a = GetWorld()->SpawnActor<AActor>(sc); // スポーン処理
+				WritePlayerInfoToCSV(a);
+				//a->SetActorLocation(GetActorLocation()); // 確認しやすいように座標を設定
+			}
+		}
+#endif
 	}
 }
 
 // カメラコントローラー
-void AKandaPawn::Look(const FInputActionValue& Value)
+void AVRActor_ver1::Look(const FInputActionValue& Value)
 {
 	// inputのValueはVector2Dに変換できる
 	FVector2D v = Value.Get<FVector2D>();
@@ -180,21 +150,22 @@ void AKandaPawn::Look(const FInputActionValue& Value)
 		// Pawnが持っているControlの角度を取得する
 		FRotator controlRotate = GetControlRotation();
 
-		// controllerのPitchの角度を制限する
-		double LimitPitchAngle = FMath::ClampAngle(controlRotate.Pitch, -40.0f, -10.0f);
+		// カメラをまわす
+		SetActorRotation(controlRotate);
 
-		// PlayerControllerの角度を設定する
-		UGameplayStatics::GetPlayerController(this, 0)->SetControlRotation(FRotator(controlRotate.Pitch, controlRotate.Yaw, 0.0f));
+		// 移動方向を指定する
+		FRotator ArrowRotate = FRotator(0,controlRotate.Yaw, 0);
+		Arrow->SetWorldRotation(ArrowRotate);
 	}
 }
 
-// csvファイル出力
-void AKandaPawn::WritePlayerInfoToCSV(KandaTestMagic* m_)
+// csv出力
+void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 {
-	FString MagicName = m_->MagicName();
+	FString MagicName = "魔法プロト";
 
 	// CSVに書き込む内容
-	FString CSVContent = MagicName + TEXT(",")  + TEXT("\n");
+	FString CSVContent = MagicName + TEXT(",") + TEXT("\n");
 
 	// ファイルの存在を確認し、存在しない場合はヘッダー行を追加
 	if (!FPaths::FileExists(MagicFilePath))
