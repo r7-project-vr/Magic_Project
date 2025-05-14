@@ -3,26 +3,25 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Kanda/KandaTestMagic.h"				// テスト用魔法クラス
 #include "GameFramework/Pawn.h"
 #include "InputActionValue.h"
-#include "KandaPawn.generated.h"
+#include "VRActor_ver1.generated.h"
 
 class UStaticMeshComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UArrowComponent;
-class UInputMappingContext; 
+class UInputMappingContext;
 class UInputAction;
 
 UCLASS()
-class MAGIC_PROJECT_API AKandaPawn : public APawn
+class MAGIC_PROJECT_API AVRActor_ver1 : public APawn
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this pawn's properties
-	AKandaPawn();
+	AVRActor_ver1();
 
 protected:
 	// Called when the game starts or when spawned
@@ -36,18 +35,12 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
-	/** Character用のStaticMesh : Sphere */
-	UPROPERTY(VisibleAnywhere, Category = Character, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UStaticMeshComponent> Sphere;
-
-	/** Cameraを配置するためのSpringArm */
-	UPROPERTY(VisibleAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<USpringArmComponent> SpringArm;
 
 	/** SpringArmの先端に配置するカメラ */
 	UPROPERTY(VisibleAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> Camera;
 
+	// コントローラーのマッピング
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;
 
@@ -64,7 +57,7 @@ private:
 	TObjectPtr<UArrowComponent> Arrow;
 
 protected:
-
+	
 	//playerコントロール
 	void ControlPlayer(const FInputActionValue& Value);
 
@@ -74,16 +67,25 @@ protected:
 	// カメラコントロール
 	void Look(const FInputActionValue& Value);
 
-	// csvファイル出力
-	void WritePlayerInfoToCSV(KandaTestMagic* m_);
-
 private:
-		// 移動倍率
-		float AddMovePoint = 10.0f;
 
-		// 魔法実行フラグ
-		bool CanMagic = true;//とりあえず
+	// 移動倍率
+	float MoveSpeedPoint = 10.0f;
 
-		KandaTestMagic* test;
-		FString MagicFilePath;
+	// 移動方向
+	FRotator MoveRotator;
+
+	// 魔法実行フラグ
+	bool CanMagic = true;//とりあえず
+
+	// クラスのメンバ変数として以下を記述する
+	TSubclassOf< class AActor > sc = nullptr;
+
+	//----------------------------------------
+	// csv用
+	//----------------------------------------
+	FString MagicFilePath;
+
+	// csvファイル出力
+	void WritePlayerInfoToCSV(AActor* m_);
 };
