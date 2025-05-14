@@ -44,6 +44,21 @@ AVRActor_ver1::AVRActor_ver1()
 
 	// Arrowを表示されるようにする
 	Arrow->bHiddenInGame = false;
+
+	// scの定義
+	FString magic = "/Game/test.test_C";
+	static ConstructorHelpers::FObjectFinder< UClass > found(*magic); // 上記で設定したパスのオブジェクトを取得する
+	sc = found.Object; // 上記で発見したオブジェクトのクラスを取得する
+
+	// テスト用
+	{
+		// 現在時刻の取得
+		FDateTime Now = FDateTime::Now();
+		FString FormattedTime = Now.ToString(TEXT("%Y_%m_%d__%H_%M"));
+
+		MagicFilePath =
+			FPaths::ProjectDir() / TEXT("CSVFile/Export/MagicData_" + FormattedTime + ".csv");
+	}
 }
 
 // Called when the game starts or when spawned
@@ -104,6 +119,18 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 	if (const bool v = Value.Get<bool>() && CanMagic)
 	{
 		UE_LOG(LogTemp, Log, TEXT("魔法を撃ったYO！"));
+
+#if true
+		// 魔法アクターを取得
+		{
+			if (sc != nullptr)
+			{
+				AActor* a = GetWorld()->SpawnActor<AActor>(sc); // スポーン処理
+				WritePlayerInfoToCSV(a);
+				//a->SetActorLocation(GetActorLocation()); // 確認しやすいように座標を設定
+			}
+		}
+#endif
 	}
 }
 
@@ -129,5 +156,23 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 		FRotator ArrowRotate = FRotator(0,controlRotate.Yaw, 0);
 		Arrow->SetWorldRotation(ArrowRotate);
 	}
+}
+
+void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
+{
+	FString MagicName = "魔法プロト";
+
+	// CSVに書き込む内容
+	FString CSVContent = MagicName + TEXT(",") + TEXT("\n");
+
+	// ファイルの存在を確認し、存在しない場合はヘッダー行を追加
+	if (!FPaths::FileExists(MagicFilePath))
+	{
+		CSVContent = TEXT("MagicName\n") + CSVContent;
+	}
+
+	// ファイルに内容を書き込む
+	FFileHelper::SaveStringToFile(CSVContent, *MagicFilePath, FFileHelper::EEncodingOptions::AutoDetect,
+		&IFileManager::Get(), EFileWrite::FILEWRITE_Append);
 }
 

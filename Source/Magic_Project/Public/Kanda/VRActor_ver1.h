@@ -78,4 +78,14 @@ private:
 	// 魔法実行フラグ
 	bool CanMagic = true;//とりあえず
 
+	// クラスのメンバ変数として以下を記述する
+	TSubclassOf< class AActor > sc = nullptr;
+
+	//----------------------------------------
+	// csv用
+	//----------------------------------------
+	FString MagicFilePath;
+
+	// csvファイル出力
+	void WritePlayerInfoToCSV(AActor* m_);
 };
