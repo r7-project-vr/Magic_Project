@@ -3,6 +3,8 @@
 
 #include "Kanda/VRActor_ver1.h"
 #include "InputMappingContext.h"
+#include "Magic/Onishi_MagicLauncher.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "InputActionValue.h"
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
@@ -46,9 +48,13 @@ AVRActor_ver1::AVRActor_ver1()
 	Arrow->bHiddenInGame = false;
 
 	// scの定義
-	FString magic = "/Game/test.test_C";
+	FString magic = "/Script/Magic_Project.Onishi_MagicLauncher";
 	static ConstructorHelpers::FObjectFinder< UClass > found(*magic); // 上記で設定したパスのオブジェクトを取得する
 	sc = found.Object; // 上記で発見したオブジェクトのクラスを取得する
+
+	// Effectのファイルの場所
+	MagicEffectFilePath = "/Game/KTP_Effect/Particles/Fly/Explosion_01_01.Explosion_01_01";
+
 
 	// テスト用
 	{
@@ -118,17 +124,44 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 {
 	if (const bool v = Value.Get<bool>() && CanMagic)
 	{
-		UE_LOG(LogTemp, Log, TEXT("魔法を撃ったYO！"));
-
+		//
+		// CanMagic = false;
 		WritePlayerInfoToCSV(this);
 #if true
 		// 魔法アクターを取得
 		{
 			if (sc != nullptr)
 			{
-				AActor* a = GetWorld()->SpawnActor<AActor>(sc); // スポーン処理
-				WritePlayerInfoToCSV(a);
-				//a->SetActorLocation(GetActorLocation()); // 確認しやすいように座標を設定
+				AOnishi_MagicLauncher* a = GetWorld()->SpawnActor<AOnishi_MagicLauncher>(sc); // スポーン処理
+
+				FVector look = GetControlRotation().Vector();
+				FVector pos = GetActorLocation();
+				//FString path = "/Game/KTP_Effect/Particles/Fly/Explosion_01_01.Explosion_01_01";
+
+				UKismetSystemLibrary::PrintString(
+					this,
+					pos.ToString(),
+					true,
+					true,
+					FColor::Red,
+					5.0f
+					);
+
+				a->SetActorLocation(pos);
+
+				UKismetSystemLibrary::PrintString(
+					this,
+					a->GetActorLocation().ToString(),
+					true,
+					true,
+					FColor::Red,
+					5.0f
+				);
+				//a->LaunchMagic(look, pos, MagicEffectFilePath);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Log, TEXT("sc is null"));
 			}
 		}
 #endif
@@ -162,7 +195,7 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 // csv出力
 void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 {
-	FString MagicName = "魔法プロト";
+	FString MagicName = MagicEffectFilePath;
 
 	// CSVに書き込む内容
 	FString CSVContent = MagicName + TEXT(",") + TEXT("\n");

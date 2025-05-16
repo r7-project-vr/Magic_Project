@@ -2,6 +2,7 @@
 
 
 #include "Magic/Onishi_MagicLauncher.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "NiagaraFunctionLibrary.h"
 #include "TimerManager.h"
 
@@ -23,7 +24,16 @@ void AOnishi_MagicLauncher::BeginPlay()
 	GetWorldTimerManager().SetTimer(DestroyTimerHandle,this,&AOnishi_MagicLauncher::HandleAutoDestroy,2.0f,false);
 
 	//ç≈èâÇÃà íuÇåàíË
-	SetActorLocation(StartLocation);
+	//SetActorLocation(StartLocation);
+
+	UKismetSystemLibrary::PrintString(
+		this,
+		StartLocation.ToString(),
+		true,
+		true,
+		FColor::Blue,
+		5.0f
+	);
 }
 
 // Called every frame
@@ -32,8 +42,8 @@ void AOnishi_MagicLauncher::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	//é©ìÆÇ≈ëOÇ…êiÇﬁ
-	FVector NewLocation = GetActorLocation() + (MoveDirection.GetSafeNormal() * MoveSpeed * DeltaTime);
-	SetActorLocation(NewLocation);
+	//FVector NewLocation = GetActorLocation() + (MoveDirection.GetSafeNormal() * MoveSpeed * DeltaTime);
+	//SetActorLocation(NewLocation);
 }
 
 void AOnishi_MagicLauncher::HandleAutoDestroy()

@@ -79,7 +79,8 @@ private:
 	bool CanMagic = true;//とりあえず
 
 	// クラスのメンバ変数として以下を記述する
-	TSubclassOf< class AActor > sc = nullptr;
+	TSubclassOf< class AOnishi_MagicLauncher > sc = nullptr;
+	FString MagicEffectFilePath;
 
 	//----------------------------------------
 	// csv用
