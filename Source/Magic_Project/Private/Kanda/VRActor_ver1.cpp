@@ -3,6 +3,9 @@
 
 #include "Kanda/VRActor_ver1.h"
 #include "InputMappingContext.h"
+#include "Magic/Onishi_MagicLauncher.h"
+#include "KandaPawn.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "InputActionValue.h"
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
@@ -19,9 +22,13 @@ AVRActor_ver1::AVRActor_ver1()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// StaticMeshComponentを追加し、RootComponentに設定する
+	Sphere = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
+	RootComponent = Sphere;
+
 	// Cameraを追加する
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
-	// Camera->SetupAttachment(RootComponent);
+	Camera->SetupAttachment(RootComponent);
 
 	// Input Mapping Context「IMC_TestPad」を読み込む
 	DefaultMappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/Kanda/Input/IMC_TestPad"));
@@ -45,10 +52,21 @@ AVRActor_ver1::AVRActor_ver1()
 	// Arrowを表示されるようにする
 	Arrow->bHiddenInGame = false;
 
-	// scの定義
-	FString magic = "/Game/test.test_C";
-	static ConstructorHelpers::FObjectFinder< UClass > found(*magic); // 上記で設定したパスのオブジェクトを取得する
-	sc = found.Object; // 上記で発見したオブジェクトのクラスを取得する
+	// Effectのファイルの場所
+	{
+		MagicEffectFilePath[0] = "/Game/KTP_Effect/Particles/Fly/Explosion_01_01.Explosion_01_01";
+		MagicEffectFilePath[1] = "/Game/KTP_Effect/Particles/Fly/Expolison_02_01.Expolison_02_01";
+		MagicEffectFilePath[2] = "/Game/KTP_Effect/Particles/Fly/Explosion_03_01.Explosion_03_01";
+		MagicEffectFilePath[3] = "/Game/KTP_Effect/Particles/Fly/Explosion_04_01.Explosion_04_01";
+		MagicEffectFilePath[4] = "/Game/KTP_Effect/Particles/Fly/Explosion_05_01.Explosion_05_01";
+		MagicEffectFilePath[5] = "/Game/KTP_Effect/Particles/Fly/Explosion_06_01.Explosion_06_01";
+		MagicEffectFilePath[6] = "/Game/KTP_Effect/Particles/Fly/Explosion_07_01.Explosion_07_01";
+		MagicEffectFilePath[7] = "/Game/KTP_Effect/Particles/Fly/Explosion_08_01.Explosion_08_01";
+		MagicEffectFilePath[8] = "/Game/KTP_Effect/Particles/Fly/Explosion_09_01.Explosion_09_01";
+	}
+	
+	// 魔法パレットの初期化
+	MagicPalette = 0;
 
 	// テスト用
 	{
@@ -113,23 +131,45 @@ void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
 	SetActorLocation(NewLocation);
 }
 
-//魔法を撃つ
+// 魔法を撃つ
 void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 {
 	if (const bool v = Value.Get<bool>() && CanMagic)
 	{
-		UE_LOG(LogTemp, Log, TEXT("魔法を撃ったYO！"));
+		MagicPalette++;
+		// CanMagic = false;
 
-		WritePlayerInfoToCSV(this);
-#if true
-		// 魔法アクターを取得
+		// 魔法アクターを生成
 		{
-			if (sc != nullptr)
-			{
-				AActor* a = GetWorld()->SpawnActor<AActor>(sc); // スポーン処理
-				WritePlayerInfoToCSV(a);
-				//a->SetActorLocation(GetActorLocation()); // 確認しやすいように座標を設定
-			}
+			FRotator look = GetControlRotation();
+			FVector pos = GetActorLocation();
+
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			AOnishi_MagicLauncher* magic =
+				GetWorld()->SpawnActor<AOnishi_MagicLauncher>(AOnishi_MagicLauncher::StaticClass(), pos, look); // スポーン処理
+
+			int Path = MagicPalette % 9;
+
+			magic->MoveSpeed *= 10.f;
+			magic->LaunchMagic(look.Vector(), pos, MagicEffectFilePath[Path]);
+
+			WritePlayerInfoToCSV(this);
+
+			//DebugLogLocation(magic, FColor::Red);
+		}
+
+#if false
+		// テスト用
+		{
+			FRotator look = GetControlRotation();
+			FVector pos = GetActorLocation();
+
+			AKandaPawn* b =
+				GetWorld()->SpawnActor<AKandaPawn>(AKandaPawn::StaticClass(), pos, look);
+
+			DebugLogLocation(b, FColor::Blue);
 		}
 #endif
 	}
@@ -159,10 +199,25 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 	}
 }
 
+// デバッグ用
+void AVRActor_ver1::DebugLogLocation(AActor* a_, FColor c)
+{
+	if (a_ == nullptr) { return; }
+
+	UKismetSystemLibrary::PrintString(
+		this,
+		a_->GetActorLocation().ToString(),
+		true,
+		true,
+		c,
+		2.0f
+	);
+}
+
 // csv出力
 void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 {
-	FString MagicName = "魔法プロト";
+	FString MagicName = MagicEffectFilePath[MagicPalette % 9];
 
 	// CSVに書き込む内容
 	FString CSVContent = MagicName + TEXT(",") + TEXT("\n");
