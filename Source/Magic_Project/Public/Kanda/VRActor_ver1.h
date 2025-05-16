@@ -36,7 +36,10 @@ public:
 
 private:
 
-	/** SpringArmの先端に配置するカメラ */
+	/** Character用のStaticMesh : Sphere */
+	UPROPERTY(VisibleAnywhere, Category = Character, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UStaticMeshComponent> Sphere;
+
 	UPROPERTY(VisibleAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> Camera;
 
@@ -78,9 +81,13 @@ private:
 	// 魔法実行フラグ
 	bool CanMagic = true;//とりあえず
 
-	// クラスのメンバ変数として以下を記述する
-	TSubclassOf< class AOnishi_MagicLauncher > sc = nullptr;
-	FString MagicEffectFilePath;
+	// 魔法変更フラグ
+	int MagicPalette;
+
+	// 魔法のエフェクトのファイルを登録
+	FString MagicEffectFilePath[9];
+
+	void DebugLogLocation(AActor* a_ , FColor c);
 
 	//----------------------------------------
 	// csv用

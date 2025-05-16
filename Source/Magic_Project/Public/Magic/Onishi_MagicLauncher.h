@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "NiagaraSystem.h"
+#include "NiagaraComponent.h"// 追記
 #include "Components/StaticMeshComponent.h"
 #include "Onishi_MagicLauncher.generated.h"
 
@@ -29,17 +30,28 @@ public:
 	float MoveSpeed = 200.0f; // cm/s
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	FVector MoveDirection = FVector(1.0, 0.0, 0.0);
+	/*FVector MoveDirection = FVector(1.0, 0.0, 0.0);*/
+	//書き換えた 5_16
+	FVector MoveDirection;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
 	UNiagaraSystem* DestroyEffect;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Movement")
-	FVector StartLocation = FVector(0, 0, 0);
+	/*FVector StartLocation = FVector(0, 0, 0);*/ 
+	//書き換えた 5_16
+	FVector StartLocation;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Effects")
 	UNiagaraSystem* FlyingEffect = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/KTP_Effect/Particles/Fly/Others/Trail_10_07.Trail_10_07"));
 
+
+	// 追記
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	UNiagaraComponent* _NiagaraComponent;
+
+	UPROPERTY(VisibleAnywhere, Category = Character, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UStaticMeshComponent> Sphere;
 public:
 	UFUNCTION()
 	void HandleAutoDestroy();
@@ -50,4 +62,17 @@ public:
 	///</summary>
 	UFUNCTION()
 	void LaunchMagic(FVector Facing, FVector NowLocation, FString EffectPath);
+
+private:
+
+	// ----------------------
+	// 追記_5_16
+
+	// プレイヤーから生成される魔法のエフェクト
+	void CreateMagicEffect(FString EffectPath);
+
+	void MoveMagic();
+
+	// デバッグ
+	void DebugLogLocation(AActor* a_, FColor c);
 };
