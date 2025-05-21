@@ -6,12 +6,12 @@
 #include "Magic/Onishi_MagicLauncher.h"
 #include "KandaPawn.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Components/StaticMeshComponent.h"
 #include "InputActionValue.h"
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
 #include "Components/ArrowComponent.h" 
 #include "EnhancedInputSubsystems.h"
-#include "Components/StaticMeshComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 
@@ -23,8 +23,28 @@ AVRActor_ver1::AVRActor_ver1()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// StaticMeshComponentを追加し、RootComponentに設定する
-	Sphere = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
-	RootComponent = Sphere;
+	Player = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
+
+	Player->SetGenerateOverlapEvents(true);
+	Player->SetCollisionProfileName(TEXT("OverlapAll"));
+
+	RootComponent = Player;
+
+	// BoxComponentを追加し、BoxComponentをRootComponentにAttachする
+	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
+	Sphere->SetupAttachment(RootComponent);
+
+	// Boxのサイズを設定する
+	Sphere->SetSphereRadius(30.f);
+
+	// Boxの位置を調整する
+	Sphere->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f), false);
+
+	Sphere->SetCollisionProfileName("Pawn");
+	Sphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AVRActor_ver1::OnSphereBeginOverlap);
+	OnActorBeginOverlap.AddDynamic(this, &AVRActor_ver1::testOverlap);
 
 	// Cameraを追加する
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
@@ -155,6 +175,7 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 			magic->MoveSpeed *= 10.f;
 			magic->LaunchMagic(look.Vector(), pos, MagicEffectFilePath[Path]);
 
+			DebugLogLocation(magic, FColor::Red);
 			WritePlayerInfoToCSV(this);
 
 			//DebugLogLocation(magic, FColor::Red);
@@ -199,6 +220,11 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 	}
 }
 
+void AVRActor_ver1::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	DebugLogLocation(this, FColor::Red);
+}
+
 // デバッグ用
 void AVRActor_ver1::DebugLogLocation(AActor* a_, FColor c)
 {
@@ -231,4 +257,8 @@ void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 	// ファイルに内容を書き込む
 	FFileHelper::SaveStringToFile(CSVContent, *MagicFilePath, FFileHelper::EEncodingOptions::AutoDetect,
 		&IFileManager::Get(), EFileWrite::FILEWRITE_Append);
+}
+
+void AVRActor_ver1::testOverlap(AActor* OverlapActor, AActor* OtherActor) {
+	DebugLogLocation(this, FColor::Red);
 }
