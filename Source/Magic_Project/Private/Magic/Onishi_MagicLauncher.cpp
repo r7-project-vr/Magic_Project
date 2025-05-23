@@ -4,6 +4,7 @@
 #include "Magic/Onishi_MagicLauncher.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Components/SphereComponent.h"
 #include "TimerManager.h"
 
 // Sets default values
@@ -17,8 +18,8 @@ AOnishi_MagicLauncher::AOnishi_MagicLauncher()
 	_NiagaraComponent = nullptr;
 
 	// StaticMeshComponentÇí«â¡ÇµÅARootComponentÇ…ê›íËÇ∑ÇÈ
-	Sphere = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
-	RootComponent = Sphere;
+	Magic = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
+	RootComponent = Magic;
 }
 
 // Called when the game starts or when spawned

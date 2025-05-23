@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Components/SphereComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "InputActionValue.h"
 #include "VRActor_ver1.generated.h"
 
@@ -13,6 +15,7 @@ class UCameraComponent;
 class UArrowComponent;
 class UInputMappingContext;
 class UInputAction;
+class USphereComponent;
 
 UCLASS()
 class MAGIC_PROJECT_API AVRActor_ver1 : public APawn
@@ -38,7 +41,10 @@ private:
 
 	/** Character—p‚ÌStaticMesh : Sphere */
 	UPROPERTY(VisibleAnywhere, Category = Character, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UStaticMeshComponent> Sphere;
+	TObjectPtr<UStaticMeshComponent> Player;
+
+	UPROPERTY(VisibleAnywhere, Category = Collider, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USphereComponent> Sphere;
 
 	UPROPERTY(VisibleAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> Camera;
@@ -58,6 +64,14 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = Control, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UArrowComponent> Arrow;
+
+public:
+	UFUNCTION()
+	void CreateMagic(FString MagicEffectFilePath, float MagicSpeed = 10.f);
+
+private:
+	UFUNCTION()
+	void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 protected:
 	
