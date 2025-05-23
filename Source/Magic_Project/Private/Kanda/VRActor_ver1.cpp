@@ -151,7 +151,7 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 
 		int Path = MagicPalette % 9;
 
-		CreateMagic(MagicEffectFilePath[Path], 10.f);
+		//CreateMagic(MagicEffectFilePath[Path], 10.f);
 
 #if false
 		// テスト用
@@ -187,7 +187,7 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 	}
 }
 
-void AVRActor_ver1::CreateMagic(FString f_,float s_) {
+void AVRActor_ver1::CreateMagic(UNiagaraSystem* Ef_Flying, UNiagaraSystem* Ef_Destroy, float s_) {
 
 	// 魔法アクターを生成
 	{
@@ -201,7 +201,7 @@ void AVRActor_ver1::CreateMagic(FString f_,float s_) {
 			GetWorld()->SpawnActor<AOnishi_MagicLauncher>(AOnishi_MagicLauncher::StaticClass(), pos, look); // スポーン処理
 
 		magic->MoveSpeed *= s_;
-		magic->LaunchMagic(look.Vector(), pos, f_);
+		magic->LaunchMagic(look.Vector(), pos, Ef_Flying, Ef_Destroy);
 
 		DebugLogLocation(magic, FColor::Red);
 		WritePlayerInfoToCSV(this);
