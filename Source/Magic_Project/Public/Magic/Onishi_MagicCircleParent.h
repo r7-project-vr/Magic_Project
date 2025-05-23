@@ -46,14 +46,19 @@ public:
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex);
 
-	//魔法陣としてのエフェクトのPath
-	UPROPERTY(BluePrintReadWrite, Category = "Effects")
+	//魔法陣としてのエフェクト
+	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Effects")
 	UNiagaraSystem* Ef_MagicCircle;
 
 	//オーバーラップしたプレイヤーのアクターを保存
 	UPROPERTY()
 	AActor* OverlappingActor;
 
+	//飛ばす魔法のエフェクト
+	UPROPERTY(EditAnywhere,BluePrintReadWrite,Category="Effects")
+	UNiagaraSystem* Ef_MagicFly;
 
-	FString f = "/Game/KTP_Effect/Particles/Fly/Expolison_03_01.Expolison_03_01";
+	//魔法が飛んだ後最後に出るエフェクト
+	UPROPERTY(EditAnywhere,BluePrintReadWrite,Category="Effects")
+	UNiagaraSystem* Ef_Destroy;
 };

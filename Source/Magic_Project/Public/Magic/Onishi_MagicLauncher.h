@@ -58,10 +58,10 @@ public:
 
 	///<summary>
 	///魔法を発射するときに呼び出し
-	///向き/現在位置/魔法のエフェクト(path)を指定
+	///向き/現在位置/魔法のエフェクトを指定
 	///</summary>
 	UFUNCTION()
-	void LaunchMagic(FVector Facing, FVector NowLocation, FString EffectPath);
+	void LaunchMagic(FVector Facing, FVector NowLocation, UNiagaraSystem* Ef_Flying, UNiagaraSystem* Ef_Destroy);
 
 private:
 
@@ -69,7 +69,7 @@ private:
 	// 追記_5_16
 
 	// プレイヤーから生成される魔法のエフェクト
-	void CreateMagicEffect(FString EffectPath);
+	void CreateMagicEffect(UNiagaraSystem* Effect);
 
 	void MoveMagic();
 

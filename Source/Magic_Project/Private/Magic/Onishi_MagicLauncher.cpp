@@ -6,6 +6,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/SphereComponent.h"
 #include "TimerManager.h"
+#include "NiagaraFunctionLibrary.h"
 
 // Sets default values
 AOnishi_MagicLauncher::AOnishi_MagicLauncher()
@@ -61,14 +62,14 @@ void AOnishi_MagicLauncher::Tick(float DeltaTime)
 	MoveMagic();
 }
 
-void AOnishi_MagicLauncher::LaunchMagic(FVector Facing, FVector NowLocation, FString EffectPath) {
+void AOnishi_MagicLauncher::LaunchMagic(FVector Facing, FVector NowLocation, UNiagaraSystem* Ef_Flying, UNiagaraSystem* Ef_Destroy) {
 	MoveDirection = Facing;
 	StartLocation = NowLocation;
-	DestroyEffect = LoadObject<UNiagaraSystem>(nullptr, *EffectPath);
+	DestroyEffect = Ef_Destroy;
 
 	// 追記_5_16
 	{
-		CreateMagicEffect(EffectPath);
+		CreateMagicEffect(Ef_Flying);
 
 		//破壊までのタイマーを始める（3つ目の引数で指定（単位は秒））
 		FTimerHandle DestroyTimerHandle;
@@ -76,12 +77,12 @@ void AOnishi_MagicLauncher::LaunchMagic(FVector Facing, FVector NowLocation, FSt
 	}
 }
 
-void AOnishi_MagicLauncher::CreateMagicEffect(FString EffectPath) {
+void AOnishi_MagicLauncher::CreateMagicEffect(UNiagaraSystem* Effect) {
 
 	// ファイルが指定されてなければ処理なし
-	if (*EffectPath == nullptr) { return; }
+	if (Effect == nullptr) { return; }
 
-	UNiagaraSystem* ns = LoadObject<UNiagaraSystem>(nullptr, *EffectPath);
+	UNiagaraSystem* ns = Effect;
 
 	// コンポーネントとしてNiagaraComponentを追加
 	_NiagaraComponent = NewObject<UNiagaraComponent>(this);
@@ -102,17 +103,16 @@ void AOnishi_MagicLauncher::CreateMagicEffect(FString EffectPath) {
 
 void AOnishi_MagicLauncher::HandleAutoDestroy()
 {
-	//// エフェクト再生（あれば）
-	////継承先のBPで指定できる（詳細のウィンドウで）
-	//if (DestroyEffect)
-	//{
-	//	UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-	//		GetWorld(),
-	//		DestroyEffect,
-	//		GetActorLocation(),
-	//		MoveDirection.Rotation()
-	//	);
-	//}
+	// エフェクト再生（あれば）
+	if (DestroyEffect)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(),
+			DestroyEffect,
+			GetActorLocation(),
+			MoveDirection.Rotation()
+		);
+	}
 
 	//DebugLogLocation(this, FColor::Black);
 

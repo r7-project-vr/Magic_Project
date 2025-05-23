@@ -67,7 +67,7 @@ private:
 
 public:
 	UFUNCTION()
-	void CreateMagic(FString MagicEffectFilePath, float MagicSpeed = 10.f);
+	void CreateMagic(UNiagaraSystem* Ef_Flying, UNiagaraSystem* Ef_Destroy, float MagicSpeed = 10.f);
 
 private:
 	UFUNCTION()
