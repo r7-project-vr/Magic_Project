@@ -51,7 +51,7 @@ public:
 	UNiagaraComponent* _NiagaraComponent;
 
 	UPROPERTY(VisibleAnywhere, Category = Character, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UStaticMeshComponent> Sphere;
+	TObjectPtr<UStaticMeshComponent> Magic;
 public:
 	UFUNCTION()
 	void HandleAutoDestroy();
