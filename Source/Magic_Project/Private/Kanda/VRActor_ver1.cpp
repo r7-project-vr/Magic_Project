@@ -4,7 +4,6 @@
 #include "Kanda/VRActor_ver1.h"
 #include "InputMappingContext.h"
 #include "Magic/Onishi_MagicLauncher.h"
-#include "KandaPawn.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/StaticMeshComponent.h"
 #include "InputActionValue.h"
@@ -24,27 +23,19 @@ AVRActor_ver1::AVRActor_ver1()
 
 	// StaticMeshComponentを追加し、RootComponentに設定する
 	Player = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
-
-	Player->SetGenerateOverlapEvents(true);
-	Player->SetCollisionProfileName(TEXT("OverlapAll"));
-
 	RootComponent = Player;
 
-	// BoxComponentを追加し、BoxComponentをRootComponentにAttachする
+	// SphereComponentを追加し、BoxComponentをRootComponentにAttachする
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 	Sphere->SetupAttachment(RootComponent);
 
-	// Boxのサイズを設定する
+	// Sphereのサイズを設定する
 	Sphere->SetSphereRadius(30.f);
 
-	// Boxの位置を調整する
+	// Sphereの位置を調整する
 	Sphere->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f), false);
 
-	Sphere->SetCollisionProfileName("Pawn");
-	Sphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-
 	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AVRActor_ver1::OnSphereBeginOverlap);
-	OnActorBeginOverlap.AddDynamic(this, &AVRActor_ver1::testOverlap);
 
 	// Cameraを追加する
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
@@ -151,14 +142,28 @@ void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
 	SetActorLocation(NewLocation);
 }
 
-// 魔法を撃つ
+// 魔法を撃つ_コントローラーのみ
 void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 {
 	if (const bool v = Value.Get<bool>() && CanMagic)
 	{
 		MagicPalette++;
-		// CanMagic = false;
 
+		int Path = MagicPalette % 9;
+
+		CreateMagic(MagicEffectFilePath[Path], 10.f);
+
+#if false
+		// テスト用
+		{
+			FRotator look = GetControlRotation();
+			FVector pos = GetActorLocation();
+
+			AKandaPawn* b =
+				GetWorld()->SpawnActor<AKandaPawn>(AKandaPawn::StaticClass(), pos, look);
+
+			DebugLogLocation(b, FColor::Blue);
+		}
 		// 魔法アクターを生成
 		{
 			FRotator look = GetControlRotation();
@@ -177,22 +182,29 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 
 			DebugLogLocation(magic, FColor::Red);
 			WritePlayerInfoToCSV(this);
-
-			//DebugLogLocation(magic, FColor::Red);
-		}
-
-#if false
-		// テスト用
-		{
-			FRotator look = GetControlRotation();
-			FVector pos = GetActorLocation();
-
-			AKandaPawn* b =
-				GetWorld()->SpawnActor<AKandaPawn>(AKandaPawn::StaticClass(), pos, look);
-
-			DebugLogLocation(b, FColor::Blue);
 		}
 #endif
+	}
+}
+
+void AVRActor_ver1::CreateMagic(FString f_,float s_) {
+
+	// 魔法アクターを生成
+	{
+		FRotator look = GetControlRotation();
+		FVector pos = GetActorLocation();
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		AOnishi_MagicLauncher* magic =
+			GetWorld()->SpawnActor<AOnishi_MagicLauncher>(AOnishi_MagicLauncher::StaticClass(), pos, look); // スポーン処理
+
+		magic->MoveSpeed *= s_;
+		magic->LaunchMagic(look.Vector(), pos, f_);
+
+		DebugLogLocation(magic, FColor::Red);
+		WritePlayerInfoToCSV(this);
 	}
 }
 
@@ -222,7 +234,7 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 
 void AVRActor_ver1::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	DebugLogLocation(this, FColor::Red);
+	DebugLogLocation(this, FColor::Black);
 }
 
 // デバッグ用
@@ -257,8 +269,4 @@ void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 	// ファイルに内容を書き込む
 	FFileHelper::SaveStringToFile(CSVContent, *MagicFilePath, FFileHelper::EEncodingOptions::AutoDetect,
 		&IFileManager::Get(), EFileWrite::FILEWRITE_Append);
-}
-
-void AVRActor_ver1::testOverlap(AActor* OverlapActor, AActor* OtherActor) {
-	DebugLogLocation(this, FColor::Red);
 }

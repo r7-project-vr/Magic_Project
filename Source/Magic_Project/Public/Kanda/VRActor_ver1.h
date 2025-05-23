@@ -15,6 +15,7 @@ class UCameraComponent;
 class UArrowComponent;
 class UInputMappingContext;
 class UInputAction;
+class USphereComponent;
 
 UCLASS()
 class MAGIC_PROJECT_API AVRActor_ver1 : public APawn
@@ -42,8 +43,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Character, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UStaticMeshComponent> Player;
 
-	/** PlayerÇ…DamageÇó^Ç¶ÇÈSphere Collision : Sphere **/
-	UPROPERTY(VisibleAnywhere, Category = Trap, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = Collider, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USphereComponent> Sphere;
 
 	UPROPERTY(VisibleAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -65,21 +65,14 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Control, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UArrowComponent> Arrow;
 
-	/*UFUNCTION()
-	void OnSphereBeginOverlap(
-		UPrimitiveComponent* OverlappedComp, 
-		AActor* OtherActor, 
-		UPrimitiveComponent* OtherComp, 
-		int32 OtherBodyIndex, 
-		bool bFromSweep, 
-		const FHitResult& SweepResult
-	);*/
+public:
+	UFUNCTION()
+	void CreateMagic(FString MagicEffectFilePath, float MagicSpeed = 10.f);
+
 private:
 	UFUNCTION()
 	void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	UFUNCTION()
-	void testOverlap(AActor* OverlappedActor, AActor* OtherActor);
 protected:
 	
 	//playerÉRÉìÉgÉçÅ[Éã
