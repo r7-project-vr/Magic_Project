@@ -4,6 +4,7 @@
 #include "Magic/Onishi_MagicCircleParent.h"
 #include "Components/SphereComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Kanda/VRActor_ver1.h"
 
 // Sets default values
 AOnishi_MagicCircleParent::AOnishi_MagicCircleParent()
@@ -52,7 +53,10 @@ void AOnishi_MagicCircleParent::OnOverlapBegin(UPrimitiveComponent* OverlappedCo
 	bool bFromSweep,
 	const FHitResult& SweepResult) {
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("HIT"));
-	Shootable = true;
+	if (AVRActor_ver1* Pawn = Cast<AVRActor_ver1>(OtherActor)) {
+		
+		Pawn->CreateMagic(f);
+	}
 }
 
 //オーバーラップ終了時の動作を定義
@@ -61,5 +65,5 @@ void AOnishi_MagicCircleParent::OnOverlapEnd(UPrimitiveComponent* OverlappedComp
 	UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex) {
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("END"));
-	Shootable = false;
+	
 }

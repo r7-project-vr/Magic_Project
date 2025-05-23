@@ -50,5 +50,10 @@ public:
 	UPROPERTY(BluePrintReadWrite, Category = "Effects")
 	UNiagaraSystem* Ef_MagicCircle;
 
-	bool Shootable = false;
+	//オーバーラップしたプレイヤーのアクターを保存
+	UPROPERTY()
+	AActor* OverlappingActor;
+
+
+	FString f = "/Game/KTP_Effect/Particles/Fly/Expolison_03_01.Expolison_03_01";
 };
