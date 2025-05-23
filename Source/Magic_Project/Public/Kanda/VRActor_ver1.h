@@ -67,7 +67,11 @@ private:
 
 public:
 	UFUNCTION()
-	void CreateMagic(UNiagaraSystem* Ef_Flying, UNiagaraSystem* Ef_Destroy, float MagicSpeed = 10.f);
+	void CreateMagic(float MagicSpeed = 10.f);
+
+	//魔法陣からデータを受け取る
+	UFUNCTION()
+	void SetMagicData(UNiagaraSystem* Ef_Flying_ = nullptr, UNiagaraSystem* Ef_Destroy_ = nullptr);
 
 private:
 	UFUNCTION()
@@ -92,9 +96,6 @@ private:
 	// 移動方向
 	FRotator MoveRotator;
 
-	// 魔法実行フラグ
-	bool CanMagic = true;//とりあえず
-
 	// 魔法変更フラグ
 	int MagicPalette;
 
@@ -110,4 +111,12 @@ private:
 
 	// csvファイル出力
 	void WritePlayerInfoToCSV(AActor* m_);
+
+	//魔法エフェクトのポインタ
+	UNiagaraSystem* Ef_Flying;
+	UNiagaraSystem* Ef_Destroy;
+
+public:
+	// 魔法実行フラグ
+	bool CanMagic = true;//とりあえず
 };
