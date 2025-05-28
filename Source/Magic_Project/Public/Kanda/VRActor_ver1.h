@@ -7,6 +7,8 @@
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "InputActionValue.h"
+#include "Magic/Onishi_MagicCircleParent.h"
+#include "Kanda/MagicDataTable.h"
 #include "VRActor_ver1.generated.h"
 
 class UStaticMeshComponent;
@@ -73,6 +75,8 @@ public:
 	UFUNCTION()
 	void SetMagicData(UNiagaraSystem* Ef_Flying_ = nullptr, UNiagaraSystem* Ef_Destroy_ = nullptr);
 
+	void SetMagicData2(MagicDataTable* m_);
+
 private:
 	UFUNCTION()
 	void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -103,6 +107,12 @@ private:
 	FString MagicEffectFilePath[9];
 
 	void DebugLogLocation(AActor* a_ , FColor c);
+
+	// 魔法のデータ管理用
+	MagicDataTable* magicData;
+
+	// 魔法陣のポインタ
+	AOnishi_MagicCircleParent* circle;
 
 	//----------------------------------------
 	// csv用

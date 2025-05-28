@@ -3,6 +3,7 @@
 
 #include "Magic/Onishi_MagicCircleParent.h"
 #include "Components/SphereComponent.h"
+#include "Kanda/MagicDataTable.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Kanda/VRActor_ver1.h"
 
@@ -52,6 +53,10 @@ void AOnishi_MagicCircleParent::OnOverlapBegin(UPrimitiveComponent* OverlappedCo
 	if (AVRActor_ver1* Pawn = Cast<AVRActor_ver1>(OtherActor)) {
 		
 		Pawn->SetMagicData(Ef_MagicFly, Ef_Destroy);
+		
+		MagicDataTable* m = new MagicDataTable(1, 1);
+		Pawn->SetMagicData2(m);
+		delete m;
 	}
 }
 

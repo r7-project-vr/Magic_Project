@@ -83,6 +83,10 @@ AVRActor_ver1::AVRActor_ver1()
 	// 魔法パレットの初期化
 	MagicPalette = 0;
 
+	// 魔法データの初期化
+	magicData = nullptr;
+	circle = nullptr;
+
 	// テスト用
 	{
 		// 現在時刻の取得
@@ -150,40 +154,34 @@ void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
 void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 {
 	if (const bool v = Value.Get<bool>()) {
+
+		if (magicData == nullptr) { return; }
+
+		if (magicData->DecMagicCnt()) {
+			circle->Destroy();
+		}
+
+		{
+			int i = magicData->GetMagicCnt();
+			FVector vec = FVector(i, 0, 0);
+			UKismetSystemLibrary::PrintString(
+				this,
+				vec.ToString(),
+				true,
+				true,
+				FColor::Black,
+				2.0f
+			);
+		}
+
+
+
 		CreateMagic();
 	}
+}
+void AVRActor_ver1::SetMagicData2(MagicDataTable* m_) {
 
-#if false
-		// テスト用
-		{
-			FRotator look = GetControlRotation();
-			FVector pos = GetActorLocation();
-
-			AKandaPawn* b =
-				GetWorld()->SpawnActor<AKandaPawn>(AKandaPawn::StaticClass(), pos, look);
-
-			DebugLogLocation(b, FColor::Blue);
-		}
-		// 魔法アクターを生成
-		{
-			FRotator look = GetControlRotation();
-			FVector pos = GetActorLocation();
-
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-			AOnishi_MagicLauncher* magic =
-				GetWorld()->SpawnActor<AOnishi_MagicLauncher>(AOnishi_MagicLauncher::StaticClass(), pos, look); // スポーン処理
-
-			int Path = MagicPalette % 9;
-
-			magic->MoveSpeed *= 10.f;
-			magic->LaunchMagic(look.Vector(), pos, MagicEffectFilePath[Path]);
-
-			DebugLogLocation(magic, FColor::Red);
-			WritePlayerInfoToCSV(this);
-		}
-#endif
+	magicData = m_;
 }
 
 // 魔法を飛ばす処理
