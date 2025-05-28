@@ -186,10 +186,13 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 #endif
 }
 
+// 魔法を飛ばす処理
 void AVRActor_ver1::CreateMagic(float s_) {
 
-	// 魔法アクターを生成
+	// エフェクトがnullなら処理なし
 	if (Ef_Flying == nullptr || Ef_Destroy == nullptr) return;
+
+	// 魔法アクターを生成
 	{
 		FRotator look = GetControlRotation();
 		FVector pos = GetActorLocation();
@@ -232,6 +235,7 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 	}
 }
 
+// ほかのアクターとの接触処理
 void AVRActor_ver1::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	DebugLogLocation(this, FColor::Black);
