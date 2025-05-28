@@ -76,6 +76,10 @@ AVRActor_ver1::AVRActor_ver1()
 		MagicEffectFilePath[8] = "/Game/KTP_Effect/Particles/Fly/Explosion_09_01.Explosion_09_01";
 	}
 	
+	//魔法エフェクトの初期化
+	Ef_Flying = nullptr;
+	Ef_Destroy = nullptr;
+
 	// 魔法パレットの初期化
 	MagicPalette = 0;
 
@@ -145,13 +149,9 @@ void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
 // 魔法を撃つ_コントローラーのみ
 void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 {
-	if (const bool v = Value.Get<bool>() && CanMagic)
-	{
-		MagicPalette++;
-
-		int Path = MagicPalette % 9;
-
-		CreateMagic(MagicEffectFilePath[Path], 10.f);
+	if (const bool v = Value.Get<bool>()) {
+		CreateMagic();
+	}
 
 #if false
 		// テスト用
@@ -184,12 +184,12 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 			WritePlayerInfoToCSV(this);
 		}
 #endif
-	}
 }
 
-void AVRActor_ver1::CreateMagic(FString f_,float s_) {
+void AVRActor_ver1::CreateMagic(float s_) {
 
 	// 魔法アクターを生成
+	if (Ef_Flying == nullptr || Ef_Destroy == nullptr) return;
 	{
 		FRotator look = GetControlRotation();
 		FVector pos = GetActorLocation();
@@ -201,7 +201,7 @@ void AVRActor_ver1::CreateMagic(FString f_,float s_) {
 			GetWorld()->SpawnActor<AOnishi_MagicLauncher>(AOnishi_MagicLauncher::StaticClass(), pos, look); // スポーン処理
 
 		magic->MoveSpeed *= s_;
-		magic->LaunchMagic(look.Vector(), pos, f_);
+		magic->LaunchMagic(look.Vector(), pos, Ef_Flying, Ef_Destroy);
 
 		DebugLogLocation(magic, FColor::Red);
 		WritePlayerInfoToCSV(this);
@@ -235,6 +235,12 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 void AVRActor_ver1::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	DebugLogLocation(this, FColor::Black);
+}
+
+//魔法陣からエフェクトの情報をもらう
+void AVRActor_ver1::SetMagicData(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_Destroy_) {
+	Ef_Flying = Ef_Flying_;
+	Ef_Destroy = Ef_Destroy_;
 }
 
 // デバッグ用
