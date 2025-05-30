@@ -49,10 +49,9 @@ void AOnishi_MagicCircleParent::OnOverlapBegin(UPrimitiveComponent* OverlappedCo
 	int32 OtherBodyIndex,
 	bool bFromSweep,
 	const FHitResult& SweepResult) {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("HIT"));
 	if (AVRActor_ver1* Pawn = Cast<AVRActor_ver1>(OtherActor)) {
 		
-		Pawn->CreateMagic(Ef_MagicFly, Ef_Destroy);
+		Pawn->SetMagicData(Ef_MagicFly, Ef_Destroy);
 	}
 }
 
@@ -61,6 +60,8 @@ void AOnishi_MagicCircleParent::OnOverlapEnd(UPrimitiveComponent* OverlappedComp
 	AActor* OtherActor,
 	UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex) {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("END"));
-	
+	if (AVRActor_ver1* Pawn = Cast<AVRActor_ver1>(OtherActor)) {
+
+		Pawn->SetMagicData(nullptr, nullptr);
+	}
 }
