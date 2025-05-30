@@ -153,8 +153,8 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 		if (magicData == nullptr) { return; }
 
 		const int cnt = magicData->GetMagicCnt();
-		UNiagaraSystem* f = magicData->GetFlyNiagaraSystem(cnt);
-		UNiagaraSystem* d = magicData->GetDeathNiagaraSystem(cnt);
+		UNiagaraSystem* f = magicData->GetRandFlyNiagaraSystem(cnt);
+		UNiagaraSystem* d = magicData->GetRandDeathNiagaraSystem(cnt);
 
 		CreateMagic(f, d);
 
@@ -219,7 +219,7 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 		SetActorRotation(controlRotate);
 
 		// à⁄ìÆï˚å¸ÇéwíËÇ∑ÇÈ
-		FRotator ArrowRotate = FRotator(0,controlRotate.Yaw, 0);
+		FRotator ArrowRotate = FRotator(0, controlRotate.Yaw, 0);
 		Arrow->SetWorldRotation(ArrowRotate);
 	}
 }
@@ -258,7 +258,7 @@ void AVRActor_ver1::DebugLogLocation(AActor* a_, FColor c)
 // csvèoóÕ
 void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 {
-	//FString MagicName = MagicEffectFilePath[MagicPalette % 9];
+	//FString MagicName = ;
 
 	//// CSVÇ…èëÇ´çûÇﬁì‡óe
 	//FString CSVContent = MagicName + TEXT(",") + TEXT("\n");

@@ -70,7 +70,7 @@ int MagicDataTable::GetMagicCnt() {
 	return cnt;
 }
 
-UNiagaraSystem* MagicDataTable::GetFlyNiagaraSystem(const int cnt) {
+UNiagaraSystem* MagicDataTable::GetRandFlyNiagaraSystem(const int cnt) {
 
 	UNiagaraSystem* ns;
 	
@@ -88,7 +88,7 @@ UNiagaraSystem* MagicDataTable::GetFlyNiagaraSystem(const int cnt) {
 	return ns;
 }
 
-UNiagaraSystem* MagicDataTable::GetDeathNiagaraSystem(const int cnt) {
+UNiagaraSystem* MagicDataTable::GetRandDeathNiagaraSystem(const int cnt) {
 
 	UNiagaraSystem* ns;
 
@@ -101,6 +101,40 @@ UNiagaraSystem* MagicDataTable::GetDeathNiagaraSystem(const int cnt) {
 
 		const int c = deathRand[cnt];
 		ns = deathNs[c];
+	}
+
+	return ns;
+}
+
+UNiagaraSystem* MagicDataTable::GetFlyNiagaraSystem(const int arr) {
+
+	UNiagaraSystem* ns;
+
+	if (flyNs.Num() == 0) {
+
+		ns = nullptr;
+		UKismetSystemLibrary::PrintString(GEngine->GetWorld(), "flyNs is non");
+	}
+	else {
+
+		ns = flyNs[arr];
+	}
+
+	return ns;
+}
+
+UNiagaraSystem* MagicDataTable::GetDeathNiagaraSystem(const int arr) {
+
+	UNiagaraSystem* ns;
+
+	if (deathNs.Num() == 0) {
+
+		ns = nullptr;
+		UKismetSystemLibrary::PrintString(GEngine->GetWorld(), "flyNs is non");
+	}
+	else {
+
+		ns = deathNs[arr];
 	}
 
 	return ns;

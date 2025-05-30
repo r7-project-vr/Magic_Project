@@ -40,9 +40,15 @@ public:
 	// カウンターを取得
 	int GetMagicCnt();
 
-	// 配列を送る
-	UNiagaraSystem* GetFlyNiagaraSystem(const int cnt);
+	// ランダムな飛ぶエフェクトを送る
+	UNiagaraSystem* GetRandFlyNiagaraSystem(const int cnt);
 
-	// 配列を送る
-	UNiagaraSystem* GetDeathNiagaraSystem(const int cnt);
+	// ランダムな破壊エフェクトを送る
+	UNiagaraSystem* GetRandDeathNiagaraSystem(const int cnt);
+
+	// 指定した配列の飛ぶエフェクトを送る
+	UNiagaraSystem* GetFlyNiagaraSystem(const int arr);
+
+	// 指定した配列の破壊エフェクトを送る
+	UNiagaraSystem* GetDeathNiagaraSystem(const int arr);
 };

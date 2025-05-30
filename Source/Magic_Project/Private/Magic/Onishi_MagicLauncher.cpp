@@ -114,8 +114,6 @@ void AOnishi_MagicLauncher::HandleAutoDestroy()
 		);
 	}
 
-	//DebugLogLocation(this, FColor::Black);
-
 	// アクターを削除
 	Destroy();
 }
