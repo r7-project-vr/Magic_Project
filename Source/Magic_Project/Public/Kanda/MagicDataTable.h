@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "NiagaraSystem.h"
+#include "NiagaraComponent.h"
 
 /**
  * 魔法を飛ばすデータクラス
@@ -10,11 +12,25 @@
 class MAGIC_PROJECT_API MagicDataTable
 {
 public:
-	MagicDataTable(int m_,int l_);
+
+	// コンストラクタ
+	MagicDataTable(
+		int m_,						// カウンターの初期化
+		TArray<UNiagaraSystem*> f_, // 飛ぶときのエフェクトの配列
+		TArray<UNiagaraSystem*> d_  // 破壊したときのエフェクトの配列
+	);
+
+	// デスストラクタ
+	~MagicDataTable();
+
 private:
-	int magicCnt;
-	int magicfileLengh;
-	TArray<int> magaicfileFlag;
+
+	int							magicCnt;			// カウンター
+	int							cntMax;				// カウンターの最大値
+	TArray<int>					flyRand;			// 乱数を保存する配列
+	TArray<int>					deathRand;			// 乱数を保存する配列
+	TArray<UNiagaraSystem*>		flyNs;				// 飛ぶときのエフェクトのポインタ
+	TArray<UNiagaraSystem*>		deathNs;			// 破壊したときのエフェクトのポインタ
 
 public:
 
@@ -25,5 +41,8 @@ public:
 	int GetMagicCnt();
 
 	// 配列を送る
-	TArray<int> MagicFileFlag();
+	UNiagaraSystem* GetFlyNiagaraSystem(const int cnt);
+
+	// 配列を送る
+	UNiagaraSystem* GetDeathNiagaraSystem(const int cnt);
 };

@@ -69,17 +69,19 @@ private:
 
 public:
 	UFUNCTION()
-	void CreateMagic(float MagicSpeed = 10.f);
+	void CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_Destroy_, float MagicSpeed = 10.f);
 
-	//魔法陣からデータを受け取る
-	UFUNCTION()
-	void SetMagicData(UNiagaraSystem* Ef_Flying_ = nullptr, UNiagaraSystem* Ef_Destroy_ = nullptr);
-
-	void SetMagicData2(MagicDataTable* m_);
+	void SetMagicData(TSharedPtr<MagicDataTable> m_, AOnishi_MagicCircleParent* o_);
 
 private:
+
+	// 接触判定の処理、コライダー同士が接触したときに呼び出される
 	UFUNCTION()
 	void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	// 接触判定の処理、コライダー同士が離れたときに呼び出される
+	UFUNCTION()
+	void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 protected:
 	
@@ -100,16 +102,13 @@ private:
 	// 移動方向
 	FRotator MoveRotator;
 
-	// 魔法変更フラグ
-	int MagicPalette;
-
 	// 魔法のエフェクトのファイルを登録
 	FString MagicEffectFilePath[9];
 
 	void DebugLogLocation(AActor* a_ , FColor c);
 
 	// 魔法のデータ管理用
-	MagicDataTable* magicData;
+	TSharedPtr<MagicDataTable> magicData;
 
 	// 魔法陣のポインタ
 	AOnishi_MagicCircleParent* circle;
@@ -121,10 +120,6 @@ private:
 
 	// csvファイル出力
 	void WritePlayerInfoToCSV(AActor* m_);
-
-	//魔法エフェクトのポインタ
-	UNiagaraSystem* Ef_Flying;
-	UNiagaraSystem* Ef_Destroy;
 
 public:
 	// 魔法実行フラグ

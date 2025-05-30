@@ -16,7 +16,9 @@
 
 
 // Sets default values
-AVRActor_ver1::AVRActor_ver1()
+AVRActor_ver1::AVRActor_ver1():
+	magicData(nullptr),
+	circle(nullptr)
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -36,6 +38,7 @@ AVRActor_ver1::AVRActor_ver1()
 	Sphere->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f), false);
 
 	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AVRActor_ver1::OnSphereBeginOverlap);
+	Sphere->OnComponentEndOverlap.AddDynamic(this, &AVRActor_ver1::OnSphereEndOverlap);
 
 	// Cameraを追加する
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
@@ -53,15 +56,18 @@ AVRActor_ver1::AVRActor_ver1()
 	// Input Action「IA_Look」を読み込む
 	LookAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_Look"));
 
-	// Arrowを追加する
-	Arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
-	Arrow->SetupAttachment(RootComponent);
+	{
+		// Arrowを追加する
+		Arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
+		Arrow->SetupAttachment(RootComponent);
 
-	// Sphereの頭上に移動するようにLocationを設定する
-	Arrow->SetRelativeLocation(FVector(400.0f, 0.0f, 130.0f));
+		// Sphereの頭上に移動するようにLocationを設定する
+		Arrow->SetRelativeLocation(FVector(400.0f, 0.0f, 130.0f));
 
-	// Arrowを表示されるようにする
-	Arrow->bHiddenInGame = false;
+		// Arrowを表示されるようにする
+		Arrow->bHiddenInGame = true;
+	}
+	
 
 	// Effectのファイルの場所
 	{
@@ -75,17 +81,6 @@ AVRActor_ver1::AVRActor_ver1()
 		MagicEffectFilePath[7] = "/Game/KTP_Effect/Particles/Fly/Explosion_08_01.Explosion_08_01";
 		MagicEffectFilePath[8] = "/Game/KTP_Effect/Particles/Fly/Explosion_09_01.Explosion_09_01";
 	}
-	
-	//魔法エフェクトの初期化
-	Ef_Flying = nullptr;
-	Ef_Destroy = nullptr;
-
-	// 魔法パレットの初期化
-	MagicPalette = 0;
-
-	// 魔法データの初期化
-	magicData = nullptr;
-	circle = nullptr;
 
 	// テスト用
 	{
@@ -157,38 +152,34 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 
 		if (magicData == nullptr) { return; }
 
+		const int cnt = magicData->GetMagicCnt();
+		UNiagaraSystem* f = magicData->GetFlyNiagaraSystem(cnt);
+		UNiagaraSystem* d = magicData->GetDeathNiagaraSystem(cnt);
+
+		CreateMagic(f, d);
+
 		if (magicData->DecMagicCnt()) {
-			circle->Destroy();
+
+			UKismetSystemLibrary::PrintString(GEngine->GetWorld(), "magicCnt 0");
+			magicData = nullptr;
+
+			// 魔法陣を破壊
+			//circle->Destroy();
 		}
-
-		{
-			int i = magicData->GetMagicCnt();
-			FVector vec = FVector(i, 0, 0);
-			UKismetSystemLibrary::PrintString(
-				this,
-				vec.ToString(),
-				true,
-				true,
-				FColor::Black,
-				2.0f
-			);
-		}
-
-
-
-		CreateMagic();
 	}
 }
-void AVRActor_ver1::SetMagicData2(MagicDataTable* m_) {
+
+void AVRActor_ver1::SetMagicData(TSharedPtr<MagicDataTable> m_, AOnishi_MagicCircleParent* o_) {
 
 	magicData = m_;
+	circle = o_;
 }
 
 // 魔法を飛ばす処理
-void AVRActor_ver1::CreateMagic(float s_) {
+void AVRActor_ver1::CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_Destroy_, float s_) {
 
 	// エフェクトがnullなら処理なし
-	if (Ef_Flying == nullptr || Ef_Destroy == nullptr) return;
+	if (Ef_Flying_ == nullptr || Ef_Destroy_ == nullptr) return;
 
 	// 魔法アクターを生成
 	{
@@ -202,7 +193,7 @@ void AVRActor_ver1::CreateMagic(float s_) {
 			GetWorld()->SpawnActor<AOnishi_MagicLauncher>(AOnishi_MagicLauncher::StaticClass(), pos, look); // スポーン処理
 
 		magic->MoveSpeed *= s_;
-		magic->LaunchMagic(look.Vector(), pos, Ef_Flying, Ef_Destroy);
+		magic->LaunchMagic(look.Vector(), pos, Ef_Flying_, Ef_Destroy_);
 
 		DebugLogLocation(magic, FColor::Red);
 		WritePlayerInfoToCSV(this);
@@ -233,16 +224,20 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 	}
 }
 
-// ほかのアクターとの接触処理
+// 接触判定の処理、コライダー同士が接触したときに呼び出される
 void AVRActor_ver1::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	DebugLogLocation(this, FColor::Black);
+	// pass
 }
 
-//魔法陣からエフェクトの情報をもらう
-void AVRActor_ver1::SetMagicData(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_Destroy_) {
-	Ef_Flying = Ef_Flying_;
-	Ef_Destroy = Ef_Destroy_;
+// 接触判定の処理、コライダー同士が離れたときに呼び出される
+void AVRActor_ver1::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex){
+
+	if (AOnishi_MagicCircleParent* Pawn = Cast<AOnishi_MagicCircleParent>(OtherActor)) {
+
+		magicData = nullptr;
+		circle = nullptr;
+	}
 }
 
 // デバッグ用
@@ -263,18 +258,18 @@ void AVRActor_ver1::DebugLogLocation(AActor* a_, FColor c)
 // csv出力
 void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 {
-	FString MagicName = MagicEffectFilePath[MagicPalette % 9];
+	//FString MagicName = MagicEffectFilePath[MagicPalette % 9];
 
-	// CSVに書き込む内容
-	FString CSVContent = MagicName + TEXT(",") + TEXT("\n");
+	//// CSVに書き込む内容
+	//FString CSVContent = MagicName + TEXT(",") + TEXT("\n");
 
-	// ファイルの存在を確認し、存在しない場合はヘッダー行を追加
-	if (!FPaths::FileExists(MagicFilePath))
-	{
-		CSVContent = TEXT("MagicName\n") + CSVContent;
-	}
+	//// ファイルの存在を確認し、存在しない場合はヘッダー行を追加
+	//if (!FPaths::FileExists(MagicFilePath))
+	//{
+	//	CSVContent = TEXT("MagicName\n") + CSVContent;
+	//}
 
-	// ファイルに内容を書き込む
-	FFileHelper::SaveStringToFile(CSVContent, *MagicFilePath, FFileHelper::EEncodingOptions::AutoDetect,
-		&IFileManager::Get(), EFileWrite::FILEWRITE_Append);
+	//// ファイルに内容を書き込む
+	//FFileHelper::SaveStringToFile(CSVContent, *MagicFilePath, FFileHelper::EEncodingOptions::AutoDetect,
+	//	&IFileManager::Get(), EFileWrite::FILEWRITE_Append);
 }
