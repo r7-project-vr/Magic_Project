@@ -18,15 +18,17 @@ AHitObjectParent::AHitObjectParent():
 	// MaterialをStaticMeshに設定する
 	UMaterial* Material = LoadObject<UMaterial>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial"));
 
-	// MaterialをStaticMeshComponentに設定する
-	ObjectMesh->SetMaterial(0, Material);
+	// StaticMeshをLaodしてStaticMeshComponentのStaticMeshに設定する
+	UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere"));
+
+	// StaticMeshをStaticMeshComponentに設定する
+	ObjectMesh->SetStaticMesh(Mesh);
 
 	//スフィアコリジョン作成
 	{
 		SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
-		RootComponent = SphereComponent;
+		SphereComponent->SetupAttachment(ObjectMesh);
 		SphereComponent->SetSphereRadius(200.0f);
-		SphereComponent->SetMaterial(0, Material);
 	}
 
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AHitObjectParent::OnOverlapBegin);
@@ -61,6 +63,4 @@ void AHitObjectParent::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent,
 		// MaterialをStaticMeshComponentに設定する
 		ObjectMesh->SetMaterial(0, Material);
 	}
-
-	UKismetSystemLibrary::PrintString(GEngine->GetWorld(), "HitMagic");
 }

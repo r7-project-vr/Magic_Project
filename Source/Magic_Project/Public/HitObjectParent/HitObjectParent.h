@@ -35,18 +35,18 @@ public:
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Material")
 	TArray<UMaterial*> ChangeMaterial;
 
-private:
+protected:
 
-	//オーバーラップした際の処理を書く関数
+	// オーバーラップした際の処理を書く関数
 	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent,
+	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex,
 		bool bFromSweep,
 		const FHitResult& SweepResult);
 
-	//スフィアコリジョン
+	// 接触判定のコリジョン
 	UPROPERTY(VisibleAnywhere)
 	class USphereComponent* SphereComponent;
 };
