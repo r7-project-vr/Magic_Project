@@ -29,7 +29,7 @@ AHitObjectParent::AHitObjectParent():
 		SphereComponent->SetMaterial(0, Material);
 	}
 
-	ObjectMesh->OnComponentBeginOverlap.AddDynamic(this, &AHitObjectParent::OnOverlapBegin);
+	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AHitObjectParent::OnOverlapBegin);
 }
 
 // Called when the game starts or when spawned
