@@ -49,4 +49,7 @@ protected:
 	// 接触判定のコリジョン
 	UPROPERTY(VisibleAnywhere)
 	class USphereComponent* SphereComponent;
+
+	// オブジェクトのメッシュ
+	UStaticMesh* objectMesh;
 };

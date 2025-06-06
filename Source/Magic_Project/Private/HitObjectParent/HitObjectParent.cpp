@@ -15,14 +15,18 @@ AHitObjectParent::AHitObjectParent():
 	ObjectMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	RootComponent = ObjectMesh;
 
-	// MaterialをStaticMeshに設定する
-	UMaterial* Material = LoadObject<UMaterial>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial"));
+	if (objectMesh == nullptr) {
 
-	// StaticMeshをLaodしてStaticMeshComponentのStaticMeshに設定する
-	UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere"));
+		// StaticMeshをLaodしてStaticMeshComponentのStaticMeshに設定する
+		UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere"));
 
-	// StaticMeshをStaticMeshComponentに設定する
-	ObjectMesh->SetStaticMesh(Mesh);
+		// StaticMeshをStaticMeshComponentに設定する
+		ObjectMesh->SetStaticMesh(Mesh);
+	}
+	else {
+		// StaticMeshをStaticMeshComponentに設定する
+		ObjectMesh->SetStaticMesh(objectMesh);
+	}
 
 	//スフィアコリジョン作成
 	{
