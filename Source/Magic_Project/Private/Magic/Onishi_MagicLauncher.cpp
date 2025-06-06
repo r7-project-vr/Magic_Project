@@ -7,6 +7,8 @@
 #include "Components/SphereComponent.h"
 #include "TimerManager.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Magic/Onishi_MagicCircleParent.h"
+#include "Kanda/VRActor_ver1.h"
 
 // Sets default values
 AOnishi_MagicLauncher::AOnishi_MagicLauncher()
@@ -21,12 +23,21 @@ AOnishi_MagicLauncher::AOnishi_MagicLauncher()
 	// StaticMeshComponentを追加し、RootComponentに設定する
 	Magic = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	RootComponent = Magic;
+
+	//スフィアコリジョン作成
+	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
+	SphereComponent->SetCollisionProfileName("OverlapAll");
+	SphereComponent->SetupAttachment(RootComponent);
+	SphereComponent->SetSphereRadius(2.0f);
+
+	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AOnishi_MagicLauncher::OnHit);
 }
 
 // Called when the game starts or when spawned
 void AOnishi_MagicLauncher::BeginPlay()
 {
 	Super::BeginPlay();
+
 
 #if false
 	// 追記_5_16
@@ -56,6 +67,7 @@ void AOnishi_MagicLauncher::Tick(float DeltaTime)
 
 	//自動で前に進む
 	FVector NewLocation = GetActorLocation() + (MoveDirection.GetSafeNormal() * MoveSpeed * DeltaTime);
+
 	SetActorLocation(NewLocation);
 
 	// RootComponentに併せて飛ばす
@@ -95,7 +107,9 @@ void AOnishi_MagicLauncher::CreateMagicEffect(UNiagaraSystem* Effect) {
 	FVector location = GetActorLocation();
 
 	_NiagaraComponent->SetWorldLocation(location);
-	_NiagaraComponent->SetWorldRotation(rotation);
+	_NiagaraComponent->SetWorldRotation(rotation + FRotator(0, -90, 0));
+
+	_NiagaraComponent->SetupAttachment(RootComponent);
 
 	// エフェクトの再生
 	_NiagaraComponent->Activate();
@@ -114,7 +128,7 @@ void AOnishi_MagicLauncher::HandleAutoDestroy()
 		);
 	}
 
-	//DebugLogLocation(this, FColor::Black);
+	DebugLogLocation(this, FColor::Blue);
 
 	// アクターを削除
 	Destroy();
@@ -145,4 +159,44 @@ void AOnishi_MagicLauncher::DebugLogLocation(AActor* a_, FColor c)
 		c,
 		2.0f
 	);
+}
+
+void AOnishi_MagicLauncher::OnHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+	bool bFromSweep, const FHitResult& SweepResult) {
+
+	if (OtherActor->IsA(AVRActor_ver1::StaticClass())) {
+		return;
+	}
+	else if (OtherActor->IsA(AOnishi_MagicCircleParent::StaticClass())) {
+		UKismetSystemLibrary::PrintString(
+			this,
+			TEXT("MagicCircleHit"),
+			true,
+			true,
+			FColor::Blue,
+			2.0f
+		);
+		return;
+	}
+	else {
+			HandleAutoDestroy();
+			if (CollisionEffect)
+			{
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+					GetWorld(),
+					CollisionEffect,
+					GetActorLocation(),
+					MoveDirection.Rotation()
+				);
+			}
+			UKismetSystemLibrary::PrintString(
+				this,
+				TEXT("HIT"),
+				true,
+				true,
+				FColor::Red,
+				2.0f
+			);
+	}
 }

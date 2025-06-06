@@ -150,7 +150,7 @@ void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
 void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 {
 	if (const bool v = Value.Get<bool>()) {
-		CreateMagic();
+		CreateMagic(1);
 	}
 
 #if false
@@ -200,11 +200,16 @@ void AVRActor_ver1::CreateMagic(float s_) {
 		AOnishi_MagicLauncher* magic =
 			GetWorld()->SpawnActor<AOnishi_MagicLauncher>(AOnishi_MagicLauncher::StaticClass(), pos, look); // スポーン処理
 
-		magic->MoveSpeed *= s_;
-		magic->LaunchMagic(look.Vector(), pos, Ef_Flying, Ef_Destroy);
+		if (magic != nullptr) {
+			magic->MoveSpeed *= s_;
+			magic->LaunchMagic(look.Vector(), pos, Ef_Flying, Ef_Destroy);
 
-		DebugLogLocation(magic, FColor::Red);
-		WritePlayerInfoToCSV(this);
+			DebugLogLocation(magic, FColor::Red);
+			WritePlayerInfoToCSV(this);
+		}
+		//0606大西
+		//魔法を打ったタイミングで得点加算にしたい
+		//（極める方の話です）
 	}
 }
 
