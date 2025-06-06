@@ -46,6 +46,10 @@ public:
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex);
 
+	// 魔法の射撃回数
+	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Effects")
+	int magicCnt;
+
 	//魔法陣としてのエフェクト
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Effects")
 	UNiagaraSystem* Ef_MagicCircle;
@@ -56,9 +60,9 @@ public:
 
 	//飛ばす魔法のエフェクト
 	UPROPERTY(EditAnywhere,BluePrintReadWrite,Category="Effects")
-	UNiagaraSystem* Ef_MagicFly;
+	TArray<UNiagaraSystem*> Ef_MagicFly;
 
 	//魔法が飛んだ後最後に出るエフェクト
 	UPROPERTY(EditAnywhere,BluePrintReadWrite,Category="Effects")
-	UNiagaraSystem* Ef_Destroy;
+	TArray<UNiagaraSystem*> Ef_Destroy;
 };

@@ -3,6 +3,8 @@
 
 #include "Magic/Onishi_MagicCircleParent.h"
 #include "Components/SphereComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Kanda/MagicDataTable.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Kanda/VRActor_ver1.h"
 
@@ -50,8 +52,10 @@ void AOnishi_MagicCircleParent::OnOverlapBegin(UPrimitiveComponent* OverlappedCo
 	bool bFromSweep,
 	const FHitResult& SweepResult) {
 	if (AVRActor_ver1* Pawn = Cast<AVRActor_ver1>(OtherActor)) {
-		
-		Pawn->SetMagicData(Ef_MagicFly, Ef_Destroy);
+
+		// スマートポインタでデータを確保
+		TSharedPtr<MagicDataTable> m = MakeShared<MagicDataTable>(magicCnt, Ef_MagicFly, Ef_Destroy);
+		Pawn->SetMagicData(m, this);
 	}
 }
 

@@ -9,7 +9,7 @@
 #include "InputActionValue.h"
 #include "Magic/Onishi_MagicCircleParent.h"
 #include "Kanda/MagicDataTable.h"
-#include "VRActor_ver1.generated.h"
+#include "VRActor_ver2.generated.h"
 
 class UStaticMeshComponent;
 class USpringArmComponent;
@@ -20,19 +20,19 @@ class UInputAction;
 class USphereComponent;
 
 UCLASS()
-class MAGIC_PROJECT_API AVRActor_ver1 : public APawn
+class MAGIC_PROJECT_API AVRActor_ver2 : public APawn
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this pawn's properties
-	AVRActor_ver1();
+	AVRActor_ver2();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -56,7 +56,7 @@ private:
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;
 
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> ControlMove;
+	TObjectPtr<UInputAction> ControlSelectMagic;
 
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> ControlMagic;
@@ -71,7 +71,13 @@ public:
 	UFUNCTION()
 	void CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_Destroy_, float MagicSpeed = 10.f);
 
-	void SetMagicData(TSharedPtr<MagicDataTable> m_, AOnishi_MagicCircleParent* o_);
+	//飛んでいるときののエフェクト
+	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Effects")
+	TArray<UNiagaraSystem*> flyNiagaras;
+
+	//破壊時のエフェクト
+	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Effects")
+	TArray<UNiagaraSystem*> deathNiagaras;
 
 private:
 
@@ -84,9 +90,6 @@ private:
 	void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 protected:
-	
-	//playerコントロール
-	void ControlPlayer(const FInputActionValue& Value);
 
 	//魔法コントロール
 	void GoMagic(const FInputActionValue& Value);
@@ -94,34 +97,25 @@ protected:
 	// カメラコントロール
 	void Look(const FInputActionValue& Value);
 
+	// カウンターの処理
+	void AddMagicCnt(const FInputActionValue& Value);
+
 private:
 
-	// 移動倍率
-	float MoveSpeedPoint = 10.0f;
-
-	// 移動方向
-	FRotator MoveRotator;
-
-	// 魔法のエフェクトのファイルを登録
-	FString MagicEffectFilePath[9];
-
-	void DebugLogLocation(AActor* a_ , FColor c);
-
-	// 魔法のデータ管理用
-	TSharedPtr<MagicDataTable> magicData;
-
-	// 魔法陣のポインタ
-	AOnishi_MagicCircleParent* circle;
+	// カウンター
+	int magicCnt;
 
 	//----------------------------------------
 	// csv用
 	//----------------------------------------
-	FString MagicFilePath;
+
+	//FString MagicFilePath;
 
 	// csvファイル出力
-	void WritePlayerInfoToCSV(AActor* m_);
+	//void WritePlayerInfoToCSV(AActor* m_);
 
 public:
 	// 魔法実行フラグ
 	bool CanMagic = true;//とりあえず
 };
+
