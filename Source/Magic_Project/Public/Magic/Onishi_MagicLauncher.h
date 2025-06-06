@@ -27,7 +27,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float MoveSpeed = 200.0f; // cm/s
+	float MoveSpeed = 2000.0f; // cm/s
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	/*FVector MoveDirection = FVector(1.0, 0.0, 0.0);*/
@@ -43,8 +43,15 @@ public:
 	FVector StartLocation;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Effects")
-	UNiagaraSystem* FlyingEffect = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/KTP_Effect/Particles/Fly/Others/Trail_10_07.Trail_10_07"));
+	UNiagaraSystem* FlyingEffect = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/Satou/KTP_Effect/Particles/Bottom/Bottom02-07.Bottom02-07"));
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	UNiagaraSystem* CollisionEffect = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/KTP_Effect/Particles/Fly/Expolison_03_08.Expolison_03_08"));
+
+	//スフィアコリジョン
+	UPROPERTY(VisibleAnywhere)
+	class USphereComponent* SphereComponent;
 
 	// 追記
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
@@ -75,4 +82,10 @@ private:
 
 	// デバッグ
 	void DebugLogLocation(AActor* a_, FColor c);
+
+	// 魔法が壁に衝突したときの処理
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+		bool bFromSweep, const FHitResult& SweepResult);
 };
