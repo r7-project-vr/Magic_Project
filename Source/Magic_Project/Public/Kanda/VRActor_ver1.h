@@ -124,4 +124,8 @@ private:
 public:
 	// 魔法実行フラグ
 	bool CanMagic = true;//とりあえず
+
+	//VR機器の情報
+	private:
+		void VRInformation();
 };

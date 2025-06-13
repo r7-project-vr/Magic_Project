@@ -273,3 +273,10 @@ void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 	//FFileHelper::SaveStringToFile(CSVContent, *MagicFilePath, FFileHelper::EEncodingOptions::AutoDetect,
 	//	&IFileManager::Get(), EFileWrite::FILEWRITE_Append);
 }
+
+//---------------------------------------------------------------------------------------------------------------------------------
+//satou
+void AVRActor_ver1::VRInformation()
+{
+	//UPlayerCameraManager::SetCameraLocation();
+}
