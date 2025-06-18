@@ -64,5 +64,5 @@ public:
 
 	//魔法が飛んだ後最後に出るエフェクト
 	UPROPERTY(EditAnywhere,BluePrintReadWrite,Category="Effects")
-	TArray<UNiagaraSystem*> Ef_Destroy;
+	TArray<UNiagaraSystem*> Ef_Destroy; 
 };

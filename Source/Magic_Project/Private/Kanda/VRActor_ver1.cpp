@@ -15,6 +15,7 @@
 #include "Camera/CameraComponent.h"
 
 
+
 // Sets default values
 AVRActor_ver1::AVRActor_ver1():
 	magicData(nullptr),
@@ -65,7 +66,7 @@ AVRActor_ver1::AVRActor_ver1():
 		Arrow->SetRelativeLocation(FVector(400.0f, 0.0f, 130.0f));
 
 		// Arrow‚ð•\Ž¦‚³‚ê‚é‚æ‚¤‚É‚·‚é
-		Arrow->bHiddenInGame = true;
+		Arrow->bHiddenInGame = false;
 	}
 	
 
@@ -164,7 +165,8 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 			magicData = nullptr;
 
 			// –‚–@w‚ð”j‰ó
-			//circle->Destroy();
+			circle->Ef_MagicCircle = nullptr;
+			circle->Destroy();
 		}
 	}
 }
@@ -279,4 +281,5 @@ void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 void AVRActor_ver1::VRInformation()
 {
 	//UPlayerCameraManager::SetCameraLocation();
+
 }
