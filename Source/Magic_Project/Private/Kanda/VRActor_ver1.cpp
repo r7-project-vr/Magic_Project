@@ -14,7 +14,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 
-
+#include "Engine/Engine.h"
+#include "IXRTrackingSystem.h"
+#include "HeadMountedDisplay.h"
 
 // Sets default values
 AVRActor_ver1::AVRActor_ver1():
@@ -30,7 +32,7 @@ AVRActor_ver1::AVRActor_ver1():
 
 	// SphereComponentを追加し、BoxComponentをRootComponentにAttachする
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
-	Sphere->SetupAttachment(RootComponent);
+	Sphere->SetupAttachment(Player);
 
 	// Sphereのサイズを設定する
 	Sphere->SetSphereRadius(30.f);
@@ -43,7 +45,7 @@ AVRActor_ver1::AVRActor_ver1():
 
 	// Cameraを追加する
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
-	Camera->SetupAttachment(RootComponent);
+	Camera->SetupAttachment(Sphere);
 
 	// Input Mapping Context「IMC_TestPad」を読み込む
 	DefaultMappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/Kanda/Input/IMC_TestPad"));
@@ -57,17 +59,6 @@ AVRActor_ver1::AVRActor_ver1():
 	// Input Action「IA_Look」を読み込む
 	LookAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_Look"));
 
-	{
-		// Arrowを追加する
-		Arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
-		Arrow->SetupAttachment(RootComponent);
-
-		// Sphereの頭上に移動するようにLocationを設定する
-		Arrow->SetRelativeLocation(FVector(400.0f, 0.0f, 130.0f));
-
-		// Arrowを表示されるようにする
-		Arrow->bHiddenInGame = false;
-	}
 	
 
 	// Effectのファイルの場所
@@ -107,12 +98,20 @@ void AVRActor_ver1::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+	if (GEngine && GEngine->XRSystem.IsValid())
+	{
+		bool VRAllowed = GEngine->XRSystem->IsHeadTrackingAllowed();
+		if (VRAllowed) {
+			GEngine->XRSystem->SetTrackingOrigin(EHMDTrackingOrigin::Local);
+		}
+	}
 }
 
 // Called every frame
 void AVRActor_ver1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	VRInformation();
 }
 
 // Called to bind functionality to input
@@ -141,7 +140,8 @@ void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
 	const FVector2D V = Value.Get<FVector2D>();
 
 	FVector PreLocation = GetActorLocation();
-	FVector NewLocation = PreLocation + Arrow->GetComponentToWorld().TransformVectorNoScale(FVector(V.Y, V.X, 0.0f) * MoveSpeedPoint);
+
+	FVector NewLocation = PreLocation + Sphere->GetComponentToWorld().TransformVectorNoScale(FVector(V.Y, V.X, 0.0f) * MoveSpeedPoint) * (1,1,1);
 
 	SetActorLocation(NewLocation);
 }
@@ -185,7 +185,7 @@ void AVRActor_ver1::CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_D
 
 	// 魔法アクターを生成
 	{
-		FRotator look = GetControlRotation();
+		FRotator look = Sphere->GetComponentRotation();
 		FVector pos = GetActorLocation();
 
 		FActorSpawnParameters SpawnParams;
@@ -220,9 +220,6 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 		// カメラをまわす
 		SetActorRotation(controlRotate);
 
-		// 移動方向を指定する
-		FRotator ArrowRotate = FRotator(0, controlRotate.Yaw, 0);
-		Arrow->SetWorldRotation(ArrowRotate);
 	}
 }
 
@@ -280,6 +277,13 @@ void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 //satou
 void AVRActor_ver1::VRInformation()
 {
-	//UPlayerCameraManager::SetCameraLocation();
+	GEngine->XRSystem->HasValidTrackingPosition();
+	if ( GEngine->XRSystem->IsHeadTrackingAllowed())
+	{
+		FQuat OrientationAsQuat;
+		FVector Position(0.f);
 
+		GEngine->XRSystem->GetCurrentPose(IXRTrackingSystem::HMDDeviceId, OrientationAsQuat, Position);
+		this->Sphere->SetRelativeLocationAndRotation(Position, OrientationAsQuat);
+	}
 }
