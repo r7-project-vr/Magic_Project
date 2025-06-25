@@ -17,6 +17,8 @@
 #include "Engine/Engine.h"
 #include "IXRTrackingSystem.h"
 #include "HeadMountedDisplay.h"
+#include "Kismet/KismetMathLibrary.h"
+
 
 // Sets default values
 AVRActor_ver1::AVRActor_ver1():
@@ -141,8 +143,8 @@ void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
 
 	FVector PreLocation = GetActorLocation();
 
-	FVector NewLocation = PreLocation + Sphere->GetComponentToWorld().TransformVectorNoScale(FVector(V.Y, V.X, 0.0f) * MoveSpeedPoint) * (1,1,1);
-
+	FVector NewLocation = PreLocation + Sphere->GetComponentToWorld().TransformVectorNoScale(FVector(V.Y, V.X, 0.0f) * MoveSpeedPoint);
+	
 	SetActorLocation(NewLocation);
 }
 
