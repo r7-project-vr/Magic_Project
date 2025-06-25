@@ -181,7 +181,7 @@ void AOnishi_MagicLauncher::OnHit(UPrimitiveComponent* OverlappedComponent, AAct
 	}
 	else {
 			HandleAutoDestroy();
-			/*if (CollisionEffect)
+			if (CollisionEffect)
 			{
 				UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 					GetWorld(),
@@ -189,7 +189,7 @@ void AOnishi_MagicLauncher::OnHit(UPrimitiveComponent* OverlappedComponent, AAct
 					GetActorLocation(),
 					MoveDirection.Rotation()
 				);
-			}*/
+			}
 			UKismetSystemLibrary::PrintString(
 				this,
 				TEXT("HIT"),

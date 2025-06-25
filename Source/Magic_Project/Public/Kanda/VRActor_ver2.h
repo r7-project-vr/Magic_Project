@@ -71,7 +71,7 @@ public:
 	UFUNCTION()
 	void CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_Destroy_, float MagicSpeed = 10.f);
 
-	//飛んでいるときののエフェクト
+	//飛んでいるときのエフェクト
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Effects")
 	TArray<UNiagaraSystem*> flyNiagaras;
 
