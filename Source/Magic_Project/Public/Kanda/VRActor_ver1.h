@@ -110,6 +110,12 @@ private:
 	// 魔法陣のポインタ
 	AOnishi_MagicCircleParent* circle;
 
+	//VR機器の情報
+	void VRInformation();
+
+	//スプラインのTransformを取得する関数
+	void GetSplineTransform(float& distance, float speed);
+
 	//----------------------------------------
 	// csv用
 	//----------------------------------------
@@ -122,7 +128,4 @@ public:
 	// 魔法実行フラグ
 	bool CanMagic = true;//とりあえず
 
-	//VR機器の情報
-	private:
-		void VRInformation();
 };

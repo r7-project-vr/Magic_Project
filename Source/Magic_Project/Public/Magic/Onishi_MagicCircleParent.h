@@ -51,7 +51,7 @@ public:
 	int magicCnt;
 
 	//魔法陣としてのエフェクト
-	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Effects")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
 	UNiagaraSystem* Ef_MagicCircle;
 
 	//オーバーラップしたプレイヤーのアクターを保存
