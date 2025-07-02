@@ -277,10 +277,11 @@ void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 
 //---------------------------------------------------------------------------------------------------------------------------------
 //satou
+// VR機器の情報取得
 void AVRActor_ver1::VRInformation()
 {
 	GEngine->XRSystem->HasValidTrackingPosition();
-	if ( GEngine->XRSystem->IsHeadTrackingAllowed())
+	if (GEngine->XRSystem->IsHeadTrackingAllowed())
 	{
 		FQuat OrientationAsQuat;
 		FVector Position(0.f);
@@ -288,4 +289,12 @@ void AVRActor_ver1::VRInformation()
 		GEngine->XRSystem->GetCurrentPose(IXRTrackingSystem::HMDDeviceId, OrientationAsQuat, Position);
 		this->Sphere->SetRelativeLocationAndRotation(Position, OrientationAsQuat);
 	}
+}
+// スプラインのTransformを取得
+void AVRActor_ver1::GetSplineTransform(float& distance, float speed)
+{
+	double value = distance + speed;
+	double min = 0.0;
+	double max = 1.0;
+	UKismetMathLibrary::FWrap(value, min, max);
 }
