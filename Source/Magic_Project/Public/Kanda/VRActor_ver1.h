@@ -64,6 +64,11 @@ private:
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> LookAction;
 
+	//スプラインアクター格納用
+public:
+	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "SplineActor")
+	TArray<AActor*> SplineActor;
+
 public:
 	UFUNCTION()
 	void CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_Destroy_, float MagicSpeed = 10.f);
@@ -110,6 +115,9 @@ private:
 	// 魔法陣のポインタ
 	AOnishi_MagicCircleParent* circle;
 
+	//魔法をためた時間を計測
+	float MagicChargeTime = 0.0f;
+
 	//VR機器の情報
 	void VRInformation();
 
@@ -128,4 +136,5 @@ public:
 	// 魔法実行フラグ
 	bool CanMagic = true;//とりあえず
 
+	void kari();
 };

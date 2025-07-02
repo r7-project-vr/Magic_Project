@@ -129,11 +129,11 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 		// ControlBall‚ÆIA_Control‚ÌTriggered‚ðBind‚·‚é
 		EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Triggered, this, &AVRActor_ver1::GoMagic);
+		EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Completed, this, &AVRActor_ver1::kari);
 
 		// Look‚ÆIA_Look‚ÌTriggered‚ðBind‚·‚é
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
 	}
-
 }
 
 void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
@@ -155,6 +155,14 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 
 		if (magicData == nullptr) { return; }
 
+		UKismetSystemLibrary::PrintString(
+			this,
+			TEXT("HELLO"),
+			true,
+			true,
+			FColor(1,1,1,1),
+			2.0f
+		);
 		const int cnt = magicData->GetMagicCnt();
 		UNiagaraSystem* f = magicData->GetRandFlyNiagaraSystem(cnt);
 		UNiagaraSystem* d = magicData->GetRandDeathNiagaraSystem(cnt);
@@ -172,7 +180,16 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 		}
 	}
 }
-
+void AVRActor_ver1::kari() {
+	UKismetSystemLibrary::PrintString(
+		this,
+		TEXT("hanasitayo"),
+		true,
+		true,
+		FColor(0, 1, 1, 1),
+		2.0f
+	);
+}
 void AVRActor_ver1::SetMagicData(TSharedPtr<MagicDataTable> m_, AOnishi_MagicCircleParent* o_) {
 
 	magicData = m_;
