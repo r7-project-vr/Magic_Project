@@ -55,6 +55,9 @@ AVRActor_ver1::AVRActor_ver1():
 	// Input Action「IA_InputMove」を読み込む
 	ControlMove = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_InputMove"));
 
+	// Input Action 「IA_MagicCharge」を読み込む
+	MagicCharge = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_ChargeMagic"));
+
 	// Input Action「IA_GoMagic」を読み込む
 	ControlMagic = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_GoMagic"));
 
@@ -128,8 +131,8 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(ControlMove, ETriggerEvent::Triggered, this, &AVRActor_ver1::ControlPlayer);
 
 		// ControlBallとIA_ControlのTriggeredをBindする
-		EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Triggered, this, &AVRActor_ver1::GoMagic);
-		EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Completed, this, &AVRActor_ver1::kari);
+		EnhancedInputComponent->BindAction(MagicCharge, ETriggerEvent::Triggered, this, &AVRActor_ver1::ChargeMagic);
+		EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Completed, this, &AVRActor_ver1::GoMagic);
 
 		// LookとIA_LookのTriggeredをBindする
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
@@ -148,11 +151,34 @@ void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
 	SetActorLocation(NewLocation);
 }
 
+void AVRActor_ver1::ChargeMagic()
+{
+	MagicChargeTime += GetWorld()->GetDeltaSeconds();
+	if (MagicChargeTime >= 2.0f)
+	{
+		UKismetSystemLibrary::PrintString(
+			this,
+			TEXT("5byoutattayo"),
+			true,
+			true,
+			FColor(255, 255, 255, 0),
+			2.0f
+		);
+	}
+}
+
 // 魔法を撃つ_コントローラーのみ
 void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 {
 	if (const bool v = Value.Get<bool>()) {
-
+		UKismetSystemLibrary::PrintString(
+			this,
+			TEXT("uttayo"),
+			true,
+			true,
+			FColor(255, 255, 255, 1),
+			2.0f
+		);
 		if (magicData == nullptr) { return; }
 
 		UKismetSystemLibrary::PrintString(
@@ -177,9 +203,13 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 			// 魔法陣を破壊
 			circle->Ef_MagicCircle = nullptr;
 			circle->Destroy();
+
+			//チャージ時間の初期化
+			MagicChargeTime = 0;
 		}
 	}
 }
+// ↓デバッグ用。後で消すこと！！！！
 void AVRActor_ver1::kari() {
 	UKismetSystemLibrary::PrintString(
 		this,
@@ -293,7 +323,7 @@ void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------
-//satou
+//sato
 // VR機器の情報取得
 void AVRActor_ver1::VRInformation()
 {
