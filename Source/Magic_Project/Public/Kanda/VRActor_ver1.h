@@ -59,6 +59,9 @@ private:
 	TObjectPtr<UInputAction> ControlMove;
 
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> MagicCharge;
+
+	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> ControlMagic;
 
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -89,6 +92,9 @@ protected:
 	
 	//playerコントロール
 	void ControlPlayer(const FInputActionValue& Value);
+
+	// 魔法のチャージ
+	void ChargeMagic();
 
 	//魔法コントロール
 	void GoMagic(const FInputActionValue& Value);
