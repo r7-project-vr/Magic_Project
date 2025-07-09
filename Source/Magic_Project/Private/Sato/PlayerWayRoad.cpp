@@ -25,3 +25,8 @@ void APlayerWayRoad::Tick(float DeltaTime)
 
 }
 
+//
+void GetSplineTransform(float& distance, float speed)
+{
+	
+}

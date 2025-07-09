@@ -24,9 +24,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	//一個下のやつだけデバッグ用なので後で必ず消すこと！！！！！sato
-	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "SplineComponent")
-	int abcdefghijklmn;
-	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "SplineComponent")
-	TObjectPtr<USplineComponent> Spline;
+	//distanceとspeedから、スプラインのトランスフォームを返す
+	void GetSplineTransform(float& distance, float speed);
 };
