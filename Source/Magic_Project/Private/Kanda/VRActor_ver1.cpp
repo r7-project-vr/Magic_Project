@@ -116,7 +116,7 @@ void AVRActor_ver1::BeginPlay()
 void AVRActor_ver1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	VRInformation();
+	//VRInformation();
 }
 
 // Called to bind functionality to input
@@ -151,26 +151,28 @@ void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
 	SetActorLocation(NewLocation);
 }
 
-void AVRActor_ver1::ChargeMagic()
+void AVRActor_ver1::ChargeMagic(const FInputActionValue& Value)
 {
-	MagicChargeTime += GetWorld()->GetDeltaSeconds();
-	if (MagicChargeTime >= 2.0f)
-	{
-		UKismetSystemLibrary::PrintString(
-			this,
-			TEXT("5byoutattayo"),
-			true,
-			true,
-			FColor(255, 255, 255, 0),
-			2.0f
-		);
+	if (const bool v = Value.Get<bool>()) {
+		MagicChargeTime += GetWorld()->GetDeltaSeconds();
+		if (MagicChargeTime >= 2.0f)
+		{
+			UKismetSystemLibrary::PrintString(
+				this,
+				TEXT("5byoutattayo"),
+				true,
+				true,
+				FColor(255, 255, 255, 0),
+				2.0f
+			);
+		}
 	}
 }
 
 // 魔法を撃つ_コントローラーのみ
 void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 {
-	if (const bool v = Value.Get<bool>()) {
+	if (true) {
 		UKismetSystemLibrary::PrintString(
 			this,
 			TEXT("uttayo"),
@@ -180,7 +182,6 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 			2.0f
 		);
 		if (magicData == nullptr) { return; }
-
 		UKismetSystemLibrary::PrintString(
 			this,
 			TEXT("HELLO"),
@@ -190,22 +191,35 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 			2.0f
 		);
 		const int cnt = magicData->GetMagicCnt();
-		UNiagaraSystem* f = magicData->GetRandFlyNiagaraSystem(cnt);
-		UNiagaraSystem* d = magicData->GetRandDeathNiagaraSystem(cnt);
 
-		CreateMagic(f, d);
+
+		UNiagaraSystem* f = magicData->GetFlyNiagaraSystem(0);
+		UNiagaraSystem* d = magicData->GetDeathNiagaraSystem(0);
+
+		UNiagaraSystem* ff = magicData->GetFlyNiagaraSystem(1);
+
+		// 魔法のチャージ時間を計って何の魔法を出すか決める
+		// else外したら多分破棄されたポインタ「d」を使うことになるのでクラッシュする
+		if (MagicChargeTime >= 2.0f)
+		{
+			CreateMagic(ff,d);
+		}
+		else
+		{
+			CreateMagic(f, d);
+		}
+
+		//チャージ時間の初期化
+		MagicChargeTime = 0;
+
 
 		if (magicData->DecMagicCnt()) {
-
 			UKismetSystemLibrary::PrintString(GEngine->GetWorld(), "magicCnt 0");
 			magicData = nullptr;
 
 			// 魔法陣を破壊
 			circle->Ef_MagicCircle = nullptr;
 			circle->Destroy();
-
-			//チャージ時間の初期化
-			MagicChargeTime = 0;
 		}
 	}
 }
@@ -325,23 +339,23 @@ void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 //---------------------------------------------------------------------------------------------------------------------------------
 //sato
 // VR機器の情報取得
-void AVRActor_ver1::VRInformation()
-{
-	GEngine->XRSystem->HasValidTrackingPosition();
-	if (GEngine->XRSystem->IsHeadTrackingAllowed())
-	{
-		FQuat OrientationAsQuat;
-		FVector Position(0.f);
-
-		GEngine->XRSystem->GetCurrentPose(IXRTrackingSystem::HMDDeviceId, OrientationAsQuat, Position);
-		this->Sphere->SetRelativeLocationAndRotation(Position, OrientationAsQuat);
-	}
-}
-// スプラインのTransformを取得
-void AVRActor_ver1::GetSplineTransform(float& distance, float speed)
-{
-	double value = distance + speed;
-	double min = 0.0;
-	double max = 1.0;
-	UKismetMathLibrary::FWrap(value, min, max);
-}
+//void AVRActor_ver1::VRInformation()
+//{
+//	GEngine->XRSystem->HasValidTrackingPosition();
+//	if (GEngine->XRSystem->IsHeadTrackingAllowed())
+//	{
+//		FQuat OrientationAsQuat;
+//		FVector Position(0.f);
+//
+//		GEngine->XRSystem->GetCurrentPose(IXRTrackingSystem::HMDDeviceId, OrientationAsQuat, Position);
+//		this->Sphere->SetRelativeLocationAndRotation(Position, OrientationAsQuat);
+//	}
+//}
+//// スプラインのTransformを取得
+//void AVRActor_ver1::GetSplineTransform(float& distance, float speed)
+//{
+//	double value = distance + speed;
+//	double min = 0.0;
+//	double max = 1.0;
+//	UKismetMathLibrary::FWrap(value, min, max);
+//}
