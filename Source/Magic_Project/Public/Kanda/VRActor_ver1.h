@@ -94,7 +94,7 @@ protected:
 	void ControlPlayer(const FInputActionValue& Value);
 
 	// 魔法のチャージ
-	void ChargeMagic();
+	void ChargeMagic(const FInputActionValue& Value);
 
 	//魔法コントロール
 	void GoMagic(const FInputActionValue& Value);
@@ -124,11 +124,11 @@ private:
 	//魔法をためた時間を計測
 	float MagicChargeTime = 0.0f;
 
-	//VR機器の情報
-	void VRInformation();
+	////VR機器の情報
+	//void VRInformation();
 
-	//スプラインのTransformを取得する関数
-	void GetSplineTransform(float& distance, float speed);
+	////スプラインのTransformを取得する関数
+	//void GetSplineTransform(float& distance, float speed);
 
 	//----------------------------------------
 	// csv用
