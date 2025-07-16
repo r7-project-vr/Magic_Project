@@ -2,13 +2,18 @@
 
 
 #include "Sato/PlayerWayRoad.h"
+#include "Components/SplineComponent.h"
+#include "Math/UnrealMathUtility.h"
+
+class USplineComponent;
 
 // Sets default values
 APlayerWayRoad::APlayerWayRoad()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	Spline = CreateDefaultSubobject<USplineComponent>(TEXT("SplineComponent"));
+	Spline->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -22,11 +27,16 @@ void APlayerWayRoad::BeginPlay()
 void APlayerWayRoad::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 }
 
 //
-void GetSplineTransform(float& distance, float speed)
+void APlayerWayRoad::GetSplineTransform(float& distance, float speed)
 {
-	
+	WrapValue = distance + speed;
+	WrapMax = Spline->GetSplineLength();
+	WrapMin = 0;
+
+	FMath::Wrap(WrapValue, WrapMin, WrapMax);
+	Spline->GetTransformAtDistanceAlongSpline(distance, ESplineCoordinateSpace::World);
 }

@@ -16,6 +16,15 @@ public:
 	// Sets default values for this actor's properties
 	APlayerWayRoad();
 
+	float WrapValue;
+	float WrapMin;
+	float WrapMax;
+
+private:
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USplineComponent> Spline;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
