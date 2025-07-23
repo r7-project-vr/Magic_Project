@@ -37,6 +37,6 @@ void APlayerWayRoad::GetSplineTransform(float& distance, float speed)
 	WrapMax = Spline->GetSplineLength();
 	WrapMin = 0;
 
-	FMath::Wrap(WrapValue, WrapMin, WrapMax);
+	//FMath::Wrap(WrapValue, WrapMin, WrapMax);
 	Spline->GetTransformAtDistanceAlongSpline(distance, ESplineCoordinateSpace::World);
 }
