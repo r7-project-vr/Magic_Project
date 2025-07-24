@@ -48,7 +48,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Collider, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USphereComponent> Sphere;
 
-	UPROPERTY(VisibleAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> Camera;
 
 	// コントローラーのマッピング
@@ -110,9 +110,6 @@ private:
 	// 移動方向
 	FRotator MoveRotator;
 
-	// 魔法のエフェクトのファイルを登録
-	FString MagicEffectFilePath[9];
-
 	void DebugLogLocation(AActor* a_ , FColor c);
 
 	// 魔法のデータ管理用
@@ -125,10 +122,10 @@ private:
 	float MagicChargeTime = 0.0f;
 
 	////VR機器の情報
-	//void VRInformation();
+	void VRInformation();
 
 	////スプラインのTransformを取得する関数
-	//void GetSplineTransform(float& distance, float speed);
+	void GetSplineTransform(float& distance, float speed);
 
 	//----------------------------------------
 	// csv用
@@ -140,7 +137,9 @@ private:
 
 public:
 	// 魔法実行フラグ
-	bool CanMagic = true;//とりあえず
-
-	void kari();
+	
+	/// <summary>
+	/// とりあえず
+	/// </summary>
+	bool CanMagic = true;
 };

@@ -64,21 +64,6 @@ AVRActor_ver1::AVRActor_ver1():
 	// Input Action「IA_Look」を読み込む
 	LookAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_Look"));
 
-	
-
-	// Effectのファイルの場所
-	{
-		MagicEffectFilePath[0] = "/Game/KTP_Effect/Particles/Fly/Explosion_01_01.Explosion_01_01";
-		MagicEffectFilePath[1] = "/Game/KTP_Effect/Particles/Fly/Expolison_02_01.Expolison_02_01";
-		MagicEffectFilePath[2] = "/Game/KTP_Effect/Particles/Fly/Explosion_03_01.Explosion_03_01";
-		MagicEffectFilePath[3] = "/Game/KTP_Effect/Particles/Fly/Explosion_04_01.Explosion_04_01";
-		MagicEffectFilePath[4] = "/Game/KTP_Effect/Particles/Fly/Explosion_05_01.Explosion_05_01";
-		MagicEffectFilePath[5] = "/Game/KTP_Effect/Particles/Fly/Explosion_06_01.Explosion_06_01";
-		MagicEffectFilePath[6] = "/Game/KTP_Effect/Particles/Fly/Explosion_07_01.Explosion_07_01";
-		MagicEffectFilePath[7] = "/Game/KTP_Effect/Particles/Fly/Explosion_08_01.Explosion_08_01";
-		MagicEffectFilePath[8] = "/Game/KTP_Effect/Particles/Fly/Explosion_09_01.Explosion_09_01";
-	}
-
 	// テスト用
 	{
 		// 現在時刻の取得
@@ -192,21 +177,19 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 		);
 		const int cnt = magicData->GetMagicCnt();
 
-
 		UNiagaraSystem* f = magicData->GetFlyNiagaraSystem(0);
 		UNiagaraSystem* d = magicData->GetDeathNiagaraSystem(0);
-
 		UNiagaraSystem* ff = magicData->GetFlyNiagaraSystem(1);
 
 		// 魔法のチャージ時間を計って何の魔法を出すか決める
 		// else外したら多分破棄されたポインタ「d」を使うことになるのでクラッシュする
-		if (MagicChargeTime >= 2.0f)
+		if (MagicChargeTime <= 2.0f)
 		{
-			CreateMagic(ff,d);
+			CreateMagic(f, d);
 		}
 		else
 		{
-			CreateMagic(f, d);
+			CreateMagic(ff, d);
 		}
 
 		//チャージ時間の初期化
@@ -222,17 +205,6 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 			circle->Destroy();
 		}
 	}
-}
-// ↓デバッグ用。後で消すこと！！！！
-void AVRActor_ver1::kari() {
-	UKismetSystemLibrary::PrintString(
-		this,
-		TEXT("hanasitayo"),
-		true,
-		true,
-		FColor(0, 1, 1, 1),
-		2.0f
-	);
 }
 void AVRActor_ver1::SetMagicData(TSharedPtr<MagicDataTable> m_, AOnishi_MagicCircleParent* o_) {
 
@@ -339,23 +311,23 @@ void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 //---------------------------------------------------------------------------------------------------------------------------------
 //sato
 // VR機器の情報取得
-//void AVRActor_ver1::VRInformation()
-//{
-//	GEngine->XRSystem->HasValidTrackingPosition();
-//	if (GEngine->XRSystem->IsHeadTrackingAllowed())
-//	{
-//		FQuat OrientationAsQuat;
-//		FVector Position(0.f);
-//
-//		GEngine->XRSystem->GetCurrentPose(IXRTrackingSystem::HMDDeviceId, OrientationAsQuat, Position);
-//		this->Sphere->SetRelativeLocationAndRotation(Position, OrientationAsQuat);
-//	}
-//}
-//// スプラインのTransformを取得
-//void AVRActor_ver1::GetSplineTransform(float& distance, float speed)
-//{
-//	double value = distance + speed;
-//	double min = 0.0;
-//	double max = 1.0;
-//	UKismetMathLibrary::FWrap(value, min, max);
-//}
+void AVRActor_ver1::VRInformation()
+{
+	GEngine->XRSystem->HasValidTrackingPosition();
+	if (GEngine->XRSystem->IsHeadTrackingAllowed())
+	{
+		FQuat OrientationAsQuat;
+		FVector Position(0.f);
+
+		GEngine->XRSystem->GetCurrentPose(IXRTrackingSystem::HMDDeviceId, OrientationAsQuat, Position);
+		this->Sphere->SetRelativeLocationAndRotation(Position, OrientationAsQuat);
+	}
+}
+// スプラインのTransformを取得
+void AVRActor_ver1::GetSplineTransform(float& distance, float speed)
+{
+	double value = distance + speed;
+	double min = 0.0;
+	double max = 1.0;
+	UKismetMathLibrary::FWrap(value, min, max);
+}
