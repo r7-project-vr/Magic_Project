@@ -22,6 +22,9 @@ AOnishi_MagicCircleParent::AOnishi_MagicCircleParent()
 	//オーバーラップ時の動作をバインド
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AOnishi_MagicCircleParent::OnOverlapBegin);
 	SphereComponent->OnComponentEndOverlap.AddDynamic(this, &AOnishi_MagicCircleParent::OnOverlapEnd);
+
+	//BOOL変数初期化
+	bIsPlayerOverlapping = false;
 }
 
 // Called when the game starts or when spawned
@@ -52,7 +55,7 @@ void AOnishi_MagicCircleParent::OnOverlapBegin(UPrimitiveComponent* OverlappedCo
 	bool bFromSweep,
 	const FHitResult& SweepResult) {
 	if (AVRActor_ver1* Pawn = Cast<AVRActor_ver1>(OtherActor)) {
-
+		bIsPlayerOverlapping = true;
 		// スマートポインタでデータを確保
 		TSharedPtr<MagicDataTable> m = MakeShared<MagicDataTable>(magicCnt, Ef_MagicFly, Ef_Destroy);
 		Pawn->SetMagicData(m, this);
@@ -65,7 +68,7 @@ void AOnishi_MagicCircleParent::OnOverlapEnd(UPrimitiveComponent* OverlappedComp
 	UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex) {
 	if (AVRActor_ver1* Pawn = Cast<AVRActor_ver1>(OtherActor)) {
-
+		bIsPlayerOverlapping = false;
 		Pawn->SetMagicData(nullptr, nullptr);
 	}
 }
