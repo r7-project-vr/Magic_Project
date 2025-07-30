@@ -158,7 +158,7 @@ void AKandaPawn::GoMagic(const FInputActionValue& Value)
 {
 	if (const bool v = Value.Get<bool>() && CanMagic)
 	{
-		UE_LOG(LogTemp, Log, TEXT("魔法を撃ったYO！"));
+		//UE_LOG(LogTemp, Log, TEXT("魔法を撃ったYO！"));//パッケージ化の時にエラーが出たのでコメントアウト
 		KandaTestMagic* magic = new KandaTestMagic();
 		WritePlayerInfoToCSV(magic);
 		delete magic;
