@@ -65,4 +65,8 @@ public:
 	//魔法が飛んだ後最後に出るエフェクト
 	UPROPERTY(EditAnywhere,BluePrintReadWrite,Category="Effects")
 	TArray<UNiagaraSystem*> Ef_Destroy; 
+
+	//魔方陣入る
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Magic Circle Status")
+	bool bIsPlayerOverlapping;
 };
