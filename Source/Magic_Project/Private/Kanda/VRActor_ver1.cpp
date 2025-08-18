@@ -73,6 +73,7 @@ AVRActor_ver1::AVRActor_ver1():
 		MagicFilePath =
 			FPaths::ProjectDir() / TEXT("CSVFile/Export/MagicData_" + FormattedTime + ".csv");
 	}
+
 }
 
 // Called when the game starts or when spawned
@@ -95,6 +96,7 @@ void AVRActor_ver1::BeginPlay()
 			GEngine->XRSystem->SetTrackingOrigin(EHMDTrackingOrigin::Local);
 		}
 	}
+	IsInMagicZone = false;
 }
 
 // Called every frame
@@ -262,11 +264,13 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 void AVRActor_ver1::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// pass
+	IsInMagicZone = true;
 }
 
 // 接触判定の処理、コライダー同士が離れたときに呼び出される
 void AVRActor_ver1::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex){
 
+	IsInMagicZone = false;
 	if (AOnishi_MagicCircleParent* Pawn = Cast<AOnishi_MagicCircleParent>(OtherActor)) {
 
 		magicData = nullptr;
