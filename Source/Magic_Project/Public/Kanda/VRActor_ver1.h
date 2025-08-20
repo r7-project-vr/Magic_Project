@@ -9,6 +9,7 @@
 #include "InputActionValue.h"
 #include "Magic/Onishi_MagicCircleParent.h"
 #include "Kanda/MagicDataTable.h"
+#include "sato/PlayerWayRoad.h"
 #include "VRActor_ver1.generated.h"
 
 class UStaticMeshComponent;
@@ -67,11 +68,13 @@ private:
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> LookAction;
 
-	//スプラインアクター格納用
-public:
-	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "SplineActor")
-	TArray<AActor*> SplineActor;
+	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccses = "true"))
+	TObjectPtr<UInputAction> MoveStart;
 
+protected:
+	//スプラインアクター格納用
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SplineActorHere")
+	TObjectPtr<APlayerWayRoad> SplineActor;
 public:
 	UFUNCTION()
 	void CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_Destroy_, float MagicSpeed = 10.f);
@@ -102,13 +105,25 @@ protected:
 	// カメラコントロール
 	void Look(const FInputActionValue& Value);
 
+	// プレイヤーの移動開始
+	void PlayerMoveStart(const FInputActionValue& Value);
+
 private:
 
 	// 移動倍率
-	float MoveSpeedPoint = 10.0f;
+	float MoveSpeedPoint = 100.0f;
 
 	// 移動方向
 	FRotator MoveRotator;
+
+	// スプライン用変数
+	float distance;
+
+	// いま移動できるかどうか。trueで停止中。
+	bool isStop = true;
+
+	// スプライン上の点で止まるために番号を指定する変数（現在は自動で指定）
+	int StopPointNum = 1;
 
 	void DebugLogLocation(AActor* a_ , FColor c);
 
@@ -118,15 +133,15 @@ private:
 	// 魔法陣のポインタ
 	AOnishi_MagicCircleParent* circle;
 
-	//魔法をためた時間を計測
+	// 魔法をためた時間を計測
 	float MagicChargeTime = 0.0f;
 
-	////VR機器の情報
+	// VR機器の情報
 	void VRInformation();
 
-	////スプラインのTransformを取得する関数
-	void GetSplineTransform(float& distance, float speed);
-
+	// スプラインの指定した点に着いたら行う処理
+	void ArriveSplinePoint(int point_);
+	
 	//----------------------------------------
 	// csv用
 	//----------------------------------------

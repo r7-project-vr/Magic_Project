@@ -20,7 +20,6 @@ APlayerWayRoad::APlayerWayRoad()
 void APlayerWayRoad::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -30,13 +29,17 @@ void APlayerWayRoad::Tick(float DeltaTime)
 	
 }
 
-//
-void APlayerWayRoad::GetSplineTransform(float& distance, float speed)
+// 
+FTransform APlayerWayRoad::GetSplineTransform(float& distance, float speed)
 {
+	// Wrap関数に使う変数たち
 	WrapValue = distance + speed;
 	WrapMax = Spline->GetSplineLength();
 	WrapMin = 0;
 
-	//FMath::Wrap(WrapValue, WrapMin, WrapMax);
-	Spline->GetTransformAtDistanceAlongSpline(distance, ESplineCoordinateSpace::World);
+	// Wrap関数を使いdistanceを更新する
+	distance = FMath::Wrap(WrapValue, WrapMin, WrapMax);
+
+	// このスプラインの長さに沿った距離を与えると、スプライン上のその点に対応するFTransformを返します。（BPより）
+	return Spline->GetTransformAtDistanceAlongSpline(distance, ESplineCoordinateSpace::World);
 }
