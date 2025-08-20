@@ -157,4 +157,7 @@ public:
 	/// ‚Æ‚è‚ ‚¦‚¸
 	/// </summary>
 	bool CanMagic = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "My Settings")
+	bool IsInMagicZone = false;
 };

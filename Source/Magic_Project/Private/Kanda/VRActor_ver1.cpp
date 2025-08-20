@@ -17,7 +17,6 @@
 #include "Engine/Engine.h"
 #include "IXRTrackingSystem.h"
 #include "HeadMountedDisplay.h"
-#include "Components/SplineComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
 
@@ -65,9 +64,6 @@ AVRActor_ver1::AVRActor_ver1():
 	// Input Action「IA_Look」を読み込む
 	LookAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_Look"));
 
-	// Input Action「IA_MoveAction」を読み込む
-	MoveStart = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_MoveAction"));
-
 	// テスト用
 	{
 		// 現在時刻の取得
@@ -77,6 +73,7 @@ AVRActor_ver1::AVRActor_ver1():
 		MagicFilePath =
 			FPaths::ProjectDir() / TEXT("CSVFile/Export/MagicData_" + FormattedTime + ".csv");
 	}
+
 }
 
 // Called when the game starts or when spawned
@@ -99,16 +96,7 @@ void AVRActor_ver1::BeginPlay()
 			GEngine->XRSystem->SetTrackingOrigin(EHMDTrackingOrigin::Local);
 		}
 	}
-
-	// スプラインをレベル上から取得（一個だけ） また、プレイヤーの初期位置をセット
-	SplineActor = Cast<APlayerWayRoad>(UGameplayStatics::GetActorOfClass(GetWorld(), APlayerWayRoad::StaticClass()));
-	if (SplineActor) // ただのnullチェック
-	{
-		FTransform transformTemp;
-		transformTemp = SplineActor->GetSplineTransform(distance, 0.0f);
-		FVector newLocation = FVector(transformTemp.GetLocation());
-		SetActorLocation(newLocation);
-	}
+	IsInMagicZone = false;
 }
 
 // Called every frame
@@ -116,16 +104,6 @@ void AVRActor_ver1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	//VRInformation();
-
-	ArriveSplinePoint(StopPointNum);
-	// スプラインの上を移動していく処理
-	if (SplineActor && !isStop) // ただのnullチェック&今停止中かチェック
-	{
-		FTransform transformTemp;
-		transformTemp = SplineActor->GetSplineTransform(distance, MoveSpeedPoint * DeltaTime);
-		FVector newLocation = FVector(transformTemp.GetLocation());
-		SetActorLocation(newLocation);
-	}
 }
 
 // Called to bind functionality to input
@@ -145,9 +123,6 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 		// LookとIA_LookのTriggeredをBindする
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
-
-		// MoveStartをバインドする
-		EnhancedInputComponent->BindAction(MoveStart, ETriggerEvent::Triggered, this, &AVRActor_ver1::PlayerMoveStart);
 	}
 }
 
@@ -171,10 +146,10 @@ void AVRActor_ver1::ChargeMagic(const FInputActionValue& Value)
 		{
 			UKismetSystemLibrary::PrintString(
 				this,
-				TEXT("2byoutattayo"),
+				TEXT("5byoutattayo"),
 				true,
 				true,
-				FColor::Cyan,
+				FColor(255, 255, 255, 0),
 				2.0f
 			);
 		}
@@ -190,7 +165,7 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 			TEXT("uttayo"),
 			true,
 			true,
-			FColor::Red,
+			FColor(255, 255, 255, 1),
 			2.0f
 		);
 		if (magicData == nullptr) { return; }
@@ -289,11 +264,13 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 void AVRActor_ver1::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// pass
+	IsInMagicZone = true;
 }
 
 // 接触判定の処理、コライダー同士が離れたときに呼び出される
 void AVRActor_ver1::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex){
 
+	IsInMagicZone = false;
 	if (AOnishi_MagicCircleParent* Pawn = Cast<AOnishi_MagicCircleParent>(OtherActor)) {
 
 		magicData = nullptr;
@@ -350,32 +327,11 @@ void AVRActor_ver1::VRInformation()
 		this->Sphere->SetRelativeLocationAndRotation(Position, OrientationAsQuat);
 	}
 }
-
-// IA_MoveActionに登録されたボタンを押されると行う処理（現在はJキー）
-void AVRActor_ver1::PlayerMoveStart(const FInputActionValue& Value)
+// スプラインのTransformを取得
+void AVRActor_ver1::GetSplineTransform(float& distance, float speed)
 {
-	//ストップしている時のみ処理
-	if (isStop)
-	{
-		UKismetSystemLibrary::PrintString(this, TEXT("ugoke"), true, true, FColor::Blue, 2.0f, NAME_None);
-		isStop = false;
-		StopPointNum++;
-	}
-}
-
-// 指定したスプラインの点に到達すると行われる処理
-void AVRActor_ver1::ArriveSplinePoint(int point_)
-{
-	// ニアリーイコールを使うための変数たち
-	FVector SplinePoint = SplineActor->Spline->GetLocationAtSplinePoint(point_, ESplineCoordinateSpace::World);
-	FTransform ATransform = FTransform(FRotator(0, 0, 0), SplinePoint, FVector(1, 1, 1));
-	FVector nowLocation = GetActorLocation();
-	FTransform BTransform = FTransform(FRotator(0, 0, 0), nowLocation, FVector(1, 1, 1));
-
-	// ニアリーイコールを使ってキャラクターを止めるか動かすか判断
-	bool isNearPointCharacter = UKismetMathLibrary::NearlyEqual_TransformTransform(ATransform, BTransform, 5.0f, 0.0001f, 0.0001f);
-	if (isNearPointCharacter)
-	{
-		isStop = true;
-	}
+	double value = distance + speed;
+	double min = 0.0;
+	double max = 1.0;
+	UKismetMathLibrary::FWrap(value, min, max);
 }
