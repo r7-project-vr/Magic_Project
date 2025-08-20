@@ -12,15 +12,16 @@ class MAGIC_PROJECT_API APlayerWayRoad : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
+private:	
 	// Sets default values for this actor's properties
 	APlayerWayRoad();
 
+	// 変数たち
 	float WrapValue;
 	float WrapMin;
 	float WrapMax;
 
-private:
+public:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<USplineComponent> Spline;
@@ -34,5 +35,5 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	//distanceとspeedから、スプラインのトランスフォームを返す
-	void GetSplineTransform(float& distance, float speed);
+	FTransform GetSplineTransform(float& distance, float speed);
 };
