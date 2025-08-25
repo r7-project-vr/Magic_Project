@@ -86,6 +86,11 @@ public:
     //UFUNCTION(BlueprintCallable, Category = "ASerial Controller")
     int ReadDataProcess(ASerialDataStruct::ASerialData* read_data_buf);
 
+    /// @brief データを読み取る
+    /// @param read_data_buf 読み取りデータを格納するバッファへのポインタ
+    /// @return 0:読み取り成功 -1:読み取り失敗 -2:タイムアウㇳ
+    int ReadData(ASerialDataStruct::ASerialData* read_data_buf);
+
     /// @brief データを送信
     /// @param command　コマンド
     /// @param data 書き込むデータ配列

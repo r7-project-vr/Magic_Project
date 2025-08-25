@@ -111,6 +111,17 @@ void AVRActor_ver1::BeginPlay()
 		SetActorLocation(newLocation);
 	}
 	IsInMagicZone = false;
+
+	// インスタンス化
+	deviceInfo_ = NewObject<UASerialPacket>(this);
+	device_ = NewObject<UASerialLibControllerWin>(this);
+	deviceCmd_ = NewObject<AMagicDeviceCmdSender>(this);
+
+	// デバイス接続。引数は左からデバイスのIDとデバイスのバージョン
+	device_->Initialize(0x02, 0x01);
+	device_->SetInterfacePt(new WindowsSerial());
+	device_->AutoConnectDevice();
+	deviceCmd_->SendCmd_Cali(device_);
 }
 
 // Called every frame
@@ -118,6 +129,8 @@ void AVRActor_ver1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	//VRInformation();
+	TimeAccumulator += DeltaTime;
+
 
 	ArriveSplinePoint(StopPointNum);
 	// スプラインの上を移動していく処理
@@ -128,6 +141,33 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		FVector newLocation = FVector(transformTemp.GetLocation());
 		SetActorLocation(newLocation);
 	}
+
+	// デバイスとの通信（割る1000すること！！！）
+	// if文で通信回数を制限
+	if (TimeAccumulator >= Interval)
+	{
+		//FRotator kari;
+		//kari.Pitch = deviceCmd_->SendCmd_Euler(device_);
+		//kari.Pitch = kari.Pitch / 1000;
+		//UE_LOG(LogTemp, Log, TEXT("debaisuPitch = %d"), (int)kari.Pitch);
+		//ASerialDataStruct::ASerialData ReadData;
+		//int Result = device_->ReadData(&ReadData);
+		//UE_LOG(LogTemp, Log, TEXT("deviceCONNECT = %d"), Result);
+		//int FinalResult = TransformDataToInt<int>((ReadData.data + 2), 4);
+		//UE_LOG(LogTemp, Log, TEXT("FINALRESULT = %d"), FinalResult);
+
+
+		int32 kari2;
+		kari2 = deviceCmd_->SendCmd_Quater(device_);
+		UE_LOG(LogTemp, Log, TEXT("quaternion = %d"), kari2);
+		ASerialDataStruct::ASerialData ReadData2;
+		int Result2 = device_->ReadData(&ReadData2);
+		UE_LOG(LogTemp, Log, TEXT("deviceCONNECT = %d"), Result2);
+		int FinalResult2 = TransformDataToInt<int>((ReadData2.data), 4);
+		FinalResult2 = FinalResult2 / 1000;
+		UE_LOG(LogTemp, Log, TEXT("FINALRESULT = %d"), FinalResult2);
+	}
+
 }
 
 // Called to bind functionality to input
@@ -151,6 +191,15 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		// MoveStartをバインドする
 		EnhancedInputComponent->BindAction(MoveStart, ETriggerEvent::Triggered, this, &AVRActor_ver1::PlayerMoveStart);
 	}
+}
+
+void AVRActor_ver1::EndPlay(const EEndPlayReason::Type EndPlayReason) 
+{
+	device_->DisConnectDevice();
+
+	UE_LOG(LogTemp, Log, TEXT("deviceDisconnected"));
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
@@ -370,16 +419,32 @@ void AVRActor_ver1::PlayerMoveStart(const FInputActionValue& Value)
 // 指定したスプラインの点に到達すると行われる処理
 void AVRActor_ver1::ArriveSplinePoint(int point_)
 {
-	// ニアリーイコールを使うための変数たち
-	FVector SplinePoint = SplineActor->Spline->GetLocationAtSplinePoint(point_, ESplineCoordinateSpace::World);
-	FTransform ATransform = FTransform(FRotator(0, 0, 0), SplinePoint, FVector(1, 1, 1));
-	FVector nowLocation = GetActorLocation();
-	FTransform BTransform = FTransform(FRotator(0, 0, 0), nowLocation, FVector(1, 1, 1));
-
-	// ニアリーイコールを使ってキャラクターを止めるか動かすか判断
-	bool isNearPointCharacter = UKismetMathLibrary::NearlyEqual_TransformTransform(ATransform, BTransform, 5.0f, 0.0001f, 0.0001f);
-	if (isNearPointCharacter)
+	if (SplineActor) // ただのnullチェック
 	{
-		isStop = true;
+		// ニアリーイコールを使うための変数たち
+		FVector SplinePoint = SplineActor->Spline->GetLocationAtSplinePoint(point_, ESplineCoordinateSpace::World);
+		FTransform ATransform = FTransform(FRotator(0, 0, 0), SplinePoint, FVector(1, 1, 1));
+		FVector nowLocation = GetActorLocation();
+		FTransform BTransform = FTransform(FRotator(0, 0, 0), nowLocation, FVector(1, 1, 1));
+
+		// ニアリーイコールを使ってキャラクターを止めるか動かすか判断
+		bool isNearPointCharacter = UKismetMathLibrary::NearlyEqual_TransformTransform(ATransform, BTransform, 5.0f, 0.0001f, 0.0001f);
+		if (isNearPointCharacter)
+		{
+			isStop = true;
+		}
+
 	}
+}
+
+template<typename T>
+T AVRActor_ver1::TransformDataToInt(const uint8_t* Data, int Size) const
+{
+	//RPMのデータは2バイト, Data[0]が上位バイト, Data[1]が下位バイト
+	T Result = 0;
+	for (int i = 0; i < Size; ++i)
+	{
+		Result |= (Data[i] << (8 * (Size - 1 - i)));
+	}
+	return Result;
 }
