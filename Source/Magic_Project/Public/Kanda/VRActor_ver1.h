@@ -10,6 +10,9 @@
 #include "Magic/Onishi_MagicCircleParent.h"
 #include "Kanda/MagicDataTable.h"
 #include "sato/PlayerWayRoad.h"
+#include "ASerialCom/Public/ASerialLibControllerWin.h"
+#include "ASerialCom/Public/ASerialCore/ASerialPacket.h"
+#include "sato/MagicDeviceCmdSender.h"
 #include "VRActor_ver1.generated.h"
 
 class UStaticMeshComponent;
@@ -39,6 +42,9 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	// Finalize相当の関数
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
 
@@ -75,6 +81,28 @@ protected:
 	//スプラインアクター格納用
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SplineActorHere")
 	TObjectPtr<APlayerWayRoad> SplineActor;
+
+private:
+	// デバイス用
+	UPROPERTY()
+	UASerialLibControllerWin* device_;
+
+	UPROPERTY()
+	UASerialPacket* deviceInfo_;
+
+	UPROPERTY()
+	AMagicDeviceCmdSender* deviceCmd_;
+
+	// テンプレート関数
+	template<typename T>
+	T TransformDataToInt(const uint8_t* Data, int Size) const;
+
+
+	// 通信処理速度制限用の変数
+	// Interval = 1.0f / xx.xf;で何fpsか制限できる
+	float TimeAccumulator = 0.0f;
+	const float Interval = 1.0f / 60.0f; 
+
 public:
 	UFUNCTION()
 	void CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_Destroy_, float MagicSpeed = 10.f);

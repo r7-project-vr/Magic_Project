@@ -19,7 +19,7 @@ int WindowsSerial::OpenPort(int com_num,
 
     int st = 0;
 
-    char com_name[20];
+    char com_name[20] = "\0";
 
     if (com_num >= 10) {  // COM番号が10以上の場合、\\.\COMx形式で指定
         sprintf_s(com_name, 20, "\\\\.\\COM%d\0", com_num);
@@ -100,8 +100,8 @@ int WindowsSerial::read(void)
         return -1;
     }
 
-    int8_t read_data;
-    DWORD dwSendSize;
+    int8_t read_data = 0;
+    DWORD dwSendSize = 0;
 
     int ret = ReadFile(   // データの受信
         m_serial_handle,  // 　通信デバイスのハンドル：　CreateFile()で取得したハンドルを指定
@@ -125,7 +125,7 @@ int WindowsSerial::write(uint8_t val)
         return -1;
     }
 
-    DWORD dwSendSize;
+    DWORD dwSendSize = 0;
 
     int Ret = WriteFile(  // データの送信
         m_serial_handle,  // 　通信デバイスのハンドル：CreateFile()で取得したハンドルを指定
@@ -148,7 +148,7 @@ int WindowsSerial::write(std::string str)
         return -1;
     }
 
-    DWORD dwSendSize;
+    DWORD dwSendSize = 0;
 
     int Ret = WriteFile(  // データの送信
         m_serial_handle,  // 　通信デバイスのハンドル：CreateFile()で取得したハンドルを指定
@@ -171,7 +171,7 @@ int WindowsSerial::write(uint8_t* buf, int len)
         return -1;
     }
 
-    DWORD dwSendSize;
+    DWORD dwSendSize = 0;
 
     int Ret = WriteFile(  // データの送信
         m_serial_handle,  // 　通信デバイスのハンドル：CreateFile()で取得したハンドルを指定
@@ -246,7 +246,7 @@ int WindowsSerial::ComSetting(int baudrate)
     // 　一般に、XOFF文字として13H ( デバイス制御3：DC3 )がよく使われます
 
     // その他
-    dcb.fNull = TRUE;          // NULLバイトの破棄： 破棄する→TRUE
+    dcb.fNull = FALSE;          // NULLバイトの破棄： 破棄する→TRUE
     dcb.fAbortOnError = TRUE;  // エラー時の読み書き操作終了：　終了する→TRUE
     dcb.fErrorChar = FALSE;    // パリティエラー発生時のキャラクタ（ErrorChar）置換：　なし→FLALSE
     dcb.ErrorChar = 0x00;      // パリティエラー発生時の置換キャラクタ
