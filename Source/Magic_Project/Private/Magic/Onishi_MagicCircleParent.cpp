@@ -33,9 +33,18 @@ void AOnishi_MagicCircleParent::BeginPlay()
 	Super::BeginPlay();
 
 	if (Ef_MagicCircle != nullptr) {
-		FVector loc = this->GetActorLocation();
-		FRotator rot = this->GetActorRotation();
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, Ef_MagicCircle, loc, rot);
+		if (Ef_MagicCircle != nullptr) {
+
+			UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(
+				Ef_MagicCircle,
+				SphereComponent,
+				NAME_None,
+				FVector::ZeroVector,
+				FRotator::ZeroRotator,
+				EAttachLocation::KeepRelativeOffset,
+				true
+			);
+		}
 	}
 }
 
@@ -60,6 +69,12 @@ void AOnishi_MagicCircleParent::OnOverlapBegin(UPrimitiveComponent* OverlappedCo
 		TSharedPtr<MagicDataTable> m = MakeShared<MagicDataTable>(magicCnt, Ef_MagicFly, Ef_Destroy);
 		Pawn->SetMagicData(m, this);
 	}
+	Super::NotifyActorBeginOverlap(OtherActor);
+
+	if (AVRActor_ver1* Pwan = Cast<AVRActor_ver1>(OtherActor))
+	{
+		Pwan->bIsPlayerOverlapping = true;
+	}
 }
 
 //オーバーラップ終了時の動作を定義
@@ -70,5 +85,11 @@ void AOnishi_MagicCircleParent::OnOverlapEnd(UPrimitiveComponent* OverlappedComp
 	if (AVRActor_ver1* Pawn = Cast<AVRActor_ver1>(OtherActor)) {
 		bIsPlayerOverlapping = false;
 		Pawn->SetMagicData(nullptr, nullptr);
+	}
+	Super::NotifyActorEndOverlap(OtherActor);
+
+	if (AVRActor_ver1* Pawn = Cast<AVRActor_ver1>(OtherActor))
+	{
+		Pawn->bIsPlayerOverlapping = false;
 	}
 }

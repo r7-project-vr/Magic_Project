@@ -188,4 +188,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "My Settings")
 	bool IsInMagicZone = false;
+
+	//–‚•ûw“ü‚é
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Magic")
+	bool bIsPlayerOverlapping = false;
+
 };
