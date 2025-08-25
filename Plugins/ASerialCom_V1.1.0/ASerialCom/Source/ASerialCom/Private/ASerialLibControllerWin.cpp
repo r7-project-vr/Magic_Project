@@ -135,6 +135,7 @@ int UASerialLibControllerWin::ReadDataProcess(ASerialDataStruct::ASerialData* re
     int st = 0;
     if (m_inteface->available() > 0) {
         int read_c = m_inteface->read();
+        UE_LOG(LogTemp, Log, TEXT("read = %x"), read_c);
         if (read_c != -1) {
             st = ReadPacketData(read_c, read_data_buf);
         }
@@ -152,7 +153,7 @@ int UASerialLibControllerWin::ReadData(ASerialDataStruct::ASerialData* read_data
         return -1;
     }
 
-    constexpr clock_t time_out = 50;
+    constexpr clock_t time_out = 200;
 
     bool time_out_flag = false;
     bool error_flag = false;
