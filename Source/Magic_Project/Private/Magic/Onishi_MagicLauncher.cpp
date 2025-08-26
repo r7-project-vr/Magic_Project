@@ -38,7 +38,14 @@ void AOnishi_MagicLauncher::BeginPlay()
 {
 	Super::BeginPlay();
 
+	{
+		FVector PreloadDirection = -GetActorForwardVector();
+		FVector PreloadLocation = GetActorLocation();
+		UNiagaraSystem* PreloadFlyingEffect = FlyingEffect;
+		UNiagaraSystem* PreloadDestroyEffect = DestroyEffect;
 
+		LaunchMagic(PreloadDirection, PreloadLocation, PreloadFlyingEffect, PreloadDestroyEffect);
+	}
 #if false
 	// ’Ç‹L_5_16
 	{
