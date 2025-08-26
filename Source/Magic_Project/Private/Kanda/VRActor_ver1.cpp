@@ -119,9 +119,9 @@ void AVRActor_ver1::BeginPlay()
 
 	// デバイス接続。引数は左からデバイスのIDとデバイスのバージョン
 	device_->Initialize(0x02, 0x01);
-	device_->SetInterfacePt(new WindowsSerial(38400));
+	device_->SetInterfacePt(new WindowsSerial());
 	device_->AutoConnectDevice();
-	//deviceCmd_->SendCmd_Cali(device_);
+	deviceCmd_->SendCmd_Cali(device_);
 }
 
 // Called every frame
@@ -146,17 +146,21 @@ void AVRActor_ver1::Tick(float DeltaTime)
 	// if文で通信回数を制限
 	if (TimeAccumulator >= Interval)
 	{
-		FRotator kari;
-		kari.Pitch = deviceCmd_->SendCmd_Euler(device_);
-		//kari.Pitch = kari.Pitch / 1000;
+		TimeAccumulator -= Interval;
+
+		int32 kari;
+		kari = deviceCmd_->SendCmd_Euler(device_);
 		//UE_LOG(LogTemp, Log, TEXT("debaisuPitch = %d"), (int)kari.Pitch);
-		ASerialDataStruct::ASerialData ReadData;
-		int Result = device_->ReadData(&ReadData);
+		ASerialDataStruct::ASerialData ResultData;
+		int Result = device_->ReadData(&ResultData);
 		uint16_t a = device_->GetLastErrorCode();
 		UE_LOG(LogTemp, Log, TEXT("ErrorCode = %X"), a);
 		UE_LOG(LogTemp, Log, TEXT("deviceCONNECT = %d"), Result);
-		int FinalResult = TransformDataToInt<int>((ReadData.data + 2), 4);
+		UE_LOG(LogTemp, Log, TEXT("deviceRESULT = %x"), ResultData.data);
+		int FinalResult = TransformDataToInt<int>((ResultData.data + 2), 4);
+		FinalResult = FinalResult / 1000;
 		UE_LOG(LogTemp, Log, TEXT("FINALRESULT = %d"), FinalResult);
+		FRotator rotateResult = TransformDataToRotator((ResultData.data ), 4);
 
 
 		//int32 kari2;
@@ -237,7 +241,7 @@ void AVRActor_ver1::ChargeMagic(const FInputActionValue& Value)
 				true,
 				true,
 				FColor::Cyan,
-				2.0f
+				0.3f
 			);
 		}
 	}
@@ -446,5 +450,39 @@ T AVRActor_ver1::TransformDataToInt(const uint8_t* Data, int Size) const
 	{
 		Result |= (Data[i] << (8 * (Size - 1 - i)));
 	}
+	return Result;
+}
+
+FRotator AVRActor_ver1::TransformDataToRotator(const uint8_t* Data, int Size)
+{
+	FRotator Result = FRotator(0,0,0);
+	int x = 0;
+	int y = 0;
+	int z = 0;
+	for (int i = 0; i < Size; ++i)
+	{
+		switch (i)
+		{
+		case 0:
+			x = (Data[i] << (8 * (Size - 1 - i)));
+			break;
+		case 1:
+			y = (Data[i] << (8 * (Size - 1 - i)));
+			break;
+		case 2:
+			z = (Data[i] << (8 * (Size - 1 - i)));
+			break;
+		case 3:
+			UE_LOG(LogTemp, Log, TEXT("case3"));
+			break;
+		default:
+			UE_LOG(LogTemp, Log, TEXT("calledDefault"));
+			break;
+		}
+	}
+	UE_LOG(LogTemp, Log, TEXT("x = %d"), x);
+	UE_LOG(LogTemp, Log, TEXT("y = %d"), y);
+	UE_LOG(LogTemp, Log, TEXT("z = %d"), z);
+
 	return Result;
 }
