@@ -132,7 +132,7 @@ int UASerialPacket::ReadPacketData(uint8_t _indata, ASerialDataStruct::ASerialDa
     }
     else if (m_error_flag == true) {  // エラーがあったパケットを読み飛ばす
         m_read_packet = false;
-        ret_st = -1;
+        ret_st = 0;
     }
     else if (_indata == AD_FLAG) {  // 加算フラグ
         if (m_add_flag == true) {
@@ -221,6 +221,7 @@ int UASerialPacket::ReadPacketData(uint8_t _indata, ASerialDataStruct::ASerialDa
                 uint16_t check_data = (((uint16_t)check_data_buf[0] << 8) | check_data_buf[1]);
                 if (check_data_sum != check_data) {
                     ret_st = -1;
+                    m_error_flag = true;
                     m_lase_error_code = static_cast<uint16_t>(ASerial::ErrorCodeList::ERR_CHECK_DATA_MISMATCH);
                 }
                 else {
@@ -276,6 +277,7 @@ int UASerialPacket::ReadPacketData(uint8_t _indata, ASerialDataStruct::ASerialDa
                 uint16_t check_data = (((uint16_t)check_data_buf[0] << 8) | check_data_buf[1]);
                 if (check_data_sum != check_data) {
                     ret_st = -1;
+                    m_error_flag = true;
                     m_lase_error_code = static_cast<uint16_t>(ASerial::ErrorCodeList::ERR_CHECK_DATA_MISMATCH);
                 }
                 else {

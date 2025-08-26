@@ -246,22 +246,13 @@ void AVRActor_ver1::ChargeMagic(const FInputActionValue& Value)
 // 魔法を撃つ_コントローラーのみ
 void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 {
-	if (true) {
-		UKismetSystemLibrary::PrintString(
-			this,
-			TEXT("uttayo"),
-			true,
-			true,
-			FColor::Red,
-			2.0f
-		);
 		if (magicData == nullptr) { return; }
 		UKismetSystemLibrary::PrintString(
 			this,
 			TEXT("HELLO"),
 			true,
 			true,
-			FColor(1, 1, 1, 1),
+			FColor::Red,
 			2.0f
 		);
 		const int cnt = magicData->GetMagicCnt();
@@ -284,7 +275,6 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 		//チャージ時間の初期化
 		MagicChargeTime = 0;
 
-
 		if (magicData->DecMagicCnt()) {
 			UKismetSystemLibrary::PrintString(GEngine->GetWorld(), "magicCnt 0");
 			magicData = nullptr;
@@ -293,7 +283,6 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 			circle->Ef_MagicCircle = nullptr;
 			circle->Destroy();
 		}
-	}
 }
 void AVRActor_ver1::SetMagicData(TSharedPtr<MagicDataTable> m_, AOnishi_MagicCircleParent* o_) {
 

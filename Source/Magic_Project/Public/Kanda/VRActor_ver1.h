@@ -101,7 +101,7 @@ private:
 	// ’ÊMˆ—‘¬“x§ŒÀ—p‚Ì•Ï”
 	// Interval = 1.0f / xx.xf;‚Å‰½fps‚©§ŒÀ‚Å‚«‚é
 	float TimeAccumulator = 0.0f;
-	const float Interval = 1.0f / 10.0f; 
+	const float Interval = 1.0f / 60.0f; 
 
 public:
 	UFUNCTION()
@@ -139,7 +139,7 @@ protected:
 private:
 
 	// ˆÚ“®”{—¦
-	float MoveSpeedPoint = 100.0f;
+	float MoveSpeedPoint = 30.0f;
 
 	// ˆÚ“®•ûŒü
 	FRotator MoveRotator;
