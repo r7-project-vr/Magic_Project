@@ -119,9 +119,9 @@ void AVRActor_ver1::BeginPlay()
 
 	// デバイス接続。引数は左からデバイスのIDとデバイスのバージョン
 	device_->Initialize(0x02, 0x01);
-	device_->SetInterfacePt(new WindowsSerial());
+	device_->SetInterfacePt(new WindowsSerial(38400));
 	device_->AutoConnectDevice();
-	deviceCmd_->SendCmd_Cali(device_);
+	//deviceCmd_->SendCmd_Cali(device_);
 }
 
 // Called every frame
@@ -146,28 +146,39 @@ void AVRActor_ver1::Tick(float DeltaTime)
 	// if文で通信回数を制限
 	if (TimeAccumulator >= Interval)
 	{
-		//FRotator kari;
-		//kari.Pitch = deviceCmd_->SendCmd_Euler(device_);
+		FRotator kari;
+		kari.Pitch = deviceCmd_->SendCmd_Euler(device_);
 		//kari.Pitch = kari.Pitch / 1000;
 		//UE_LOG(LogTemp, Log, TEXT("debaisuPitch = %d"), (int)kari.Pitch);
-		//ASerialDataStruct::ASerialData ReadData;
-		//int Result = device_->ReadData(&ReadData);
-		//UE_LOG(LogTemp, Log, TEXT("deviceCONNECT = %d"), Result);
-		//int FinalResult = TransformDataToInt<int>((ReadData.data + 2), 4);
-		//UE_LOG(LogTemp, Log, TEXT("FINALRESULT = %d"), FinalResult);
+		ASerialDataStruct::ASerialData ReadData;
+		int Result = device_->ReadData(&ReadData);
+		uint16_t a = device_->GetLastErrorCode();
+		UE_LOG(LogTemp, Log, TEXT("ErrorCode = %X"), a);
+		UE_LOG(LogTemp, Log, TEXT("deviceCONNECT = %d"), Result);
+		int FinalResult = TransformDataToInt<int>((ReadData.data + 2), 4);
+		UE_LOG(LogTemp, Log, TEXT("FINALRESULT = %d"), FinalResult);
 
 
-		int32 kari2;
-		kari2 = deviceCmd_->SendCmd_Quater(device_);
-		UE_LOG(LogTemp, Log, TEXT("quaternion = %d"), kari2);
-		ASerialDataStruct::ASerialData ReadData2;
-		int Result2 = device_->ReadData(&ReadData2);
-		UE_LOG(LogTemp, Log, TEXT("deviceCONNECT = %d"), Result2);
-		int FinalResult2 = TransformDataToInt<int>((ReadData2.data), 4);
-		FinalResult2 = FinalResult2 / 1000;
-		UE_LOG(LogTemp, Log, TEXT("FINALRESULT = %d"), FinalResult2);
+		//int32 kari2;
+		//int Result2;
+		//ASerialDataStruct::ASerialData ReadData2;
+		//while(true)
+		//{
+		//	int32 kari2 = deviceCmd_->SendCmd_Quater(device_);
+		//	UE_LOG(LogTemp, Log, TEXT("quaternion = %d"), kari2);
+		//	ASerialDataStruct::ASerialData ReadData2;
+		//	int Result2 = device_->ReadData(&ReadData2);
+
+		//	//if (Result2 == 0) break;
+		////}
+
+		//UE_LOG(LogTemp, Log, TEXT("deviceCONNECT = %d"), Result2);
+		//int FinalResult2 = TransformDataToInt<int>((ReadData2.data), 4);
+		//FinalResult2 = FinalResult2 / 1000;
+		//UE_LOG(LogTemp, Log, TEXT("FINALRESULT = %d"), FinalResult2);
 	}
 
+	//if (FinalResult2 > 10)
 }
 
 // Called to bind functionality to input
@@ -235,22 +246,13 @@ void AVRActor_ver1::ChargeMagic(const FInputActionValue& Value)
 // 魔法を撃つ_コントローラーのみ
 void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 {
-	if (true) {
-		UKismetSystemLibrary::PrintString(
-			this,
-			TEXT("uttayo"),
-			true,
-			true,
-			FColor::Red,
-			2.0f
-		);
 		if (magicData == nullptr) { return; }
 		UKismetSystemLibrary::PrintString(
 			this,
 			TEXT("HELLO"),
 			true,
 			true,
-			FColor(1, 1, 1, 1),
+			FColor::Red,
 			2.0f
 		);
 		const int cnt = magicData->GetMagicCnt();
@@ -273,7 +275,6 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 		//チャージ時間の初期化
 		MagicChargeTime = 0;
 
-
 		if (magicData->DecMagicCnt()) {
 			UKismetSystemLibrary::PrintString(GEngine->GetWorld(), "magicCnt 0");
 			magicData = nullptr;
@@ -282,7 +283,6 @@ void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
 			circle->Ef_MagicCircle = nullptr;
 			circle->Destroy();
 		}
-	}
 }
 void AVRActor_ver1::SetMagicData(TSharedPtr<MagicDataTable> m_, AOnishi_MagicCircleParent* o_) {
 

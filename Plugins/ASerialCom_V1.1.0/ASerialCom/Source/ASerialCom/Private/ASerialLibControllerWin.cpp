@@ -134,10 +134,8 @@ int UASerialLibControllerWin::ReadDataProcess(ASerialDataStruct::ASerialData* re
 
     int st = 0;
     if (m_inteface->available() > 0) {
-        int read_c = m_inteface->read();
-        if (read_c != -1) {
-            st = ReadPacketData(read_c, read_data_buf);
-        }
+        uint8_t read_c = (uint8_t)m_inteface->read();
+        st = ReadPacketData(read_c, read_data_buf);
     }
 
     if (st == -1) {

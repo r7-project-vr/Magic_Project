@@ -139,7 +139,7 @@ protected:
 private:
 
 	// ˆÚ“®”{—¦
-	float MoveSpeedPoint = 100.0f;
+	float MoveSpeedPoint = 30.0f;
 
 	// ˆÚ“®•ûŒü
 	FRotator MoveRotator;
