@@ -93,17 +93,17 @@ private:
 	UPROPERTY()
 	AMagicDeviceCmdSender* deviceCmd_;
 
-	FRotator TransformDataToRotator(const uint8_t* Data, int Size);
+	// デバイスの情報を入れるとオイラー角を取得できる関数
+	// TransformDataToInt32はTransformEulerAnglesのために作られた関数です。
+	// 使う際はTransformEulerAnglesにデバイスの情報を入れればそのまま使えます。
+	int32 TransformDataToInt32(const uint8_t* Data, int Size);
+	FRotator TransformEulerAngles(const uint8_t* Data);
 
-
-	// テンプレート関数
-	template<typename T>
-	T TransformDataToInt(const uint8_t* Data, int Size) const;
 
 	// 通信処理速度制限用の変数
 	// Interval = 1.0f / xx.xf;で何fpsか制限できる
 	float TimeAccumulator = 0.0f;
-	const float Interval = 1.0f / 30.0f; 
+	const float Interval = 1.0f / 10.0f; 
 
 public:
 	UFUNCTION()
@@ -136,7 +136,8 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 	// プレイヤーの移動開始
-	void PlayerMoveStart(const FInputActionValue& Value);
+	void PlayerMoveStartaaa(const FInputActionValue& Value);
+	void PlayerMoveStart();
 
 private:
 
@@ -151,6 +152,21 @@ private:
 
 	// いま移動できるかどうか。trueで停止中。
 	bool isStop = true;
+
+	// 腕をどれだけ上げる必要があるか
+	float ArmUpAngle = 45.0f;
+
+	// 腕を上げ下げした回数
+	int ArmUpDownCnt = 0;
+
+	// 移動に必要な腕を上げ下げする回数
+	int Need_ArmUpDownCnt = 3;
+
+	// 今腕を上げているか下げているか。trueで上げている。
+	bool IsArmUp = false;
+
+	// デバイスからもらった、今どれだけの角度を向いているかを表す変数
+	FRotator Final_Device_Rotate;
 
 	// スプライン上の点で止まるために番号を指定する変数（現在は自動で指定）
 	int StopPointNum = 1;
