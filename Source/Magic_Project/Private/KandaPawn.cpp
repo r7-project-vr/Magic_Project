@@ -11,6 +11,9 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/Actor.h"				// ファイル関係
+#include "Misc/FileHelper.h"					// ファイル関係
+#include "HAL/PlatformFilemanager.h"			// ファイル関係
 
 // Sets default values
 AKandaPawn::AKandaPawn()
@@ -83,6 +86,18 @@ AKandaPawn::AKandaPawn()
 
 	// Arrowを表示されるようにする
 	Arrow->bHiddenInGame = false;
+
+	// テスト用
+	{
+		test = nullptr;
+
+		// 現在時刻の取得
+		FDateTime Now = FDateTime::Now();
+		FString FormattedTime = Now.ToString(TEXT("%Y_%m_%d__%H_%M"));
+
+		MagicFilePath =
+			FPaths::ProjectDir() / TEXT("CSVFile/Export/MagicData_" + FormattedTime + ".csv");
+	}
 }
 
 // Called when the game starts or when spawned
@@ -141,9 +156,12 @@ void AKandaPawn::ControlPlayer(const FInputActionValue& Value)
 //魔法を撃つ
 void AKandaPawn::GoMagic(const FInputActionValue& Value)
 {
-	if (const bool v = Value.Get<bool>() && CanMagic) 
+	if (const bool v = Value.Get<bool>() && CanMagic)
 	{
 		UE_LOG(LogTemp, Log, TEXT("魔法を撃ったYO！"));
+		KandaTestMagic* magic = new KandaTestMagic();
+		WritePlayerInfoToCSV(magic);
+		delete magic;
 	}
 }
 
@@ -170,4 +188,21 @@ void AKandaPawn::Look(const FInputActionValue& Value)
 	}
 }
 
+// csvファイル出力
+void AKandaPawn::WritePlayerInfoToCSV(KandaTestMagic* m_)
+{
+	FString MagicName = m_->MagicName();
 
+	// CSVに書き込む内容
+	FString CSVContent = MagicName + TEXT(",")  + TEXT("\n");
+
+	// ファイルの存在を確認し、存在しない場合はヘッダー行を追加
+	if (!FPaths::FileExists(MagicFilePath))
+	{
+		CSVContent = TEXT("MagicName\n") + CSVContent;
+	}
+
+	// ファイルに内容を書き込む
+	FFileHelper::SaveStringToFile(CSVContent, *MagicFilePath, FFileHelper::EEncodingOptions::AutoDetect,
+		&IFileManager::Get(), EFileWrite::FILEWRITE_Append);
+}

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "NiagaraSystem.h"
+#include "NiagaraComponent.h"// 追記
 #include "Components/StaticMeshComponent.h"
 #include "Onishi_MagicLauncher.generated.h"
 
@@ -26,14 +27,65 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float MoveSpeed = 200.0f; // cm/s
+	float MoveSpeed = 1000.0f; // cm/s
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	FVector MoveDirection = FVector(1.0f, 0.0f, 0.0f); // X方向
+	/*FVector MoveDirection = FVector(1.0, 0.0, 0.0);*/
+	//書き換えた 5_16
+	FVector MoveDirection;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
 	UNiagaraSystem* DestroyEffect;
 
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Movement")
+	/*FVector StartLocation = FVector(0, 0, 0);*/ 
+	//書き換えた 5_16
+	FVector StartLocation;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Effects")
+	UNiagaraSystem* FlyingEffect = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/Satou/KTP_Effect/Particles/Bottom/Bottom02-07.Bottom02-07"));
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	UNiagaraSystem* CollisionEffect = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/KTP_Effect/Particles/Fly/Expolison_03_08.Expolison_03_08"));
+
+	//スフィアコリジョン
+	UPROPERTY(VisibleAnywhere)
+	class USphereComponent* SphereComponent;
+
+	// 追記
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	UNiagaraComponent* _NiagaraComponent;
+
+	UPROPERTY(VisibleAnywhere, Category = Character, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UStaticMeshComponent> Magic;
+public:
 	UFUNCTION()
 	void HandleAutoDestroy();
+
+	///<summary>
+	///魔法を発射するときに呼び出し
+	///向き/現在位置/魔法のエフェクトを指定
+	///</summary>
+	UFUNCTION()
+	void LaunchMagic(FVector Facing, FVector NowLocation, UNiagaraSystem* Ef_Flying, UNiagaraSystem* Ef_Destroy);
+
+private:
+
+	// ----------------------
+	// 追記_5_16
+
+	// プレイヤーから生成される魔法のエフェクト
+	void CreateMagicEffect(UNiagaraSystem* Effect);
+
+	void MoveMagic();
+
+	// デバッグ
+	void DebugLogLocation(AActor* a_, FColor c);
+
+	// 魔法が壁に衝突したときの処理
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+		bool bFromSweep, const FHitResult& SweepResult);
 };
