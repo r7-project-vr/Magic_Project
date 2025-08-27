@@ -19,6 +19,7 @@
 #include "HeadMountedDisplay.h"
 #include "Components/SplineComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include <array>
 
 
 // Sets default values
@@ -142,47 +143,52 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		SetActorLocation(newLocation);
 	}
 
-	// デバイスとの通信（割る1000すること！！！）
-	// if文で通信回数を制限
+	// デバイスとの通信
+	// if文で通信回数を制限。ヘッダーファイルのIntervalの値でfpsを調整できます。
 	if (TimeAccumulator >= Interval)
 	{
 		TimeAccumulator -= Interval;
 
-		int32 kari;
-		kari = deviceCmd_->SendCmd_Euler(device_);
-		//UE_LOG(LogTemp, Log, TEXT("debaisuPitch = %d"), (int)kari.Pitch);
-		ASerialDataStruct::ASerialData ResultData;
-		int Result = device_->ReadData(&ResultData);
+		// デバイスにオイラー角取得のコマンドを送る。そのデータをReadDataする
+		deviceCmd_->SendCmd_Euler(device_);
+		ASerialDataStruct::ASerialData ReceiveData;
+		int Result = device_->ReadData(&ReceiveData);
+
+		// ＝＝＝＝＝＝デバッグ情報＝＝＝＝＝＝
 		uint16_t a = device_->GetLastErrorCode();
-		UE_LOG(LogTemp, Log, TEXT("ErrorCode = %X"), a);
+		UE_LOG(LogTemp, Log, TEXT("ErrorCode     = %X"), a);
 		UE_LOG(LogTemp, Log, TEXT("deviceCONNECT = %d"), Result);
-		UE_LOG(LogTemp, Log, TEXT("deviceRESULT = %x"), ResultData.data);
-		int FinalResult = TransformDataToInt<int>((ResultData.data + 2), 4);
-		FinalResult = FinalResult / 1000;
-		UE_LOG(LogTemp, Log, TEXT("FINALRESULT = %d"), FinalResult);
-		FRotator rotateResult = TransformDataToRotator((ResultData.data ), 4);
+		UE_LOG(LogTemp, Log, TEXT("deviceRESULT  = %x"), ReceiveData.data);
+		// ＝＝＝＝＝＝デバッグ情報＝＝＝＝＝＝
 
-
-		//int32 kari2;
-		//int Result2;
-		//ASerialDataStruct::ASerialData ReadData2;
-		//while(true)
-		//{
-		//	int32 kari2 = deviceCmd_->SendCmd_Quater(device_);
-		//	UE_LOG(LogTemp, Log, TEXT("quaternion = %d"), kari2);
-		//	ASerialDataStruct::ASerialData ReadData2;
-		//	int Result2 = device_->ReadData(&ReadData2);
-
-		//	//if (Result2 == 0) break;
-		////}
-
-		//UE_LOG(LogTemp, Log, TEXT("deviceCONNECT = %d"), Result2);
-		//int FinalResult2 = TransformDataToInt<int>((ReadData2.data), 4);
-		//FinalResult2 = FinalResult2 / 1000;
-		//UE_LOG(LogTemp, Log, TEXT("FINALRESULT = %d"), FinalResult2);
+		// デバイスからもらった情報をFRotatorに変換する。1000倍されているので割る1000した値を最終的な値にする。
+		FRotator Device_Rotate = TransformEulerAngles(ReceiveData.data);
+		Final_Device_Rotate = FRotator(Device_Rotate.Pitch / 1000, Device_Rotate.Yaw / 1000, Device_Rotate.Roll / 1000);
+		UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Pitch = %.0f"), Final_Device_Rotate.Pitch);
+		UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Yaw = %.0f"),   Final_Device_Rotate.Yaw);
+		UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Roll = %.0f"),  Final_Device_Rotate.Roll);
 	}
 
-	//if (FinalResult2 > 10)
+	// デバイスの角度が0度以下になったら       (腕を下げたら)
+	if (Final_Device_Rotate.Pitch < 0 && IsArmUp)
+	{
+		IsArmUp = false;
+		ArmUpDownCnt++;
+	}
+	// デバイスの角度がArmUpAngle以上になったら(腕を上げたら)
+	if (Final_Device_Rotate.Pitch > ArmUpAngle && !IsArmUp)
+	{
+		IsArmUp = true;
+	}
+	UKismetSystemLibrary::PrintString(this, IsArmUp ? TEXT("true") : TEXT("false"), true, false, FColor::Red, 0.1f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.1f, NAME_None);
+
+	// 腕を一定回数以上上げ下げしたら動く
+	if (ArmUpDownCnt >= Need_ArmUpDownCnt)
+	{
+		PlayerMoveStart();
+		ArmUpDownCnt = 0;
+	}
 }
 
 // Called to bind functionality to input
@@ -204,7 +210,7 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
 
 		// MoveStartをバインドする
-		EnhancedInputComponent->BindAction(MoveStart, ETriggerEvent::Triggered, this, &AVRActor_ver1::PlayerMoveStart);
+		EnhancedInputComponent->BindAction(MoveStart, ETriggerEvent::Triggered, this, &AVRActor_ver1::PlayerMoveStartaaa);
 	}
 }
 
@@ -409,7 +415,7 @@ void AVRActor_ver1::VRInformation()
 }
 
 // IA_MoveActionに登録されたボタンを押されると行う処理（現在はJキー）
-void AVRActor_ver1::PlayerMoveStart(const FInputActionValue& Value)
+void AVRActor_ver1::PlayerMoveStartaaa(const FInputActionValue& Value)
 {
 	//ストップしている時のみ処理
 	if (isStop)
@@ -418,6 +424,19 @@ void AVRActor_ver1::PlayerMoveStart(const FInputActionValue& Value)
 		isStop = false;
 		StopPointNum++;
 	}
+}
+
+// デバイス情報からピッチが一定以上になったら呼ばれる処理（今のところは）
+void AVRActor_ver1::PlayerMoveStart()
+{
+	//ストップしている時のみ処理
+	if (isStop)
+	{
+		UKismetSystemLibrary::PrintString(this, TEXT("ugoke2"), true, true, FColor::Blue, 2.0f, NAME_None);
+		isStop = false;
+		StopPointNum++;
+	}
+
 }
 
 // 指定したスプラインの点に到達すると行われる処理
@@ -437,52 +456,30 @@ void AVRActor_ver1::ArriveSplinePoint(int point_)
 		{
 			isStop = true;
 		}
-
 	}
 }
 
-template<typename T>
-T AVRActor_ver1::TransformDataToInt(const uint8_t* Data, int Size) const
+// デバイスからもらった情報をTransformEulerAnglesからもらって、int32型に変換して返す
+int32 AVRActor_ver1::TransformDataToInt32(const uint8_t* Data, int Size)
 {
-	//RPMのデータは2バイト, Data[0]が上位バイト, Data[1]が下位バイト
-	T Result = 0;
+	int32 Result = 0;
+
 	for (int i = 0; i < Size; ++i)
 	{
-		Result |= (Data[i] << (8 * (Size - 1 - i)));
+		Result |= (static_cast<int32>(Data[i]) << (8 * (Size - 1 - i)));
 	}
 	return Result;
 }
 
-FRotator AVRActor_ver1::TransformDataToRotator(const uint8_t* Data, int Size)
+// デバイスからもらった情報をTransformDataToInt32に入れて、その結果をFRotatorで返す
+FRotator AVRActor_ver1::TransformEulerAngles(const uint8_t* Data)
 {
-	FRotator Result = FRotator(0,0,0);
-	int x = 0;
-	int y = 0;
-	int z = 0;
-	for (int i = 0; i < Size; ++i)
-	{
-		switch (i)
-		{
-		case 0:
-			x = (Data[i] << (8 * (Size - 1 - i)));
-			break;
-		case 1:
-			y = (Data[i] << (8 * (Size - 1 - i)));
-			break;
-		case 2:
-			z = (Data[i] << (8 * (Size - 1 - i)));
-			break;
-		case 3:
-			UE_LOG(LogTemp, Log, TEXT("case3"));
-			break;
-		default:
-			UE_LOG(LogTemp, Log, TEXT("calledDefault"));
-			break;
-		}
-	}
-	UE_LOG(LogTemp, Log, TEXT("x = %d"), x);
-	UE_LOG(LogTemp, Log, TEXT("y = %d"), y);
-	UE_LOG(LogTemp, Log, TEXT("z = %d"), z);
+	std::array<int32, 3> Angles;
+	Angles[0] = TransformDataToInt32(Data, 4);       // X
+	Angles[1] = TransformDataToInt32(Data + 4, 4);   // Y
+	Angles[2] = TransformDataToInt32(Data + 8, 4);   // Z
 
-	return Result;
+	// FRotatorの引数は（ピッチ、ヨー、ロール）の順なのでそれにあわせて番号を変えてる
+	FRotator ResultRotate = FRotator(Angles[1], Angles[2], Angles[0]);
+	return ResultRotate;
 }

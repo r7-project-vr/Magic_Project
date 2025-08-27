@@ -38,7 +38,6 @@ int32 AMagicDeviceCmdSender::SendCmd_Euler(UASerialLibControllerWin* device_)
 	if (device_)
 	{
 		int32 Result = device_->WriteData(EulerCmd_);
-		//int32 Result = device_->WriteData(0x01);
 		return Result;
 	}
 	else

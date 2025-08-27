@@ -43,5 +43,4 @@ private:
 
 	// クォータニオン取得コマンド
 	uint8_t QuaternionCmd_ = 0x22;
-	//int32
 };
