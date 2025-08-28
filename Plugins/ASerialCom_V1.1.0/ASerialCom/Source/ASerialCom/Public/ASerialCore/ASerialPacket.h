@@ -95,11 +95,23 @@ public:
     /// @note エラーコードはASerial::ErrorCodeListに定義されています。
     uint16_t GetLastErrorCode(void);
 
-    /// @brief 必要なパケットバッファサイズを取得
+    /// @brief 必要なパケットバッファサイズを取得(デバイスモード時)
     /// @param data_array データ配列 
     /// @param data_num データ数
     /// @return 必要なパケットバッファサイズ
     size_t GetNeedPacketBufSize(uint8_t* data_array, int data_num);
+
+    /// @brief 必要なパケットバッファサイズを取得(コントローラモード時)
+    /// @param command コマンド
+     /// @param data_array データ配列 
+     /// @param data_num データ数
+     /// @return 必要なパケットバッファサイズ
+    size_t GetNeedPacketBufSize(uint8_t command, uint8_t* data_array, int data_num);
+
+    /// @brief 必要なパケットバッファサイズを取得(コントローラモード時)
+    /// @param command コマンド
+    /// @return 必要なパケットバッファサイズ
+    size_t GetNeedPacketBufSize(uint8_t command);
 
     /// @brief 接続状態を設定
     /// @param state 接続状態

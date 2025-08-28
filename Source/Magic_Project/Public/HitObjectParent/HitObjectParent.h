@@ -38,7 +38,7 @@ public:
 protected:
 
 	// オーバーラップした際の処理を書く関数
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,

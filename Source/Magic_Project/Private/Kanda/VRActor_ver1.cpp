@@ -162,7 +162,7 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		// ＝＝＝＝＝＝デバッグ情報＝＝＝＝＝＝
 
 		// デバイスからもらった情報をFRotatorに変換する。1000倍されているので割る1000した値を最終的な値にする。
-		FRotator Device_Rotate = TransformEulerAngles(ReceiveData.data);
+		FRotator Device_Rotate = TransformEulerAngles(ReceiveData.data, 4);
 		Final_Device_Rotate = FRotator(Device_Rotate.Pitch / 1000, Device_Rotate.Yaw / 1000, Device_Rotate.Roll / 1000);
 		UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Pitch = %.0f"), Final_Device_Rotate.Pitch);
 		UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Yaw = %.0f"),   Final_Device_Rotate.Yaw);
@@ -189,6 +189,7 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		PlayerMoveStart();
 		ArmUpDownCnt = 0;
 	}
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicScore = %d"), Magic_Score), true, false, FColor::Blue, 0.1f, NAME_None);
 }
 
 // Called to bind functionality to input
@@ -436,7 +437,6 @@ void AVRActor_ver1::PlayerMoveStart()
 		isStop = false;
 		StopPointNum++;
 	}
-
 }
 
 // 指定したスプラインの点に到達すると行われる処理
@@ -472,12 +472,12 @@ int32 AVRActor_ver1::TransformDataToInt32(const uint8_t* Data, int Size)
 }
 
 // デバイスからもらった情報をTransformDataToInt32に入れて、その結果をFRotatorで返す
-FRotator AVRActor_ver1::TransformEulerAngles(const uint8_t* Data)
+FRotator AVRActor_ver1::TransformEulerAngles(const uint8_t* Data, int Size)
 {
 	std::array<int32, 3> Angles;
-	Angles[0] = TransformDataToInt32(Data, 4);       // X
-	Angles[1] = TransformDataToInt32(Data + 4, 4);   // Y
-	Angles[2] = TransformDataToInt32(Data + 8, 4);   // Z
+	Angles[0] = TransformDataToInt32(Data, Size);       // X
+	Angles[1] = TransformDataToInt32(Data + 4, Size);   // Y
+	Angles[2] = TransformDataToInt32(Data + 8, Size);   // Z
 
 	// FRotatorの引数は（ピッチ、ヨー、ロール）の順なのでそれにあわせて番号を変えてる
 	FRotator ResultRotate = FRotator(Angles[1], Angles[2], Angles[0]);
