@@ -81,18 +81,113 @@ size_t UASerialPacket::GetNeedPacketBufSize(uint8_t* data_array, int data_num)
 
     if (GetMode() == MODE_DEVICE) {
         size += 2;  // スタートフラグ(1) + データ数(1)
+        if (data_num == AD_FLAG || data_num == DO_FLAG) {
+            size += 1;
+        }
     }
     else {
-        size += 4;  // スタートフラグ(1) + ターゲットデバイスID(1) + データ数(1) + コマンド(1)
+        return -1;  // コントローラモード時はコマンドが必要なのでエラーを返す
     }
 
+    uint16_t check_sum = 0;
+
     for (int i = 0; i < data_num; ++i) {
+        check_sum += data_array[i];
         if (data_array[i] == AD_FLAG || data_array[i] == DO_FLAG) {
             size += 2;  // 加算フラグ(1) + データ(1)
         }
         else {
             size += 1;  // データ(1)
         }
+    }
+
+    uint8_t check_data[2] = { 0 };  // チェックデータ分割用([0]上位バイト [1]下位バイト)
+
+    check_data[0] = (uint8_t)((check_sum & 0xFF00) >> 8);  // 上位バイト抽出
+    check_data[1] = (uint8_t)(check_sum & 0x00FF);         // 下位バイト抽出
+
+    size += 2;  // チェックデータ
+
+    // チェックデータの加算フラグ分
+    if (check_data[0] == AD_FLAG || check_data[0] == DO_FLAG) {
+        size += 1;
+    }
+
+    if (check_data[1] == AD_FLAG || check_data[1] == DO_FLAG) {
+        size += 1;
+    }
+
+    return size;
+}
+
+size_t UASerialPacket::GetNeedPacketBufSize(uint8_t command, uint8_t* data_array, int data_num)
+{
+    size_t size = 0;
+
+    if (GetMode() == MODE_CONTROLLER) {
+        size += 4;  // スタートフラグ(1) + ターゲットデバイスID(1) + データ数(1) + コマンド(1)
+        if (m_target_device_id == AD_FLAG || m_target_device_id == DO_FLAG) {
+            size += 1;
+        }
+
+        if (data_num == AD_FLAG || data_num == DO_FLAG) {
+            size += 1;
+        }
+
+        if (command == AD_FLAG || command == DO_FLAG) {
+            size += 1;
+        }
+    }
+    else {
+        return -1;  // デバイスモード時はコマンドが必要無いのでエラーを返す
+    }
+    uint16_t check_sum = 0;
+
+
+    for (int i = 0; i < data_num; ++i) {
+        check_sum += data_array[i];
+        if (data_array[i] == AD_FLAG || data_array[i] == DO_FLAG) {
+            size += 2;  // 加算フラグ(1) + データ(1)
+        }
+        else {
+            size += 1;  // データ(1)
+        }
+    }
+    uint8_t check_data[2] = { 0 };  // チェックデータ分割用([0]上位バイト [1]下位バイト)
+
+    check_data[0] = (uint8_t)((check_sum & 0xFF00) >> 8);  // 上位バイト抽出
+    check_data[1] = (uint8_t)(check_sum & 0x00FF);         // 下位バイト抽出
+
+    size += 2;  // チェックデータ
+
+    // チェックデータの加算フラグ分
+    if (check_data[0] == AD_FLAG || check_data[0] == DO_FLAG) {
+        size += 1;
+    }
+
+    if (check_data[1] == AD_FLAG || check_data[1] == DO_FLAG) {
+        size += 1;
+    }
+
+    return size;
+}
+
+size_t UASerialPacket::GetNeedPacketBufSize(uint8_t command) {
+    size_t size = 0;
+
+    if (GetMode() == MODE_CONTROLLER) {
+        size += 4;  // スタートフラグ(1) + ターゲットデバイスID(1) + データ数(1) + コマンド(1)
+
+        if (m_target_device_id == AD_FLAG || m_target_device_id == DO_FLAG) {
+            size += 1;
+        }
+
+        if (command == AD_FLAG || command == DO_FLAG) {
+            size += 1;
+        }
+    }
+    else {
+        return -1;  // デバイスモード時はコマンドが必要無いのでエラーを返す
     }
 
     size += 2;  // チェックデータ
@@ -337,14 +432,14 @@ int UASerialPacket::MakePacketData(uint8_t* to_device_data, int data_num, uint8_
         ++index;
     }
 
-    int8_t check_data[2] = { 0 };  // チェックデータ分割用([1]上位バイト [2]下位バイト)
+    uint8_t check_data[2] = { 0 };  // チェックデータ分割用([1]上位バイト [2]下位バイト)
 
-    check_data[1] = (uint8_t)((check_sum & 0xFF00) >> 8);  // 上位バイト抽出
-    check_data[2] = (uint8_t)(check_sum & 0x00FF);         // 下位バイト抽出
+    check_data[0] = (uint8_t)((check_sum & 0xFF00) >> 8);  // 上位バイト抽出
+    check_data[1] = (uint8_t)(check_sum & 0x00FF);         // 下位バイト抽出
 
-    CheckDataNeedAddFlag(check_data[1], data_packet_out, &index);
+    CheckDataNeedAddFlag(check_data[0], data_packet_out, &index);
     ++index;
-    CheckDataNeedAddFlag(check_data[2], data_packet_out, &index);
+    CheckDataNeedAddFlag(check_data[1], data_packet_out, &index);
 
     return 0;
 }
@@ -408,14 +503,14 @@ int UASerialPacket::MakePacketData(uint8_t* to_controller_data, int data_num, ui
         // Serial.println(st);
     }
 
-    int8_t check_data[2] = { 0 };  // チェックデータ分割用([1]上位バイト [2]下位バイト)
+    uint8_t check_data[2] = { 0 };  // チェックデータ分割用([1]上位バイト [2]下位バイト)
 
-    check_data[1] = (uint8_t)((check_sum & 0xFF00) >> 8);  // 上位バイト抽出
-    check_data[2] = (uint8_t)(check_sum & 0x00FF);         // 下位バイト抽出
+    check_data[0] = (uint8_t)((check_sum & 0xFF00) >> 8);  // 上位バイト抽出
+    check_data[1] = (uint8_t)(check_sum & 0x00FF);         // 下位バイト抽出
 
-    CheckDataNeedAddFlag(check_data[1], data_packet_out, &index);
+    CheckDataNeedAddFlag(check_data[0], data_packet_out, &index);
     ++index;
-    CheckDataNeedAddFlag(check_data[2], data_packet_out, &index);
+    CheckDataNeedAddFlag(check_data[1], data_packet_out, &index);
 
     return 0;
 }
