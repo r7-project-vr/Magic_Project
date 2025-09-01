@@ -176,7 +176,7 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		ArmUpDownCnt++;
 	}
 	// デバイスの角度がArmUpAngle以上になったら(腕を上げたら)
-	if (Final_Device_Rotate.Pitch > ArmUpAngle && !IsArmUp)
+	if (Final_Device_Rotate.Pitch > ArmUpAngle)
 	{
 		IsArmUp = true;
 	}
@@ -211,7 +211,7 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
 
 		// MoveStartをバインドする
-		EnhancedInputComponent->BindAction(MoveStart, ETriggerEvent::Triggered, this, &AVRActor_ver1::PlayerMoveStartaaa);
+		//EnhancedInputComponent->BindAction(MoveStart, ETriggerEvent::Triggered, this, &AVRActor_ver1::kariPlayerMoveStart);
 	}
 }
 
@@ -416,16 +416,16 @@ void AVRActor_ver1::VRInformation()
 }
 
 // IA_MoveActionに登録されたボタンを押されると行う処理（現在はJキー）
-void AVRActor_ver1::PlayerMoveStartaaa(const FInputActionValue& Value)
-{
-	//ストップしている時のみ処理
-	if (isStop)
-	{
-		UKismetSystemLibrary::PrintString(this, TEXT("ugoke"), true, true, FColor::Blue, 2.0f, NAME_None);
-		isStop = false;
-		StopPointNum++;
-	}
-}
+//void AVRActor_ver1::kariPlayerMoveStart(const FInputActionValue& Value)
+//{
+//	//ストップしている時のみ処理
+//	if (isStop)
+//	{
+//		UKismetSystemLibrary::PrintString(this, TEXT("ugoke"), true, true, FColor::Blue, 2.0f, NAME_None);
+//		isStop = false;
+//		StopPointNum++;
+//	}
+//}
 
 // デバイス情報からピッチが一定以上になったら呼ばれる処理（今のところは）
 void AVRActor_ver1::PlayerMoveStart()
