@@ -174,11 +174,13 @@ void AVRActor_ver1::Tick(float DeltaTime)
 	{
 		IsArmUp = false;
 		ArmUpDownCnt++;
+		DeviceGoMagic();
 	}
 	// デバイスの角度がArmUpAngle以上になったら(腕を上げたら)
 	if (Final_Device_Rotate.Pitch > ArmUpAngle)
 	{
 		IsArmUp = true;
+		MagicChargeTime += DeltaTime;
 	}
 	UKismetSystemLibrary::PrintString(this, IsArmUp ? TEXT("true") : TEXT("false"), true, false, FColor::Red, 0.1f, NAME_None);
 	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.1f, NAME_None);
@@ -190,6 +192,7 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		ArmUpDownCnt = 0;
 	}
 	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicScore = %d"), Magic_Score), true, false, FColor::Blue, 0.1f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, IsInMagicZone ? TEXT("ture") : TEXT("false"), true, false, FColor::Yellow, 0.1f, NAME_None);
 }
 
 // Called to bind functionality to input
@@ -205,7 +208,7 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 		// ControlBallとIA_ControlのTriggeredをBindする
 		EnhancedInputComponent->BindAction(MagicCharge, ETriggerEvent::Triggered, this, &AVRActor_ver1::ChargeMagic);
-		EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Completed, this, &AVRActor_ver1::GoMagic);
+		//EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Completed, this, &AVRActor_ver1::GoMagic);
 
 		// LookとIA_LookのTriggeredをBindする
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
@@ -255,7 +258,7 @@ void AVRActor_ver1::ChargeMagic(const FInputActionValue& Value)
 }
 
 // 魔法を撃つ_コントローラーのみ
-void AVRActor_ver1::GoMagic(const FInputActionValue& Value)
+void AVRActor_ver1::GoMagic()
 {
 		if (magicData == nullptr) { return; }
 		UKismetSystemLibrary::PrintString(
@@ -482,4 +485,10 @@ FRotator AVRActor_ver1::TransformEulerAngles(const uint8_t* Data, int Size)
 	// FRotatorの引数は（ピッチ、ヨー、ロール）の順なのでそれにあわせて番号を変えてる
 	FRotator ResultRotate = FRotator(Angles[1], Angles[2], Angles[0]);
 	return ResultRotate;
+}
+
+void AVRActor_ver1::DeviceGoMagic()
+{
+	GoMagic();
+	UKismetSystemLibrary::PrintString(this, TEXT("isInMagicZone = true"), true, false, FColor::Yellow, 2.f, NAME_None);
 }
