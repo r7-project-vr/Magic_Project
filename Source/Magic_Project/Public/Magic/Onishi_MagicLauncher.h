@@ -43,7 +43,7 @@ public:
 	FVector StartLocation;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Effects")
-	UNiagaraSystem* FlyingEffect = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/Satou/KTP_Effect/Particles/Bottom/Bottom02-07.Bottom02-07"));
+	UNiagaraSystem* FlyingEffect;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")

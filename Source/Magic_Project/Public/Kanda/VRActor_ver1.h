@@ -130,7 +130,7 @@ protected:
 	void ChargeMagic(const FInputActionValue& Value);
 
 	//魔法コントロール
-	void GoMagic(const FInputActionValue& Value);
+	void GoMagic();
 
 	// カメラコントロール
 	void Look(const FInputActionValue& Value);
@@ -196,6 +196,9 @@ private:
 
 	// スプラインの指定した点に着いたら行う処理
 	void ArriveSplinePoint(int point_);
+
+	// デバイスで魔法を放つ処理
+	void DeviceGoMagic();
 	
 	//----------------------------------------
 	// csv用
