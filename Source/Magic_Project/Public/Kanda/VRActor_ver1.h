@@ -103,7 +103,7 @@ private:
 	// 通信処理速度制限用の変数
 	// Interval = 1.0f / xx.xf;で何fpsか制限できる
 	float TimeAccumulator = 0.0f;
-	const float Interval = 1.0f / 120.0f; 
+	const float Interval = 1.0f / 240.0f; 
 
 public:
 	UFUNCTION()
@@ -136,7 +136,8 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 	// プレイヤーの移動開始
-	void PlayerMoveStartaaa(const FInputActionValue& Value);
+	//void kariPlayerMoveStart(const FInputActionValue& Value);
+	UFUNCTION(BlueprintCallable)
 	void PlayerMoveStart();
 
 public:
@@ -157,10 +158,12 @@ private:
 	float distance;
 
 	// いま移動できるかどうか。trueで停止中。
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool isStop = true;
 
+
 	// 腕をどれだけ上げる必要があるか
-	float ArmUpAngle = 45.0f;
+	float ArmUpAngle = 30.0f;
 
 	// 腕を上げ下げした回数
 	int ArmUpDownCnt = 0;
