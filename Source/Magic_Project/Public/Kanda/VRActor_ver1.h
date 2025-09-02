@@ -189,6 +189,7 @@ private:
 	AOnishi_MagicCircleParent* circle;
 
 	// –‚–@‚ğ‚½‚ß‚½ŠÔ‚ğŒv‘ª
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float MagicChargeTime = 0.0f;
 
 	// VR‹@Ší‚Ìî•ñ

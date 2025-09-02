@@ -192,7 +192,7 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		ArmUpDownCnt = 0;
 	}
 	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicScore = %d"), Magic_Score), true, false, FColor::Blue, 0.1f, NAME_None);
-	UKismetSystemLibrary::PrintString(this, IsInMagicZone ? TEXT("ture") : TEXT("false"), true, false, FColor::Yellow, 0.1f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicChargeTime = %f"), MagicChargeTime), true, false, FColor::Yellow, 0.1f, NAME_None);
 }
 
 // Called to bind functionality to input
@@ -208,7 +208,7 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 		// ControlBall‚ÆIA_Control‚ÌTriggered‚ðBind‚·‚é
 		EnhancedInputComponent->BindAction(MagicCharge, ETriggerEvent::Triggered, this, &AVRActor_ver1::ChargeMagic);
-		//EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Completed, this, &AVRActor_ver1::GoMagic);
+		EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Completed, this, &AVRActor_ver1::GoMagic);
 
 		// Look‚ÆIA_Look‚ÌTriggered‚ðBind‚·‚é
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
