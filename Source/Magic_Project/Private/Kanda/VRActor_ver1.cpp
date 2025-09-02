@@ -182,8 +182,8 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		IsArmUp = true;
 		MagicChargeTime += DeltaTime;
 	}
-	UKismetSystemLibrary::PrintString(this, IsArmUp ? TEXT("true") : TEXT("false"), true, false, FColor::Red, 0.1f, NAME_None);
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.1f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, IsArmUp ? TEXT("true") : TEXT("false"), true, false, FColor::Red, 0.05f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.05f, NAME_None);
 
 	// ˜r‚ðˆê’è‰ñ”ˆÈãã‚°‰º‚°‚µ‚½‚ç“®‚­
 	if (ArmUpDownCnt >= Need_ArmUpDownCnt)
@@ -191,8 +191,8 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		PlayerMoveStart();
 		ArmUpDownCnt = 0;
 	}
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicScore = %d"), Magic_Score), true, false, FColor::Blue, 0.1f, NAME_None);
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicChargeTime = %f"), MagicChargeTime), true, false, FColor::Yellow, 0.1f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicScore = %d"), Magic_Score), true, false, FColor::Blue, 0.05f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicChargeTime = %f"), MagicChargeTime), true, false, FColor::Yellow, 0.05f, NAME_None);
 }
 
 // Called to bind functionality to input
