@@ -253,6 +253,7 @@ void AVRActor_ver1::ChargeMagic(const FInputActionValue& Value)
 				FColor::Cyan,
 				0.3f
 			);
+			Charged = true;
 		}
 	}
 }
@@ -289,6 +290,17 @@ void AVRActor_ver1::GoMagic()
 		//チャージ時間の初期化
 		MagicChargeTime = 0;
 
+		//チャージ初期化
+		MagicChargeTime = 0;
+		FTimerHandle ResetHandle;
+		GetWorldTimerManager().SetTimer(
+			ResetHandle,
+			this,
+			&AVRActor_ver1::ResetCharged,
+			2.0f,
+			false
+		);
+
 		if (magicData->DecMagicCnt()) {
 			UKismetSystemLibrary::PrintString(GEngine->GetWorld(), "magicCnt 0");
 			magicData = nullptr;
@@ -297,6 +309,12 @@ void AVRActor_ver1::GoMagic()
 			circle->Ef_MagicCircle = nullptr;
 			circle->Destroy();
 		}
+}
+
+//チャージリセット
+void AVRActor_ver1::ResetCharged()
+{
+	Charged = false;
 }
 void AVRActor_ver1::SetMagicData(TSharedPtr<MagicDataTable> m_, AOnishi_MagicCircleParent* o_) {
 
