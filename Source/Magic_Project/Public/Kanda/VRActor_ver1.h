@@ -189,7 +189,7 @@ private:
 	AOnishi_MagicCircleParent* circle;
 
 	// 魔法をためた時間を計測
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	float MagicChargeTime = 0.0f;
 
 	// VR機器の情報
@@ -200,6 +200,8 @@ private:
 
 	// デバイスで魔法を放つ処理
 	void DeviceGoMagic();
+
+	void ResetCharged();
 	
 	//----------------------------------------
 	// csv用
@@ -224,4 +226,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Magic")
 	bool bIsPlayerOverlapping = false;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Charged")
+	bool Charged = false;
 };
