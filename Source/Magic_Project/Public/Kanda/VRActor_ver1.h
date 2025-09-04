@@ -61,6 +61,12 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UArrowComponent> Arrow;
 
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> Sphere_HandTest;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USpringArmComponent> SpringArm;
+
 	// コントローラーのマッピング
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;
