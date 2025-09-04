@@ -58,6 +58,9 @@ private:
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> Camera;
 
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UArrowComponent> Arrow;
+
 	// コントローラーのマッピング
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;

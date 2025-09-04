@@ -20,6 +20,7 @@
 #include "Components/SplineComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include <array>
+#include "HeadMountedDisplayFunctionLibrary.h"
 
 
 // Sets default values
@@ -50,6 +51,12 @@ AVRActor_ver1::AVRActor_ver1() :
 	// Cameraを追加する
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	Camera->SetupAttachment(Sphere);
+
+	// Arrowを追加する
+	Arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
+	Arrow->SetRelativeLocation(FVector(50.f, 0.f, 30.f));
+	Arrow->SetupAttachment(Camera);
+	//Arrow->SetHiddenInGame(false);// この行のコメントアウトを解除するとArrowが見えるようになります※変更後プロジェクトの再起動が必要です
 
 	// Input Mapping Context「IMC_TestPad」を読み込む
 	DefaultMappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/Kanda/Input/IMC_TestPad"));
@@ -129,7 +136,7 @@ void AVRActor_ver1::BeginPlay()
 void AVRActor_ver1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//VRInformation();
+	VRInformation();
 	TimeAccumulator += DeltaTime;
 
 
@@ -330,7 +337,7 @@ void AVRActor_ver1::CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_D
 
 	// 魔法アクターを生成
 	{
-		FRotator look = Sphere->GetComponentRotation();
+		FRotator look = Arrow->GetComponentRotation();
 		FVector pos = GetActorLocation();
 
 		FActorSpawnParameters SpawnParams;
@@ -430,9 +437,12 @@ void AVRActor_ver1::VRInformation()
 	{
 		FQuat OrientationAsQuat;
 		FVector Position(0.f);
+		FRotator ro;
 
 		GEngine->XRSystem->GetCurrentPose(IXRTrackingSystem::HMDDeviceId, OrientationAsQuat, Position);
-		this->Sphere->SetRelativeLocationAndRotation(Position, OrientationAsQuat);
+		//UHeadMountedFunctionSystemLibrary::
+		UHeadMountedDisplayFunctionLibrary::GetOrientationAndPosition(ro, Position);
+		this->Sphere->SetRelativeRotation(ro);
 	}
 }
 
