@@ -35,14 +35,10 @@ AVRActor_ver1::AVRActor_ver1() :
 	Player = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	RootComponent = Player;
 
-	// SphereComponentを追加し、BoxComponentをRootComponentにAttachする
+	// SphereComponentの追加と設定
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 	Sphere->SetupAttachment(Player);
-
-	// Sphereのサイズを設定する
 	Sphere->SetSphereRadius(30.f);
-
-	// Sphereの位置を調整する
 	Sphere->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f), false);
 
 	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AVRActor_ver1::OnSphereBeginOverlap);
@@ -57,6 +53,19 @@ AVRActor_ver1::AVRActor_ver1() :
 	Arrow->SetRelativeLocation(FVector(50.f, 0.f, 30.f));
 	Arrow->SetupAttachment(Camera);
 	//Arrow->SetHiddenInGame(false);// この行のコメントアウトを解除するとArrowが見えるようになります※変更後プロジェクトの再起動が必要です
+
+	// スプリングアームコンポーネントの追加と設定
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
+	SpringArm->TargetArmLength = 200.f;
+	SpringArm->SetupAttachment(RootComponent);
+
+	// 手のテスト用のSphereを追加する
+	Sphere_HandTest = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sphere_handtest"));
+	UStaticMesh* HandMesh = LoadObject<UStaticMesh>(NULL, TEXT("/Engine/BasicShapes/Sphere"));
+	Sphere_HandTest->SetStaticMesh(HandMesh);
+	UMaterial* HandMeshMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Materials/M_Gray"));
+	Sphere_HandTest->SetMaterial(0,HandMeshMaterial);
+	Sphere_HandTest->SetupAttachment(SpringArm);
 
 	// Input Mapping Context「IMC_TestPad」を読み込む
 	DefaultMappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/Kanda/Input/IMC_TestPad"));
@@ -138,7 +147,8 @@ void AVRActor_ver1::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	VRInformation();
 	TimeAccumulator += DeltaTime;
-
+	// デバイスのピッチでSpringArmの角度を変える。SpringArmのヨーを180にしているので、ピッチにマイナスをかける
+	SpringArm->SetRelativeRotation(FRotator(-Final_Device_Rotate.Pitch, 180.f, 0));
 
 	ArriveSplinePoint(StopPointNum);
 	// スプラインの上を移動していく処理
@@ -182,12 +192,16 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		IsArmUp = false;
 		ArmUpDownCnt++;
 		DeviceGoMagic();
+		UMaterial* HandMeshDownMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Materials/M_Red"));
+		Sphere_HandTest->SetMaterial(0, HandMeshDownMaterial);
 	}
 	// デバイスの角度がArmUpAngle以上になったら(腕を上げたら)
 	if (Final_Device_Rotate.Pitch > ArmUpAngle)
 	{
 		IsArmUp = true;
 		MagicChargeTime += DeltaTime;
+		UMaterial* HandMeshUpMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Materials/M_Green"));
+		Sphere_HandTest->SetMaterial(0, HandMeshUpMaterial);
 	}
 	UKismetSystemLibrary::PrintString(this, IsArmUp ? TEXT("true") : TEXT("false"), true, false, FColor::Red, 0.05f, NAME_None);
 	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.05f, NAME_None);
@@ -228,8 +242,6 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 void AVRActor_ver1::EndPlay(const EEndPlayReason::Type EndPlayReason) 
 {
 	device_->DisConnectDevice();
-
-	UE_LOG(LogTemp, Log, TEXT("deviceDisconnected"));
 
 	Super::EndPlay(EndPlayReason);
 }
@@ -440,7 +452,6 @@ void AVRActor_ver1::VRInformation()
 		FRotator ro;
 
 		GEngine->XRSystem->GetCurrentPose(IXRTrackingSystem::HMDDeviceId, OrientationAsQuat, Position);
-		//UHeadMountedFunctionSystemLibrary::
 		UHeadMountedDisplayFunctionLibrary::GetOrientationAndPosition(ro, Position);
 		this->Sphere->SetRelativeRotation(ro);
 	}
