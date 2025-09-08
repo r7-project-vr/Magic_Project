@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Kanda/VRActor_ver1.h"
+#include "Sound/SoundBase.h"
 #include "HitObject.generated.h"
 
 UCLASS()
@@ -24,6 +25,10 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+private:
+	UPROPERTY(EditAnywhere, Category = "Magic")
+	USoundBase* MagicHitSound;
 
 protected:
 

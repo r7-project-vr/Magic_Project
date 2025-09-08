@@ -21,6 +21,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include <array>
 #include "HeadMountedDisplayFunctionLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -94,7 +95,6 @@ AVRActor_ver1::AVRActor_ver1() :
 		MagicFilePath =
 			FPaths::ProjectDir() / TEXT("CSVFile/Export/MagicData_" + FormattedTime + ".csv");
 	}
-
 }
 
 // Called when the game starts or when spawned
@@ -262,17 +262,18 @@ void AVRActor_ver1::ChargeMagic(const FInputActionValue& Value)
 {
 	if (const bool v = Value.Get<bool>()) {
 		MagicChargeTime += GetWorld()->GetDeltaSeconds();
-		if (MagicChargeTime >= 2.0f)
+		if (MagicChargeTime >= 2.0f && !Charged)
 		{
 			UKismetSystemLibrary::PrintString(
 				this,
-				TEXT("2byoutattayo"),
+				TEXT("2byoutattayo!!!!!!!!!!!!!!!"),
 				true,
 				true,
 				FColor::Cyan,
 				0.3f
 			);
 			Charged = true;
+			UGameplayStatics::PlaySound2D(this, ChargeFinishSound);
 		}
 	}
 }
@@ -300,10 +301,12 @@ void AVRActor_ver1::GoMagic()
 		if (MagicChargeTime <= 2.0f)
 		{
 			CreateMagic(f, d);
+			UGameplayStatics::PlaySound2D(this, NormalMagicSound);
 		}
 		else
 		{
 			CreateMagic(ff, d);
+			UGameplayStatics::PlaySound2D(this, ChargeMagicSound);
 		}
 
 		//ƒ`ƒƒ[ƒWŽžŠÔ‚Ì‰Šú‰»
