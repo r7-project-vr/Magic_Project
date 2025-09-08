@@ -13,6 +13,7 @@
 #include "ASerialCom/Public/ASerialLibControllerWin.h"
 #include "ASerialCom/Public/ASerialCore/ASerialPacket.h"
 #include "sato/MagicDeviceCmdSender.h"
+#include "Sound/SoundBase.h"
 #include "VRActor_ver1.generated.h"
 
 class UStaticMeshComponent;
@@ -85,6 +86,16 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccses = "true"))
 	TObjectPtr<UInputAction> MoveStart;
+
+	UPROPERTY(EditAnywhere, Category = Magic)
+	USoundBase* NormalMagicSound;
+
+	UPROPERTY(EditAnywhere, Category = Magic)
+	USoundBase* ChargeMagicSound;
+
+	UPROPERTY(EditAnywhere, Category = Magic)
+	USoundBase* ChargeFinishSound;
+
 
 protected:
 	//スプラインアクター格納用

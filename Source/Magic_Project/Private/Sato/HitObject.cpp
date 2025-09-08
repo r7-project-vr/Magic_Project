@@ -35,6 +35,7 @@ void AHitObject::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 		APawn* Pawn = UGameplayStatics::GetPlayerPawn(this, 0);
 		AVRActor_ver1* VRActorV1 = Cast<AVRActor_ver1>(Pawn);
 		VRActorV1->Magic_Score += 100;
+		UGameplayStatics::PlaySound2D(this, MagicHitSound);
 		Destroy();
 	}
 }
