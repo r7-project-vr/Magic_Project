@@ -87,15 +87,21 @@ private:
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccses = "true"))
 	TObjectPtr<UInputAction> MoveStart;
 
-	UPROPERTY(EditAnywhere, Category = Magic)
+	// 効果音
+	UPROPERTY(EditAnywhere, Category = Sound)
 	USoundBase* NormalMagicSound;
 
-	UPROPERTY(EditAnywhere, Category = Magic)
+	UPROPERTY(EditAnywhere, Category = Sound)
 	USoundBase* ChargeMagicSound;
 
-	UPROPERTY(EditAnywhere, Category = Magic)
+	UPROPERTY(EditAnywhere, Category = Sound)
 	USoundBase* ChargeFinishSound;
 
+	UPROPERTY(EditAnywhere, Category = Sound)
+	USoundBase* HandUpSound;
+
+	UPROPERTY(EditAnywhere, Category = Sound)
+	USoundBase* HandDownSound;
 
 protected:
 	//スプラインアクター格納用
@@ -163,7 +169,7 @@ protected:
 public:
 
 	// スコア
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadOnly)
 	int Magic_Score;
 
 private:
