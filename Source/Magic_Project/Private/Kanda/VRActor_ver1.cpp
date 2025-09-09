@@ -62,9 +62,9 @@ AVRActor_ver1::AVRActor_ver1() :
 
 	// 手のテスト用のSphereを追加する
 	Sphere_HandTest = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sphere_handtest"));
-	UStaticMesh* HandMesh = LoadObject<UStaticMesh>(NULL, TEXT("/Engine/BasicShapes/Sphere"));
+	UStaticMesh* HandMesh = LoadObject<UStaticMesh>(NULL, TEXT("/Game/Satou/Mesh/hand/source/hand"));
 	Sphere_HandTest->SetStaticMesh(HandMesh);
-	UMaterial* HandMeshMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Materials/M_Gray"));
+	UMaterial* HandMeshMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Mesh/hand/source/lambert2"));
 	Sphere_HandTest->SetMaterial(0,HandMeshMaterial);
 	Sphere_HandTest->SetupAttachment(SpringArm);
 
@@ -192,19 +192,29 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		IsArmUp = false;
 		ArmUpDownCnt++;
 		DeviceGoMagic();
-		UMaterial* HandMeshDownMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Materials/M_Red"));
-		Sphere_HandTest->SetMaterial(0, HandMeshDownMaterial);
+		// 魔法陣にいるとき、魔法発射の効果音と被るので魔法陣の上にいるかチェック
+		if (magicData == nullptr)
+		{
+			UGameplayStatics::PlaySound2D(this, HandDownSound);
+		}
+		//手のマテリアルが変わる処理。必要ならコメントアウトを外すこと
+		//UMaterial* HandMeshDownMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Materials/M_Red"));
+		//Sphere_HandTest->SetMaterial(0, HandMeshDownMaterial);
 	}
 	// デバイスの角度がArmUpAngle以上になったら(腕を上げたら)
 	if (Final_Device_Rotate.Pitch > ArmUpAngle)
 	{
+		// 手を挙げた最初の一回だけ効果音を鳴らす（下ろしたらリセット）
+		if (IsArmUp == false)
+		{
+			UGameplayStatics::PlaySound2D(this, HandUpSound);
+		}
 		IsArmUp = true;
 		MagicChargeTime += DeltaTime;
-		UMaterial* HandMeshUpMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Materials/M_Green"));
-		Sphere_HandTest->SetMaterial(0, HandMeshUpMaterial);
+		//手のマテリアルが変わる処理。必要ならコメントアウトを外すこと
+		//UMaterial* HandMeshUpMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Materials/M_Green"));
+		//Sphere_HandTest->SetMaterial(0, HandMeshUpMaterial);
 	}
-	UKismetSystemLibrary::PrintString(this, IsArmUp ? TEXT("true") : TEXT("false"), true, false, FColor::Red, 0.05f, NAME_None);
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.05f, NAME_None);
 
 	// 腕を一定回数以上上げ下げしたら動く
 	if (ArmUpDownCnt >= Need_ArmUpDownCnt)
@@ -212,6 +222,9 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		PlayerMoveStart();
 		ArmUpDownCnt = 0;
 	}
+
+	UKismetSystemLibrary::PrintString(this, IsArmUp ? TEXT("true") : TEXT("false"), true, false, FColor::Red, 0.05f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.05f, NAME_None);
 	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicScore = %d"), Magic_Score), true, false, FColor::Blue, 0.05f, NAME_None);
 	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicChargeTime = %f"), MagicChargeTime), true, false, FColor::Yellow, 0.05f, NAME_None);
 }
