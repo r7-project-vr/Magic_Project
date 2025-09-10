@@ -51,5 +51,10 @@
 				"VisionOS"
 			]
 		}
+	],
+	"TargetPlatforms": [
+		"Android",
+		"Windows",
+		"VisionOS"
 	]
 }
