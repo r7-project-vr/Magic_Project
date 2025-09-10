@@ -22,6 +22,7 @@
 #include <array>
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
 
 
 // Sets default values
@@ -192,6 +193,17 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		IsArmUp = false;
 		ArmUpDownCnt++;
 		DeviceGoMagic();
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			this,
+			HandStar,									// エフェクト
+			Sphere_HandTest->GetComponentLocation(),	// Location
+			FRotator(0, 0, 0),							// Rotation
+			FVector(1.f),								// Scale
+			true,										// bAutoDestroy(基本true)
+			true,										// bAutoActivate
+			ENCPoolMethod::None,
+			true										// bPrecullCheck(カリングチェック)
+		);
 		// 魔法陣にいるとき、魔法発射の効果音と被るので魔法陣の上にいるかチェック
 		if (magicData == nullptr)
 		{
@@ -201,6 +213,7 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		//UMaterial* HandMeshDownMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Materials/M_Red"));
 		//Sphere_HandTest->SetMaterial(0, HandMeshDownMaterial);
 	}
+
 	// デバイスの角度がArmUpAngle以上になったら(腕を上げたら)
 	if (Final_Device_Rotate.Pitch > ArmUpAngle)
 	{
@@ -208,6 +221,17 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		if (IsArmUp == false)
 		{
 			UGameplayStatics::PlaySound2D(this, HandUpSound);
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+				this, 
+				HandStar,									// エフェクト
+				Sphere_HandTest->GetComponentLocation(),	// Location
+				FRotator(0, 0, 0),							// Rotation
+				FVector(1.f),								// Scale
+				true,										// bAutoDestroy(基本true)
+				true,										// bAutoActivate
+				ENCPoolMethod::None,						
+				true										// bPrecullCheck(カリングチェック)
+			);
 		}
 		IsArmUp = true;
 		MagicChargeTime += DeltaTime;
@@ -277,14 +301,7 @@ void AVRActor_ver1::ChargeMagic(const FInputActionValue& Value)
 		MagicChargeTime += GetWorld()->GetDeltaSeconds();
 		if (MagicChargeTime >= 2.0f && !Charged)
 		{
-			UKismetSystemLibrary::PrintString(
-				this,
-				TEXT("2byoutattayo!!!!!!!!!!!!!!!"),
-				true,
-				true,
-				FColor::Cyan,
-				0.3f
-			);
+			UKismetSystemLibrary::PrintString(this, TEXT("2byoutattayo!!!!!!!!!!!!!!!"), true, true, FColor::Cyan, 0.3f);
 			Charged = true;
 			UGameplayStatics::PlaySound2D(this, ChargeFinishSound);
 		}
