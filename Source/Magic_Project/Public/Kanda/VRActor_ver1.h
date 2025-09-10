@@ -14,6 +14,7 @@
 #include "ASerialCom/Public/ASerialCore/ASerialPacket.h"
 #include "sato/MagicDeviceCmdSender.h"
 #include "Sound/SoundBase.h"
+#include "NiagaraSystem.h"
 #include "VRActor_ver1.generated.h"
 
 class UStaticMeshComponent;
@@ -102,6 +103,10 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Sound)
 	USoundBase* HandDownSound;
+
+	// エフェクト
+	UPROPERTY(EditAnywhere, Category = Niagara)
+	UNiagaraSystem* HandStar;
 
 protected:
 	//スプラインアクター格納用
