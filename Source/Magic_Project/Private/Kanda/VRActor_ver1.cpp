@@ -173,18 +173,18 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		int Result = device_->ReadData(&ReceiveData);
 
 		// ＝＝＝＝＝＝デバッグ情報＝＝＝＝＝＝
-		uint16_t a = device_->GetLastErrorCode();
-		UE_LOG(LogTemp, Log, TEXT("ErrorCode     = %X"), a);
-		UE_LOG(LogTemp, Log, TEXT("deviceCONNECT = %d"), Result);
-		UE_LOG(LogTemp, Log, TEXT("deviceRESULT  = %x"), ReceiveData.data);
+		//uint16_t a = device_->GetLastErrorCode();
+		//UE_LOG(LogTemp, Log, TEXT("ErrorCode     = %X"), a);
+		//UE_LOG(LogTemp, Log, TEXT("deviceCONNECT = %d"), Result);
+		//UE_LOG(LogTemp, Log, TEXT("deviceRESULT  = %x"), ReceiveData.data);
 		// ＝＝＝＝＝＝デバッグ情報＝＝＝＝＝＝
 
 		// デバイスからもらった情報をFRotatorに変換する。1000倍されているので割る1000した値を最終的な値にする。
 		FRotator Device_Rotate = TransformEulerAngles(ReceiveData.data, 4);
 		Final_Device_Rotate = FRotator(Device_Rotate.Pitch / 1000, Device_Rotate.Yaw / 1000, Device_Rotate.Roll / 1000);
-		UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Pitch = %.0f"), Final_Device_Rotate.Pitch);
-		UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Yaw = %.0f"),   Final_Device_Rotate.Yaw);
-		UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Roll = %.0f"),  Final_Device_Rotate.Roll);
+		//UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Pitch = %.0f"), Final_Device_Rotate.Pitch);
+		//UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Yaw = %.0f"),   Final_Device_Rotate.Yaw);
+		//UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Roll = %.0f"),  Final_Device_Rotate.Roll);
 	}
 
 	// デバイスの角度が0度以下になったら       (腕を下げたら)
@@ -247,10 +247,10 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		ArmUpDownCnt = 0;
 	}
 
-	UKismetSystemLibrary::PrintString(this, IsArmUp ? TEXT("true") : TEXT("false"), true, false, FColor::Red, 0.05f, NAME_None);
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.05f, NAME_None);
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicScore = %d"), Magic_Score), true, false, FColor::Blue, 0.05f, NAME_None);
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicChargeTime = %f"), MagicChargeTime), true, false, FColor::Yellow, 0.05f, NAME_None);
+	//UKismetSystemLibrary::PrintString(this, IsArmUp ? TEXT("true") : TEXT("false"), true, false, FColor::Red, 0.05f, NAME_None);
+	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.05f, NAME_None);
+	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicScore = %d"), Magic_Score), true, false, FColor::Blue, 0.05f, NAME_None);
+	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicChargeTime = %f"), MagicChargeTime), true, false, FColor::Yellow, 0.05f, NAME_None);
 }
 
 // Called to bind functionality to input
