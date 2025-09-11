@@ -27,7 +27,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float MoveSpeed = 1000.0f; // cm/s
+	float MoveSpeed = 100.0f; // cm/s
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	/*FVector MoveDirection = FVector(1.0, 0.0, 0.0);*/
@@ -47,7 +47,7 @@ public:
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
-	UNiagaraSystem* CollisionEffect = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/KTP_Effect/Particles/Fly/Expolison_03_08.Expolison_03_08"));
+	UNiagaraSystem* CollisionEffect;
 
 	//スフィアコリジョン
 	UPROPERTY(VisibleAnywhere)
