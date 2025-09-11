@@ -50,6 +50,10 @@
 				"Android",
 				"VisionOS"
 			]
+		},
+		{
+			"Name": "GPULightmass",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
