@@ -162,14 +162,14 @@ void AOnishi_MagicLauncher::DebugLogLocation(AActor* a_, FColor c)
 {
 	if (a_ == nullptr) { return; }
 
-	UKismetSystemLibrary::PrintString(
+	/*UKismetSystemLibrary::PrintString(
 		this,
 		a_->GetActorLocation().ToString(),
 		true,
 		true,
 		c,
 		2.0f
-	);
+	);*/
 }
 
 void AOnishi_MagicLauncher::OnHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -180,14 +180,14 @@ void AOnishi_MagicLauncher::OnHit(UPrimitiveComponent* OverlappedComponent, AAct
 		return;
 	}
 	else if (OtherActor->IsA(AOnishi_MagicCircleParent::StaticClass())) {
-		UKismetSystemLibrary::PrintString(
-			this,
-			TEXT("MagicCircleHit"),
-			true,
-			true,
-			FColor::Blue,
-			2.0f
-		);
+		//UKismetSystemLibrary::PrintString(
+		//	this,
+		//	TEXT("MagicCircleHit"),
+		//	true,
+		//	true,
+		//	FColor::Blue,
+		//	2.0f
+		//);
 		return;
 	}
 	else {
@@ -201,13 +201,13 @@ void AOnishi_MagicLauncher::OnHit(UPrimitiveComponent* OverlappedComponent, AAct
 					MoveDirection.Rotation()
 				);
 			}
-			UKismetSystemLibrary::PrintString(
-				this,
-				TEXT("HIT"),
-				true,
-				true,
-				FColor::Red,
-				2.0f
-			);
+			//UKismetSystemLibrary::PrintString(
+			//	this,
+			//	TEXT("HIT"),
+			//	true,
+			//	true,
+			//	FColor::Red,
+			//	2.0f
+			//);
 	}
 }
