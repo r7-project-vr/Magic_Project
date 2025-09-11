@@ -139,7 +139,7 @@ void AVRActor_ver1::BeginPlay()
 	device_->Initialize(0x02, 0x01);
 	device_->SetInterfacePt(new WindowsSerial());
 	device_->AutoConnectDevice();
-	deviceCmd_->SendCmd_Cali(device_);
+	deviceCmd_->SendCmd_Cali(device_);    
 }
 
 // Called every frame
@@ -312,14 +312,6 @@ void AVRActor_ver1::ChargeMagic(const FInputActionValue& Value)
 void AVRActor_ver1::GoMagic()
 {
 		if (magicData == nullptr) { return; }
-		UKismetSystemLibrary::PrintString(
-			this,
-			TEXT("HELLO"),
-			true,
-			true,
-			FColor::Red,
-			2.0f
-		);
 		const int cnt = magicData->GetMagicCnt();
 
 		UNiagaraSystem* f = magicData->GetFlyNiagaraSystem(0);

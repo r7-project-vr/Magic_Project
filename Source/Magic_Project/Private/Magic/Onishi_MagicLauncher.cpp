@@ -28,9 +28,13 @@ AOnishi_MagicLauncher::AOnishi_MagicLauncher()
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 	SphereComponent->SetCollisionProfileName("OverlapAll");
 	SphereComponent->SetupAttachment(RootComponent);
-	SphereComponent->SetSphereRadius(2.0f);
+	SphereComponent->SetSphereRadius(50.0f);
 
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AOnishi_MagicLauncher::OnHit);
+
+
+	SphereComponent->SetHiddenInGame(false);
+	SphereComponent->SetVisibility(true);
 }
 
 // Called when the game starts or when spawned
