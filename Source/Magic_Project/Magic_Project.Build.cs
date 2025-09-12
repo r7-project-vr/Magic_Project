@@ -8,7 +8,7 @@ public class Magic_Project : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "Niagara", "HeadMountedDisplay", "ASerialCom", "XRBase" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "Niagara", "HeadMountedDisplay", "ASerialCom", "XRBase", "VRM4U" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
