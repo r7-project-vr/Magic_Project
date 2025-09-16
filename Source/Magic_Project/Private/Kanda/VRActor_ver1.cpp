@@ -604,6 +604,7 @@ void AVRActor_ver1::SpawnMagicChargeEffect()
 		//);
 		ChargingEffect->SetHiddenInGame(false);
 		alreadyChargingMagicEffect = true;
+		UKismetSystemLibrary::PrintString(this, TEXT("1secondCHAEGE"), true, false, FColor::Black, 2.0f, NAME_None);
 	}
 	if (MagicChargeTime > 2.0f && !alreadyChargeFinishMagicEffect)
 	{
