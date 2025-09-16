@@ -38,7 +38,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -68,6 +68,12 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USpringArmComponent> SpringArm;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UNiagaraComponent> ChargingEffect;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UNiagaraComponent> ChargeFinishEffect;
 
 	// コントローラーのマッピング
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -108,6 +114,12 @@ private:
 	UPROPERTY(EditAnywhere, Category = Niagara)
 	UNiagaraSystem* HandStar;
 
+	UPROPERTY(EditAnywhere, Category = Niagara)
+	UNiagaraSystem* ChargingMagicEffect;
+	
+	UPROPERTY(EditAnywhere, Category = Niagara)
+	UNiagaraSystem* ChargeFinishMagicEffect;
+
 protected:
 	//スプラインアクター格納用
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SplineActorHere")
@@ -124,6 +136,9 @@ private:
 	UPROPERTY()
 	AMagicDeviceCmdSender* deviceCmd_;
 
+	UFUNCTION()
+	void DeviceRotateToAverage();
+
 	// デバイスの情報を入れるとオイラー角を取得できる関数
 	// TransformDataToInt32はTransformEulerAnglesのために作られた関数です。
 	// 使う際はTransformEulerAnglesにデバイスの情報を入れればそのまま使えます。
@@ -134,7 +149,7 @@ private:
 	// 通信処理速度制限用の変数
 	// Interval = 1.0f / xx.xf;で何fpsか制限できる
 	float TimeAccumulator = 0.0f;
-	const float Interval = 1.0f / 240.0f; 
+	const float Interval = 1.0f / 240.0f;
 
 public:
 	UFUNCTION()
@@ -153,12 +168,13 @@ private:
 	void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 protected:
-	
+
 	//playerコントロール
 	void ControlPlayer(const FInputActionValue& Value);
 
 	// 魔法のチャージ
-	void ChargeMagic(const FInputActionValue& Value);
+	void ChargeMagic();
+	void MouseChargeMagic(const FInputActionValue& Value);
 
 	//魔法コントロール
 	void GoMagic();
@@ -205,13 +221,24 @@ private:
 	// 今腕を上げているか下げているか。trueで上げている。
 	bool IsArmUp = false;
 
+	// 魔法のチャージ中のエフェクト用の変数
+	bool alreadyChargingMagicEffect = false;
+	bool alreadyChargeFinishMagicEffect = false;
+
+	//
+	int count;
+	float Average;
+
 	// デバイスからもらった、今どれだけの角度を向いているかを表す変数
 	FRotator Final_Device_Rotate;
+
+	// Final_Device_Rotateの前身である変数。平均をとるため
+	FRotator AverageRotate;
 
 	// スプライン上の点で止まるために番号を指定する変数（現在は自動で指定）
 	int StopPointNum = 1;
 
-	void DebugLogLocation(AActor* a_ , FColor c);
+	void DebugLogLocation(AActor* a_, FColor c);
 
 	// 魔法のデータ管理用
 	TSharedPtr<MagicDataTable> magicData;
@@ -223,6 +250,9 @@ private:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	float MagicChargeTime = 0.0f;
 
+	// 魔法をチャージしてるときにエフェクトを出す関数
+	void SpawnMagicChargeEffect();
+
 	// VR機器の情報
 	void VRInformation();
 
@@ -233,7 +263,7 @@ private:
 	void DeviceGoMagic();
 
 	void ResetCharged();
-	
+
 	//----------------------------------------
 	// csv用
 	//----------------------------------------
@@ -244,7 +274,7 @@ private:
 
 public:
 	// 魔法実行フラグ
-	
+
 	/// <summary>
 	/// とりあえず
 	/// </summary>

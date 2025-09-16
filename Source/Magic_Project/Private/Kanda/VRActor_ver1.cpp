@@ -59,15 +59,23 @@ AVRActor_ver1::AVRActor_ver1() :
 	// スプリングアームコンポーネントの追加と設定
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
 	SpringArm->TargetArmLength = 200.f;
-	SpringArm->SetupAttachment(RootComponent);
+	SpringArm->SetupAttachment(Camera);
 
 	// 手のテスト用のSphereを追加する
 	Sphere_HandTest = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sphere_handtest"));
 	UStaticMesh* HandMesh = LoadObject<UStaticMesh>(NULL, TEXT("/Game/Satou/Mesh/hand/source/hand"));
 	Sphere_HandTest->SetStaticMesh(HandMesh);
 	UMaterial* HandMeshMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Mesh/hand/source/lambert2"));
-	Sphere_HandTest->SetMaterial(0,HandMeshMaterial);
+	Sphere_HandTest->SetMaterial(0, HandMeshMaterial);
 	Sphere_HandTest->SetupAttachment(SpringArm);
+
+	// チャージ中のナイアガラコンポーネントを追加
+	ChargingEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ChargingMagicEffectComponent"));
+	ChargeFinishEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ChargeFinishEffectComponent"));
+	ChargingEffect->SetupAttachment(Camera);
+	ChargeFinishEffect->SetupAttachment(Camera);
+	ChargingEffect->SetHiddenInGame(true);
+	ChargeFinishEffect->SetHiddenInGame(true);
 
 	// Input Mapping Context「IMC_TestPad」を読み込む
 	DefaultMappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/Kanda/Input/IMC_TestPad"));
@@ -139,7 +147,7 @@ void AVRActor_ver1::BeginPlay()
 	device_->Initialize(0x02, 0x01);
 	device_->SetInterfacePt(new WindowsSerial());
 	device_->AutoConnectDevice();
-	deviceCmd_->SendCmd_Cali(device_);    
+	deviceCmd_->SendCmd_Cali(device_);
 }
 
 // Called every frame
@@ -147,6 +155,7 @@ void AVRActor_ver1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	VRInformation();
+	SpawnMagicChargeEffect();
 	TimeAccumulator += DeltaTime;
 	// デバイスのピッチでSpringArmの角度を変える。SpringArmのヨーを180にしているので、ピッチにマイナスをかける
 	SpringArm->SetRelativeRotation(FRotator(-Final_Device_Rotate.Pitch, 180.f, 0));
@@ -173,18 +182,19 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		int Result = device_->ReadData(&ReceiveData);
 
 		// ＝＝＝＝＝＝デバッグ情報＝＝＝＝＝＝
-		//uint16_t a = device_->GetLastErrorCode();
-		//UE_LOG(LogTemp, Log, TEXT("ErrorCode     = %X"), a);
-		//UE_LOG(LogTemp, Log, TEXT("deviceCONNECT = %d"), Result);
-		//UE_LOG(LogTemp, Log, TEXT("deviceRESULT  = %x"), ReceiveData.data);
+		uint16_t a = device_->GetLastErrorCode();
+		UE_LOG(LogTemp, Log, TEXT("ErrorCode     = %X"), a);
+		UE_LOG(LogTemp, Log, TEXT("deviceCONNECT = %d"), Result);
+		UE_LOG(LogTemp, Log, TEXT("deviceRESULT  = %x"), ReceiveData.data);
 		// ＝＝＝＝＝＝デバッグ情報＝＝＝＝＝＝
 
 		// デバイスからもらった情報をFRotatorに変換する。1000倍されているので割る1000した値を最終的な値にする。
 		FRotator Device_Rotate = TransformEulerAngles(ReceiveData.data, 4);
-		Final_Device_Rotate = FRotator(Device_Rotate.Pitch / 1000, Device_Rotate.Yaw / 1000, Device_Rotate.Roll / 1000);
-		//UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Pitch = %.0f"), Final_Device_Rotate.Pitch);
-		//UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Yaw = %.0f"),   Final_Device_Rotate.Yaw);
-		//UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Roll = %.0f"),  Final_Device_Rotate.Roll);
+		AverageRotate = FRotator(Device_Rotate.Pitch / 1000, Device_Rotate.Yaw / 1000, Device_Rotate.Roll / 1000);
+		Final_Device_Rotate = AverageRotate;
+		UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Pitch = %.0f"), Final_Device_Rotate.Pitch);
+		UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Yaw = %.0f"),   Final_Device_Rotate.Yaw);
+		UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Roll = %.0f"),  Final_Device_Rotate.Roll);
 	}
 
 	// デバイスの角度が0度以下になったら       (腕を下げたら)
@@ -222,19 +232,23 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		{
 			UGameplayStatics::PlaySound2D(this, HandUpSound);
 			UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-				this, 
+				this,
 				HandStar,									// エフェクト
 				Sphere_HandTest->GetComponentLocation(),	// Location
 				FRotator(0, 0, 0),							// Rotation
 				FVector(1.f),								// Scale
 				true,										// bAutoDestroy(基本true)
 				true,										// bAutoActivate
-				ENCPoolMethod::None,						
+				ENCPoolMethod::None,
 				true										// bPrecullCheck(カリングチェック)
 			);
 		}
 		IsArmUp = true;
-		MagicChargeTime += DeltaTime;
+		// 魔法陣にいる場合はチャージタイムも増える
+		if (IsInMagicZone)
+		{
+			ChargeMagic();
+		}
 		//手のマテリアルが変わる処理。必要ならコメントアウトを外すこと
 		//UMaterial* HandMeshUpMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Materials/M_Green"));
 		//Sphere_HandTest->SetMaterial(0, HandMeshUpMaterial);
@@ -247,10 +261,11 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		ArmUpDownCnt = 0;
 	}
 
+	UKismetSystemLibrary::PrintString(this, IsInMagicZone ? TEXT("IsInMagicZone = true") : TEXT("IsInMagicZone = false"), true, false, FColor::Red, 0.05f, NAME_None);
 	//UKismetSystemLibrary::PrintString(this, IsArmUp ? TEXT("true") : TEXT("false"), true, false, FColor::Red, 0.05f, NAME_None);
 	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.05f, NAME_None);
 	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicScore = %d"), Magic_Score), true, false, FColor::Blue, 0.05f, NAME_None);
-	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicChargeTime = %f"), MagicChargeTime), true, false, FColor::Yellow, 0.05f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicChargeTime = %f"), MagicChargeTime), true, false, FColor::Yellow, 0.05f, NAME_None);
 }
 
 // Called to bind functionality to input
@@ -265,7 +280,7 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(ControlMove, ETriggerEvent::Triggered, this, &AVRActor_ver1::ControlPlayer);
 
 		// ControlBallとIA_ControlのTriggeredをBindする
-		EnhancedInputComponent->BindAction(MagicCharge, ETriggerEvent::Triggered, this, &AVRActor_ver1::ChargeMagic);
+		EnhancedInputComponent->BindAction(MagicCharge, ETriggerEvent::Triggered, this, &AVRActor_ver1::MouseChargeMagic);
 		EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Completed, this, &AVRActor_ver1::GoMagic);
 
 		// LookとIA_LookのTriggeredをBindする
@@ -276,7 +291,7 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	}
 }
 
-void AVRActor_ver1::EndPlay(const EEndPlayReason::Type EndPlayReason) 
+void AVRActor_ver1::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	device_->DisConnectDevice();
 
@@ -295,13 +310,24 @@ void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
 	SetActorLocation(NewLocation);
 }
 
-void AVRActor_ver1::ChargeMagic(const FInputActionValue& Value)
+void AVRActor_ver1::ChargeMagic()
 {
-	if (const bool v = Value.Get<bool>()) {
+	MagicChargeTime += GetWorld()->GetDeltaSeconds();
+	if (MagicChargeTime >= 2.0f && !Charged)
+	{
+		UKismetSystemLibrary::PrintString(this, TEXT("2byoutattayo!!!!!!!!!!!!!!!"), true, false, FColor::Cyan, 0.3f);
+		Charged = true;
+		UGameplayStatics::PlaySound2D(this, ChargeFinishSound);
+	}
+}
+
+void AVRActor_ver1::MouseChargeMagic(const FInputActionValue& Value)
+{
+	if (const bool v = Value.Get<bool>() && IsInMagicZone) {
 		MagicChargeTime += GetWorld()->GetDeltaSeconds();
 		if (MagicChargeTime >= 2.0f && !Charged)
 		{
-			UKismetSystemLibrary::PrintString(this, TEXT("2byoutattayo!!!!!!!!!!!!!!!"), true, true, FColor::Cyan, 0.3f);
+			UKismetSystemLibrary::PrintString(this, TEXT("2byoutattayo!!!!!!!!!!!!!!!"), true, false, FColor::Cyan, 0.3f);
 			Charged = true;
 			UGameplayStatics::PlaySound2D(this, ChargeFinishSound);
 		}
@@ -311,48 +337,49 @@ void AVRActor_ver1::ChargeMagic(const FInputActionValue& Value)
 // 魔法を撃つ_コントローラーのみ
 void AVRActor_ver1::GoMagic()
 {
-		if (magicData == nullptr) { return; }
-		const int cnt = magicData->GetMagicCnt();
+	if (magicData == nullptr) { return; }
+	const int cnt = magicData->GetMagicCnt();
 
-		UNiagaraSystem* f = magicData->GetFlyNiagaraSystem(0);
-		UNiagaraSystem* d = magicData->GetDeathNiagaraSystem(0);
-		UNiagaraSystem* ff = magicData->GetFlyNiagaraSystem(1);
+	UNiagaraSystem* f = magicData->GetFlyNiagaraSystem(0);
+	UNiagaraSystem* d = magicData->GetDeathNiagaraSystem(0);
+	UNiagaraSystem* ff = magicData->GetFlyNiagaraSystem(1);
 
-		// 魔法のチャージ時間を計って何の魔法を出すか決める
-		// else外したら多分破棄されたポインタ「d」を使うことになるのでクラッシュする
-		if (MagicChargeTime <= 2.0f)
-		{
-			CreateMagic(f, d);
-			UGameplayStatics::PlaySound2D(this, NormalMagicSound);
-		}
-		else
-		{
-			CreateMagic(ff, d);
-			UGameplayStatics::PlaySound2D(this, ChargeMagicSound);
-		}
+	// 魔法のチャージ時間を計って何の魔法を出すか決める
+	// else外したら多分破棄されたポインタ「d」を使うことになるのでクラッシュする
+	if (MagicChargeTime <= 2.0f)
+	{
+		CreateMagic(f, d);
+		UGameplayStatics::PlaySound2D(this, NormalMagicSound);
+	}
+	else
+	{
+		CreateMagic(ff, d);
+		UGameplayStatics::PlaySound2D(this, ChargeMagicSound);
+	}
 
-		//チャージ時間の初期化
-		MagicChargeTime = 0;
+	//チャージ初期化
+	MagicChargeTime = 0;
+	FTimerHandle ResetHandle;
+	GetWorldTimerManager().SetTimer(
+		ResetHandle,
+		this,
+		&AVRActor_ver1::ResetCharged,
+		2.0f,
+		false
+	);
+	alreadyChargingMagicEffect = false;
+	alreadyChargeFinishMagicEffect = false;
+	ChargingEffect->SetHiddenInGame(true);
+	ChargeFinishEffect->SetHiddenInGame(true);
 
-		//チャージ初期化
-		MagicChargeTime = 0;
-		FTimerHandle ResetHandle;
-		GetWorldTimerManager().SetTimer(
-			ResetHandle,
-			this,
-			&AVRActor_ver1::ResetCharged,
-			2.0f,
-			false
-		);
+	if (magicData->DecMagicCnt()) {
+		UKismetSystemLibrary::PrintString(GEngine->GetWorld(), "magicCnt 0");
+		magicData = nullptr;
 
-		if (magicData->DecMagicCnt()) {
-			UKismetSystemLibrary::PrintString(GEngine->GetWorld(), "magicCnt 0");
-			magicData = nullptr;
-
-			// 魔法陣を破壊
-			circle->Ef_MagicCircle = nullptr;
-			circle->Destroy();
-		}
+		// 魔法陣を破壊
+		circle->Ef_MagicCircle = nullptr;
+		circle->Destroy();
+	}
 }
 
 //チャージリセット
@@ -416,15 +443,18 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 void AVRActor_ver1::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// pass
-	IsInMagicZone = true;
+	if (AOnishi_MagicCircleParent* Pawn = Cast<AOnishi_MagicCircleParent>(OtherActor)) {
+		IsInMagicZone = true;
+	}
+
 }
 
 // 接触判定の処理、コライダー同士が離れたときに呼び出される
 void AVRActor_ver1::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) {
 
-	IsInMagicZone = false;
 	if (AOnishi_MagicCircleParent* Pawn = Cast<AOnishi_MagicCircleParent>(OtherActor)) {
-
+		IsInMagicZone = false;
+		MagicChargeTime = 0;
 		magicData = nullptr;
 		circle = nullptr;
 	}
@@ -554,5 +584,53 @@ FRotator AVRActor_ver1::TransformEulerAngles(const uint8_t* Data, int Size)
 void AVRActor_ver1::DeviceGoMagic()
 {
 	GoMagic();
-	UKismetSystemLibrary::PrintString(this, TEXT("isInMagicZone = true"), true, false, FColor::Yellow, 2.f, NAME_None);
+}
+
+void AVRActor_ver1::SpawnMagicChargeEffect()
+{
+	FVector a = Camera->GetComponentLocation() + FVector(100,0,0);
+	if (MagicChargeTime > 1.0f && !alreadyChargingMagicEffect)
+	{
+		//UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		//	this,
+		//	ChargingMagicEffect,									// エフェクト
+		//	Camera->GetComponentLocation() + FVector(100, 0, 0),	// Location
+		//	Camera->GetComponentRotation(),							// Rotation
+		//	FVector(1.f),											// Scale
+		//	true,													// bAutoDestroy(基本true)
+		//	true,													// bAutoActivate
+		//	ENCPoolMethod::None,
+		//	true													// bPrecullCheck(カリングチェック)
+		//);
+		ChargingEffect->SetHiddenInGame(false);
+		alreadyChargingMagicEffect = true;
+	}
+	if (MagicChargeTime > 2.0f && !alreadyChargeFinishMagicEffect)
+	{
+		//UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		//	this,
+		//	ChargeFinishMagicEffect,								// エフェクト
+		//	Camera->GetComponentLocation() + FVector(100, 0, 0),	// Location
+		//	Camera->GetComponentRotation(),							// Rotation
+		//	FVector(1.f),											// Scale
+		//	true,													// bAutoDestroy(基本true)
+		//	true,													// bAutoActivate
+		//	ENCPoolMethod::None,
+		//	true													// bPrecullCheck(カリングチェック)
+		//);
+		ChargeFinishEffect->SetHiddenInGame(false);
+		alreadyChargeFinishMagicEffect = true;
+	}
+}
+
+void AVRActor_ver1::DeviceRotateToAverage()
+{
+	Average += AverageRotate.Pitch;
+	count++;
+
+	if (count == 5) {
+		AverageRotate.Pitch = Average / 5;
+		Average = 0;
+		count = 0;
+	}
 }
