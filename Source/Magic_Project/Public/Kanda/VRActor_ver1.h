@@ -190,10 +190,11 @@ protected:
 public:
 
 	// スコア
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadOnly)
 	int Magic_Score;
 
 private:
+
 	// 移動倍率
 	float MoveSpeedPoint = 30.0f;
 
@@ -208,14 +209,14 @@ private:
 	bool isStop = true;
 
 
-	// [難易度管理]腕をどれだけ上げる必要があるか
-	float ArmUpAngle;
+	// 腕をどれだけ上げる必要があるか
+	float ArmUpAngle = 30.0f;
 
 	// 腕を上げ下げした回数
 	int ArmUpDownCnt = 0;
 
-	// [難易度管理]移動に必要な腕を上げ下げする回数
-	int Need_ArmUpDownCnt;
+	// 移動に必要な腕を上げ下げする回数
+	int Need_ArmUpDownCnt = 3;
 
 	// 今腕を上げているか下げているか。trueで上げている。
 	bool IsArmUp = false;
@@ -246,7 +247,7 @@ private:
 	AOnishi_MagicCircleParent* circle;
 
 	// 魔法をためた時間を計測
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	float MagicChargeTime = 0.0f;
 
 	// 魔法をチャージしてるときにエフェクトを出す関数
