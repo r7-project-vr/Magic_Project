@@ -23,6 +23,8 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
+#include "sato/MyGameStateBase.h"
+#include "sato/MagicGameInstance.h"
 
 
 // Sets default values
@@ -104,6 +106,7 @@ AVRActor_ver1::AVRActor_ver1() :
 		MagicFilePath =
 			FPaths::ProjectDir() / TEXT("CSVFile/Export/MagicData_" + FormattedTime + ".csv");
 	}
+
 }
 
 // Called when the game starts or when spawned
@@ -137,6 +140,25 @@ void AVRActor_ver1::BeginPlay()
 		SetActorLocation(newLocation);
 	}
 	IsInMagicZone = false;
+
+	// 難易度によるパラメーターの調整。現在は０でノーマル、１でハード
+	AMyGameStateBase* MyGameState = Cast<AMyGameStateBase>(GetWorld()->GetGameState<AMyGameStateBase>());
+	UMagicGameInstance* MagicGame = Cast<UMagicGameInstance>(GetWorld()->GetGameInstance<UMagicGameInstance>());
+	switch (MagicGame->Difficulty)
+	{
+	case 0:
+		ArmUpAngle = 30.0f;
+		Need_ArmUpDownCnt = 3;
+		break;
+	case 1:
+		ArmUpAngle = 45.0f;
+		Need_ArmUpDownCnt = 5;
+		break;
+	default:
+		break;
+	}
+
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Gamemode = %d"), MagicGame->Difficulty), true, false, FColor::Green, 30.0f, NAME_None);
 
 	// インスタンス化
 	deviceInfo_ = NewObject<UASerialPacket>(this);
