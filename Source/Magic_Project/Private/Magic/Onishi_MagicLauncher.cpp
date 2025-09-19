@@ -33,8 +33,6 @@ AOnishi_MagicLauncher::AOnishi_MagicLauncher()
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AOnishi_MagicLauncher::OnHit);
 
 
-	SphereComponent->SetHiddenInGame(false);
-	SphereComponent->SetVisibility(true);
 }
 
 // Called when the game starts or when spawned
