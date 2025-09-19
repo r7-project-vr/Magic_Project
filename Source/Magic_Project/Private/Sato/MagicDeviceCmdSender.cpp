@@ -16,16 +16,15 @@ bool FMagicDeviceCmdSender::Init()
 	// インスタンス化
 	deviceInfo_ = NewObject<UASerialPacket>();
 	device_ = NewObject<UASerialLibControllerWin>();
-	deviceCmd_ = NewObject<FMagicDeviceCmdSender>();
+	//deviceCmd_ = new FMagicDeviceCmdSender;
+	//TSharedPtr<FMagicDeviceCmdSender> deviceCmd_ = MakeShared<FMagicDeviceCmdSender>();
+	//deviceCmd_ = MakeShared<FMagicDeviceCmdSender>();
 
 	// デバイス接続
 	device_->Initialize(this->DeviceID_, this->DeviceVersion_);
 	device_->SetInterfacePt(new WindowsSerial());
 	device_->AutoConnectDevice();
-	deviceCmd_->SendCmd_Cali(device_);
-
-	//キャリブレーション
-	SendCmd_Cali(device_);
+	this->SendCmd_Cali(device_);
 
 	return true;
 }
@@ -34,9 +33,6 @@ uint32 FMagicDeviceCmdSender::Run()
 {
 	while (StopTaskCounter.GetValue() == 0)
 	{
-
-		
-
 		this->SendCmd_Euler(device_);
 		ASerialDataStruct::ASerialData ReceiveData;
 		int Result = device_->ReadData(&ReceiveData);
@@ -53,7 +49,7 @@ uint32 FMagicDeviceCmdSender::Run()
 		//UE_LOG(LogTemp, Log, TEXT("deviceRESULT  = %x"), ReceiveData.data);
 		// ＝＝＝＝＝＝デバッグ情報＝＝＝＝＝＝
 
-		FPlatformProcess::Sleep(0.1f);
+		FPlatformProcess::Sleep(0.01f);
 	}
 
 	return 0;
@@ -66,26 +62,27 @@ void FMagicDeviceCmdSender::Stop()
 
 void FMagicDeviceCmdSender::Exit()
 {
-
+	device_->DisConnectDevice();
+	//delete deviceCmd_;
 }
 
 //========================================================================
 //================================デバイス================================
 //========================================================================
 
-void FMagicDeviceCmdSender::SendCmd_Cali(UASerialLibControllerWin* device_)
+void FMagicDeviceCmdSender::SendCmd_Cali(UASerialLibControllerWin* magicdevice_)
 {
-	if (device_)
+	if (magicdevice_)
 	{
-		device_->WriteData(Calibration_);
+		magicdevice_->WriteData(Calibration_);
 	}
 }
 
-int32 FMagicDeviceCmdSender::SendCmd_Euler(UASerialLibControllerWin* device_)
+int32 FMagicDeviceCmdSender::SendCmd_Euler(UASerialLibControllerWin* magicdevice_)
 {
-	if (device_)
+	if (magicdevice_)
 	{
-		int32 Result = device_->WriteData(EulerCmd_);
+		int32 Result = magicdevice_->WriteData(EulerCmd_);
 		return Result;
 	}
 	else
@@ -94,11 +91,11 @@ int32 FMagicDeviceCmdSender::SendCmd_Euler(UASerialLibControllerWin* device_)
 	}
 }
 
-int32 FMagicDeviceCmdSender::SendCmd_Quater(UASerialLibControllerWin* device_)
+int32 FMagicDeviceCmdSender::SendCmd_Quater(UASerialLibControllerWin* magicdevice_)
 {
-	if (device_)
+	if (magicdevice_)
 	{
-		int32 Result = device_->WriteData(QuaternionCmd_);
+		int32 Result = magicdevice_->WriteData(QuaternionCmd_);
 		return Result;
 	}
 	else

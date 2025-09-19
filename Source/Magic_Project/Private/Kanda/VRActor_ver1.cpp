@@ -155,18 +155,10 @@ void AVRActor_ver1::BeginPlay()
 	default:
 		break;
 	}
-	
-	//// インスタンス化
-	//deviceInfo_ = NewObject<UASerialPacket>(this);
-	//device_ = NewObject<UASerialLibControllerWin>(this);
-	//deviceCmd_ = NewObject<AMagicDeviceCmdSender>(this);
-	DeviceManager = NewObject<UDeviceThreadManager>(this);
 
-	//// デバイス接続。引数は左からデバイスのIDとデバイスのバージョン
-	//device_->Initialize(0x02, 0x01);
-	//device_->SetInterfacePt(new WindowsSerial());
-	//device_->AutoConnectDevice();
-	//deviceCmd_->SendCmd_Cali(device_);
+	// インスタンス化
+	//DeviceManager = NewObject<UDeviceThreadManager>(this);
+	DeviceManager_ = Cast<UMagicGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->DeviceManager;
 }
 
 // Called every frame
@@ -196,31 +188,7 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		SetActorLocation(newLocation);
 	}
 
-	Final_Device_Rotate = DeviceManager->GetLatestData();
-	//// デバイスとの通信
-	//// if文で通信回数を制限。ヘッダーファイルのIntervalの値でfpsを調整できます。
-	//	TimeAccumulator -= Interval;
-
-	//	// デバイスにオイラー角取得のコマンドを送る。そのデータをReadDataする
-	//	deviceCmd_->SendCmd_Euler(device_);
-	//	ASerialDataStruct::ASerialData ReceiveData;
-	//	int Result = device_->ReadData(&ReceiveData);
-
-	//	// ＝＝＝＝＝＝デバッグ情報＝＝＝＝＝＝
-	//	uint16_t a = device_->GetLastErrorCode();
-	//	//UE_LOG(LogTemp, Log, TEXT("ErrorCode     = %X"), a);
-	//	//UE_LOG(LogTemp, Log, TEXT("deviceCONNECT = %d"), Result);
-	//	//UE_LOG(LogTemp, Log, TEXT("deviceRESULT  = %x"), ReceiveData.data);
-	//	// ＝＝＝＝＝＝デバッグ情報＝＝＝＝＝＝
-
-	//	// デバイスからもらった情報をFRotatorに変換する。1000倍されているので割る1000した値を最終的な値にする。
-	//	FRotator Device_Rotate = TransformEulerAngles(ReceiveData.data, 4);
-	//	AverageRotate = FRotator(Device_Rotate.Pitch / 1000, Device_Rotate.Yaw / 1000, Device_Rotate.Roll / 1000);
-	//	Final_Device_Rotate = AverageRotate;
-	//	//UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Pitch = %.0f"), Final_Device_Rotate.Pitch);
-	//	//UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Yaw = %.0f"),   Final_Device_Rotate.Yaw);
-	//	//UE_LOG(LogTemp, Log, TEXT("Final_Device_Rotate.Roll = %.0f"),  Final_Device_Rotate.Roll);
-	////}
+	Final_Device_Rotate = DeviceManager_->GetLatestData();
 
 	// デバイスの角度が0度以下になったら       (腕を下げたら)
 	if (Final_Device_Rotate.Pitch < 0 && IsArmUp)
@@ -309,7 +277,7 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Completed, this, &AVRActor_ver1::GoMagic);
 
 		// LookとIA_LookのTriggeredをBindする
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
+		//EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
 
 		// MoveStartをバインドする
 		//EnhancedInputComponent->BindAction(MoveStart, ETriggerEvent::Triggered, this, &AVRActor_ver1::kariPlayerMoveStart);
@@ -318,8 +286,6 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 void AVRActor_ver1::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	device_->DisConnectDevice();
-
 	Super::EndPlay(EndPlayReason);
 }
 
