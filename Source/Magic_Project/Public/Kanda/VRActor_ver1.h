@@ -138,7 +138,7 @@ private:
 	//AMagicDeviceCmdSender* deviceCmd_;
 
 	UPROPERTY()
-	UDeviceThreadManager* DeviceManager;
+	UDeviceThreadManager* DeviceManager_;
 
 	UFUNCTION()
 	void DeviceRotateToAverage();

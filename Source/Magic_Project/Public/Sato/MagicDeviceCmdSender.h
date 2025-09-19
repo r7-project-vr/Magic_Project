@@ -8,7 +8,8 @@
 #include "HAL/ThreadSafeCounter.h"
 #include "ASerialCom/Public/ASerialLibControllerWin.h"
 #include "ASerialCom/Public/ASerialCore/ASerialPacket.h"
-#include "MagicDeviceCmdSender.generated.h"
+#include "Templates/SharedPointer.h"
+
 
 /**
  *
@@ -35,8 +36,8 @@ private:
 	UPROPERTY()
 	UASerialPacket* deviceInfo_;
 
-	UPROPERTY()
-	FMagicDeviceCmdSender* deviceCmd_;
+	//TSharedPtr<FMagicDeviceCmdSender> deviceCmd_;
+	//FMagicDeviceCmdSender* deviceCmd_;
 
 
 	// デバイスの情報を入れるとオイラー角を取得できる関数
@@ -63,21 +64,21 @@ public:
 	/// キャリブレーションコマンドを送信する関数
 	/// </summary>
 	/// <param name="device_">デバイス</param>
-	void SendCmd_Cali(UASerialLibControllerWin* device_);
+	void SendCmd_Cali(UASerialLibControllerWin* magicdevice_);
 
 	/// <summary>
 	/// オイラー角取得コマンドを送信する関数
 	/// </summary>
 	/// <param name="device_">デバイス</param>
 	/// <returns>デバイス情報のオイラー角</returns>
-	int32 SendCmd_Euler(UASerialLibControllerWin* device_);
+	int32 SendCmd_Euler(UASerialLibControllerWin* magicdevice_);
 
 	/// <summary>
 	/// クォータニオン取得コマンドを送信する関数
 	/// </summary>
 	/// <param name="device_">デバイス</param>
 	/// <returns>デバイス情報のクォータニオン</returns>
-	int32 SendCmd_Quater(UASerialLibControllerWin* device_);
+	int32 SendCmd_Quater(UASerialLibControllerWin* magicdevice_);
 
 private:
 	/// <summary>
