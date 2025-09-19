@@ -150,7 +150,7 @@ int UASerialLibControllerWin::ReadData(ASerialDataStruct::ASerialData* read_data
         return -1;
     }
 
-    constexpr clock_t time_out = 50;
+    constexpr clock_t time_out = 25;
 
     bool time_out_flag = false;
     bool error_flag = false;
