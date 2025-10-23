@@ -34,11 +34,11 @@ AVRActor_ver1::AVRActor_ver1() :
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// StaticMeshComponent‚ğ’Ç‰Á‚µARootComponent‚Éİ’è‚·‚é
+	// StaticMeshComponentã‚’è¿½åŠ ã—ã€RootComponentã«è¨­å®šã™ã‚‹
 	Player = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	RootComponent = Player;
 
-	// SphereComponent‚Ì’Ç‰Á‚Æİ’è
+	// SphereComponentã®è¿½åŠ ã¨è¨­å®š
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 	Sphere->SetupAttachment(Player);
 	Sphere->SetSphereRadius(30.f);
@@ -47,22 +47,22 @@ AVRActor_ver1::AVRActor_ver1() :
 	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AVRActor_ver1::OnSphereBeginOverlap);
 	Sphere->OnComponentEndOverlap.AddDynamic(this, &AVRActor_ver1::OnSphereEndOverlap);
 
-	// Camera‚ğ’Ç‰Á‚·‚é
+	// Cameraã‚’è¿½åŠ ã™ã‚‹
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	Camera->SetupAttachment(Sphere);
 
-	// Arrow‚ğ’Ç‰Á‚·‚é
+	// Arrowã‚’è¿½åŠ ã™ã‚‹
 	Arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
 	Arrow->SetRelativeLocation(FVector(50.f, 0.f, 30.f));
 	Arrow->SetupAttachment(Camera);
-	//Arrow->SetHiddenInGame(false);// ‚±‚Ìs‚ÌƒRƒƒ“ƒgƒAƒEƒg‚ğ‰ğœ‚·‚é‚ÆArrow‚ªŒ©‚¦‚é‚æ‚¤‚É‚È‚è‚Ü‚·¦•ÏXŒãƒvƒƒWƒFƒNƒg‚ÌÄ‹N“®‚ª•K—v‚Å‚·
+	//Arrow->SetHiddenInGame(false);// ã“ã®è¡Œã®ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆã‚’è§£é™¤ã™ã‚‹ã¨ArrowãŒè¦‹ãˆã‚‹ã‚ˆã†ã«ãªã‚Šã¾ã™â€»å¤‰æ›´å¾Œãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã®å†èµ·å‹•ãŒå¿…è¦ã§ã™
 
-	// ƒXƒvƒŠƒ“ƒOƒA[ƒ€ƒRƒ“ƒ|[ƒlƒ“ƒg‚Ì’Ç‰Á‚Æİ’è
+	// ã‚¹ãƒ—ãƒªãƒ³ã‚°ã‚¢ãƒ¼ãƒ ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®è¿½åŠ ã¨è¨­å®š
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
 	SpringArm->TargetArmLength = 200.f;
 	SpringArm->SetupAttachment(Camera);
 
-	// è‚ÌƒeƒXƒg—p‚ÌSphere‚ğ’Ç‰Á‚·‚é
+	// æ‰‹ã®ãƒ†ã‚¹ãƒˆç”¨ã®Sphereã‚’è¿½åŠ ã™ã‚‹
 	Sphere_HandTest = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sphere_handtest"));
 	UStaticMesh* HandMesh = LoadObject<UStaticMesh>(NULL, TEXT("/Game/Satou/Mesh/hand/source/hand"));
 	Sphere_HandTest->SetStaticMesh(HandMesh);
@@ -70,7 +70,7 @@ AVRActor_ver1::AVRActor_ver1() :
 	Sphere_HandTest->SetMaterial(0, HandMeshMaterial);
 	Sphere_HandTest->SetupAttachment(SpringArm);
 
-	// ƒ`ƒƒ[ƒW’†‚ÌƒiƒCƒAƒKƒ‰ƒRƒ“ƒ|[ƒlƒ“ƒg‚ğ’Ç‰Á
+	// ãƒãƒ£ãƒ¼ã‚¸ä¸­ã®ãƒŠã‚¤ã‚¢ã‚¬ãƒ©ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’è¿½åŠ 
 	ChargingEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ChargingMagicEffectComponent"));
 	ChargeFinishEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ChargeFinishEffectComponent"));
 	ChargingEffect->SetupAttachment(Camera);
@@ -78,27 +78,27 @@ AVRActor_ver1::AVRActor_ver1() :
 	ChargingEffect->SetHiddenInGame(true);
 	ChargeFinishEffect->SetHiddenInGame(true);
 
-	// Input Mapping ContextuIMC_TestPadv‚ğ“Ç‚İ‚Ş
+	// Input Mapping Contextã€ŒIMC_TestPadã€ã‚’èª­ã¿è¾¼ã‚€
 	DefaultMappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/Kanda/Input/IMC_TestPad"));
 
-	// Input ActionuIA_InputMovev‚ğ“Ç‚İ‚Ş
+	// Input Actionã€ŒIA_InputMoveã€ã‚’èª­ã¿è¾¼ã‚€
 	ControlMove = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_InputMove"));
 
-	// Input Action uIA_MagicChargev‚ğ“Ç‚İ‚Ş
+	// Input Action ã€ŒIA_MagicChargeã€ã‚’èª­ã¿è¾¼ã‚€
 	MagicCharge = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_ChargeMagic"));
 
-	// Input ActionuIA_GoMagicv‚ğ“Ç‚İ‚Ş
+	// Input Actionã€ŒIA_GoMagicã€ã‚’èª­ã¿è¾¼ã‚€
 	ControlMagic = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_GoMagic"));
 
-	// Input ActionuIA_Lookv‚ğ“Ç‚İ‚Ş
+	// Input Actionã€ŒIA_Lookã€ã‚’èª­ã¿è¾¼ã‚€
 	LookAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_Look"));
 
-	// Input ActionuIA_MoveActionv‚ğ“Ç‚İ‚Ş
+	// Input Actionã€ŒIA_MoveActionã€ã‚’èª­ã¿è¾¼ã‚€
 	MoveStart = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_MoveAction"));
 
-	// ƒeƒXƒg—p
+	// ãƒ†ã‚¹ãƒˆç”¨
 	{
-		// Œ»İ‚Ìæ“¾
+		// ç¾åœ¨æ™‚åˆ»ã®å–å¾—
 		FDateTime Now = FDateTime::Now();
 		FString FormattedTime = Now.ToString(TEXT("%Y_%m_%d__%H_%M"));
 
@@ -129,9 +129,9 @@ void AVRActor_ver1::BeginPlay()
 		}
 	}
 
-	// ƒXƒvƒ‰ƒCƒ“‚ğƒŒƒxƒ‹ã‚©‚çæ“¾iˆêŒÂ‚¾‚¯j ‚Ü‚½AƒvƒŒƒCƒ„[‚Ì‰ŠúˆÊ’u‚ğƒZƒbƒg
+	// ã‚¹ãƒ—ãƒ©ã‚¤ãƒ³ã‚’ãƒ¬ãƒ™ãƒ«ä¸Šã‹ã‚‰å–å¾—ï¼ˆä¸€å€‹ã ã‘ï¼‰ ã¾ãŸã€ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®åˆæœŸä½ç½®ã‚’ã‚»ãƒƒãƒˆ
 	SplineActor = Cast<APlayerWayRoad>(UGameplayStatics::GetActorOfClass(GetWorld(), APlayerWayRoad::StaticClass()));
-	if (SplineActor) // ‚½‚¾‚Ìnullƒ`ƒFƒbƒN
+	if (SplineActor) // ãŸã ã®nullãƒã‚§ãƒƒã‚¯
 	{
 		FTransform transformTemp;
 		transformTemp = SplineActor->GetSplineTransform(distance, 0.0f);
@@ -140,7 +140,7 @@ void AVRActor_ver1::BeginPlay()
 	}
 	IsInMagicZone = false;
 
-	// “ïˆÕ“x‚É‚æ‚éƒpƒ‰ƒ[ƒ^[‚Ì’²®BŒ»İ‚Í‚O‚Åƒm[ƒ}ƒ‹A‚P‚Åƒn[ƒh
+	// é›£æ˜“åº¦ã«ã‚ˆã‚‹ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã®èª¿æ•´ã€‚ç¾åœ¨ã¯ï¼ã§ãƒãƒ¼ãƒãƒ«ã€ï¼‘ã§ãƒãƒ¼ãƒ‰
 	UMagicGameInstance* MagicGame = Cast<UMagicGameInstance>(GetWorld()->GetGameInstance<UMagicGameInstance>());
 	switch (MagicGame->Difficulty)
 	{
@@ -156,7 +156,7 @@ void AVRActor_ver1::BeginPlay()
 		break;
 	}
 
-	// ƒCƒ“ƒXƒ^ƒ“ƒX‰»
+	// ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹åŒ–
 	//DeviceManager = NewObject<UDeviceThreadManager>(this);
 	DeviceManager_ = Cast<UMagicGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->DeviceManager;
 }
@@ -175,12 +175,12 @@ void AVRActor_ver1::Tick(float DeltaTime)
 	VRInformation();
 	SpawnMagicChargeEffect();
 	DeviceRotateToAverage();
-	// ƒfƒoƒCƒX‚Ìƒsƒbƒ`‚ÅSpringArm‚ÌŠp“x‚ğ•Ï‚¦‚éBSpringArm‚Ìƒˆ[‚ğ180‚É‚µ‚Ä‚¢‚é‚Ì‚ÅAƒsƒbƒ`‚Éƒ}ƒCƒiƒX‚ğ‚©‚¯‚é
+	// ãƒ‡ãƒã‚¤ã‚¹ã®ãƒ”ãƒƒãƒã§SpringArmã®è§’åº¦ã‚’å¤‰ãˆã‚‹ã€‚SpringArmã®ãƒ¨ãƒ¼ã‚’180ã«ã—ã¦ã„ã‚‹ã®ã§ã€ãƒ”ãƒƒãƒã«ãƒã‚¤ãƒŠã‚¹ã‚’ã‹ã‘ã‚‹
 	SpringArm->SetRelativeRotation(FRotator(-Final_Device_Rotate.Pitch, 180.f, 0));
 
 	ArriveSplinePoint(StopPointNum);
-	// ƒXƒvƒ‰ƒCƒ“‚Ìã‚ğˆÚ“®‚µ‚Ä‚¢‚­ˆ—
-	if (SplineActor && !isStop) // ‚½‚¾‚Ìnullƒ`ƒFƒbƒN&¡’â~’†‚©ƒ`ƒFƒbƒN
+	// ã‚¹ãƒ—ãƒ©ã‚¤ãƒ³ã®ä¸Šã‚’ç§»å‹•ã—ã¦ã„ãå‡¦ç†
+	if (SplineActor && !isStop) // ãŸã ã®nullãƒã‚§ãƒƒã‚¯&ä»Šåœæ­¢ä¸­ã‹ãƒã‚§ãƒƒã‚¯
 	{
 		FTransform transformTemp;
 		transformTemp = SplineActor->GetSplineTransform(distance, MoveSpeedPoint * DeltaTime);
@@ -190,7 +190,7 @@ void AVRActor_ver1::Tick(float DeltaTime)
 
 	Final_Device_Rotate = DeviceManager_->GetLatestData();
 
-	// ƒfƒoƒCƒX‚ÌŠp“x‚ª0“xˆÈ‰º‚É‚È‚Á‚½‚ç       (˜r‚ğ‰º‚°‚½‚ç)
+	// ãƒ‡ãƒã‚¤ã‚¹ã®è§’åº¦ãŒ0åº¦ä»¥ä¸‹ã«ãªã£ãŸã‚‰       (è…•ã‚’ä¸‹ã’ãŸã‚‰)
 	if (Final_Device_Rotate.Pitch < 0 && IsArmUp)
 	{
 		IsArmUp = false;
@@ -198,56 +198,56 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		DeviceGoMagic();
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 			this,
-			HandStar,									// ƒGƒtƒFƒNƒg
+			HandStar,									// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆ
 			Sphere_HandTest->GetComponentLocation(),	// Location
 			FRotator(0, 0, 0),							// Rotation
 			FVector(1.f),								// Scale
-			true,										// bAutoDestroy(Šî–{true)
+			true,										// bAutoDestroy(åŸºæœ¬true)
 			true,										// bAutoActivate
 			ENCPoolMethod::None,
-			true										// bPrecullCheck(ƒJƒŠƒ“ƒOƒ`ƒFƒbƒN)
+			true										// bPrecullCheck(ã‚«ãƒªãƒ³ã‚°ãƒã‚§ãƒƒã‚¯)
 		);
-		// –‚–@w‚É‚¢‚é‚Æ‚«A–‚–@”­Ë‚ÌŒø‰Ê‰¹‚Æ”í‚é‚Ì‚Å–‚–@w‚Ìã‚É‚¢‚é‚©ƒ`ƒFƒbƒN
+		// é­”æ³•é™£ã«ã„ã‚‹ã¨ãã€é­”æ³•ç™ºå°„ã®åŠ¹æœéŸ³ã¨è¢«ã‚‹ã®ã§é­”æ³•é™£ã®ä¸Šã«ã„ã‚‹ã‹ãƒã‚§ãƒƒã‚¯
 		if (magicData == nullptr)
 		{
 			UGameplayStatics::PlaySound2D(this, HandDownSound);
 		}
-		//è‚Ìƒ}ƒeƒŠƒAƒ‹‚ª•Ï‚í‚éˆ—B•K—v‚È‚çƒRƒƒ“ƒgƒAƒEƒg‚ğŠO‚·‚±‚Æ
+		//æ‰‹ã®ãƒãƒ†ãƒªã‚¢ãƒ«ãŒå¤‰ã‚ã‚‹å‡¦ç†ã€‚å¿…è¦ãªã‚‰ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆã‚’å¤–ã™ã“ã¨
 		//UMaterial* HandMeshDownMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Materials/M_Red"));
 		//Sphere_HandTest->SetMaterial(0, HandMeshDownMaterial);
 	}
 
-	// ƒfƒoƒCƒX‚ÌŠp“x‚ªArmUpAngleˆÈã‚É‚È‚Á‚½‚ç(˜r‚ğã‚°‚½‚ç)
+	// ãƒ‡ãƒã‚¤ã‚¹ã®è§’åº¦ãŒArmUpAngleä»¥ä¸Šã«ãªã£ãŸã‚‰(è…•ã‚’ä¸Šã’ãŸã‚‰)
 	if (Final_Device_Rotate.Pitch > ArmUpAngle)
 	{
-		// è‚ğ‹“‚°‚½Å‰‚Ìˆê‰ñ‚¾‚¯Œø‰Ê‰¹‚ğ–Â‚ç‚·i‰º‚ë‚µ‚½‚çƒŠƒZƒbƒgj
+		// æ‰‹ã‚’æŒ™ã’ãŸæœ€åˆã®ä¸€å›ã ã‘åŠ¹æœéŸ³ã‚’é³´ã‚‰ã™ï¼ˆä¸‹ã‚ã—ãŸã‚‰ãƒªã‚»ãƒƒãƒˆï¼‰
 		if (IsArmUp == false)
 		{
 			UGameplayStatics::PlaySound2D(this, HandUpSound);
 			UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 				this,
-				HandStar,									// ƒGƒtƒFƒNƒg
+				HandStar,									// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆ
 				Sphere_HandTest->GetComponentLocation(),	// Location
 				FRotator(0, 0, 0),							// Rotation
 				FVector(1.f),								// Scale
-				true,										// bAutoDestroy(Šî–{true)
+				true,										// bAutoDestroy(åŸºæœ¬true)
 				true,										// bAutoActivate
 				ENCPoolMethod::None,
-				true										// bPrecullCheck(ƒJƒŠƒ“ƒOƒ`ƒFƒbƒN)
+				true										// bPrecullCheck(ã‚«ãƒªãƒ³ã‚°ãƒã‚§ãƒƒã‚¯)
 			);
 		}
 		IsArmUp = true;
-		// –‚–@w‚É‚¢‚éê‡‚Íƒ`ƒƒ[ƒWƒ^ƒCƒ€‚à‘‚¦‚é
+		// é­”æ³•é™£ã«ã„ã‚‹å ´åˆã¯ãƒãƒ£ãƒ¼ã‚¸ã‚¿ã‚¤ãƒ ã‚‚å¢—ãˆã‚‹
 		if (IsInMagicZone)
 		{
 			ChargeMagic();
 		}
-		//è‚Ìƒ}ƒeƒŠƒAƒ‹‚ª•Ï‚í‚éˆ—B•K—v‚È‚çƒRƒƒ“ƒgƒAƒEƒg‚ğŠO‚·‚±‚Æ
+		//æ‰‹ã®ãƒãƒ†ãƒªã‚¢ãƒ«ãŒå¤‰ã‚ã‚‹å‡¦ç†ã€‚å¿…è¦ãªã‚‰ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆã‚’å¤–ã™ã“ã¨
 		//UMaterial* HandMeshUpMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Materials/M_Green"));
 		//Sphere_HandTest->SetMaterial(0, HandMeshUpMaterial);
 	}
 
-	// ˜r‚ğˆê’è‰ñ”ˆÈãã‚°‰º‚°‚µ‚½‚ç“®‚­
+	// è…•ã‚’ä¸€å®šå›æ•°ä»¥ä¸Šä¸Šã’ä¸‹ã’ã—ãŸã‚‰å‹•ã
 	if (ArmUpDownCnt >= Need_ArmUpDownCnt)
 	{
 		PlayerMoveStart();
@@ -269,17 +269,17 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
 
-		// ControlBall‚ÆIA_Control‚ÌTriggered‚ğBind‚·‚é
+		// ControlBallã¨IA_Controlã®Triggeredã‚’Bindã™ã‚‹
 		EnhancedInputComponent->BindAction(ControlMove, ETriggerEvent::Triggered, this, &AVRActor_ver1::ControlPlayer);
 
-		// ControlBall‚ÆIA_Control‚ÌTriggered‚ğBind‚·‚é
+		// ControlBallã¨IA_Controlã®Triggeredã‚’Bindã™ã‚‹
 		EnhancedInputComponent->BindAction(MagicCharge, ETriggerEvent::Triggered, this, &AVRActor_ver1::MouseChargeMagic);
 		EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Completed, this, &AVRActor_ver1::GoMagic);
 
-		// Look‚ÆIA_Look‚ÌTriggered‚ğBind‚·‚é
+		// Lookã¨IA_Lookã®Triggeredã‚’Bindã™ã‚‹
 		//EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
 
-		// MoveStart‚ğƒoƒCƒ“ƒh‚·‚é
+		// MoveStartã‚’ãƒã‚¤ãƒ³ãƒ‰ã™ã‚‹
 		//EnhancedInputComponent->BindAction(MoveStart, ETriggerEvent::Triggered, this, &AVRActor_ver1::kariPlayerMoveStart);
 	}
 }
@@ -291,7 +291,7 @@ void AVRActor_ver1::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
 {
-	// input‚ÌValue‚ÍVector2D‚É•ÏŠ·‚Å‚«‚é
+	// inputã®Valueã¯Vector2Dã«å¤‰æ›ã§ãã‚‹
 	const FVector2D V = Value.Get<FVector2D>();
 
 	FVector PreLocation = GetActorLocation();
@@ -325,7 +325,7 @@ void AVRActor_ver1::MouseChargeMagic(const FInputActionValue& Value)
 	}
 }
 
-// –‚–@‚ğŒ‚‚Â_ƒRƒ“ƒgƒ[ƒ‰[‚Ì‚İ
+// é­”æ³•ã‚’æ’ƒã¤_ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã®ã¿
 void AVRActor_ver1::GoMagic()
 {
 	if (magicData == nullptr) { return; }
@@ -335,8 +335,8 @@ void AVRActor_ver1::GoMagic()
 	UNiagaraSystem* d = magicData->GetDeathNiagaraSystem(0);
 	UNiagaraSystem* ff = magicData->GetFlyNiagaraSystem(1);
 
-	// –‚–@‚Ìƒ`ƒƒ[ƒWŠÔ‚ğŒv‚Á‚Ä‰½‚Ì–‚–@‚ğo‚·‚©Œˆ‚ß‚é
-	// elseŠO‚µ‚½‚ç‘½•ª”jŠü‚³‚ê‚½ƒ|ƒCƒ“ƒ^udv‚ğg‚¤‚±‚Æ‚É‚È‚é‚Ì‚ÅƒNƒ‰ƒbƒVƒ…‚·‚é
+	// é­”æ³•ã®ãƒãƒ£ãƒ¼ã‚¸æ™‚é–“ã‚’è¨ˆã£ã¦ä½•ã®é­”æ³•ã‚’å‡ºã™ã‹æ±ºã‚ã‚‹
+	// elseå¤–ã—ãŸã‚‰å¤šåˆ†ç ´æ£„ã•ã‚ŒãŸãƒã‚¤ãƒ³ã‚¿ã€Œdã€ã‚’ä½¿ã†ã“ã¨ã«ãªã‚‹ã®ã§ã‚¯ãƒ©ãƒƒã‚·ãƒ¥ã™ã‚‹
 	if (MagicChargeTime <= 2.0f)
 	{
 		CreateMagic(f, d);
@@ -348,7 +348,7 @@ void AVRActor_ver1::GoMagic()
 		UGameplayStatics::PlaySound2D(this, ChargeMagicSound);
 	}
 
-	//ƒ`ƒƒ[ƒW‰Šú‰»
+	//ãƒãƒ£ãƒ¼ã‚¸åˆæœŸåŒ–
 	MagicChargeTime = 0;
 	FTimerHandle ResetHandle;
 	GetWorldTimerManager().SetTimer(
@@ -367,13 +367,13 @@ void AVRActor_ver1::GoMagic()
 		UKismetSystemLibrary::PrintString(GEngine->GetWorld(), "magicCnt 0");
 		magicData = nullptr;
 
-		// –‚–@w‚ğ”j‰ó
+		// é­”æ³•é™£ã‚’ç ´å£Š
 		circle->Ef_MagicCircle = nullptr;
 		circle->Destroy();
 	}
 }
 
-//ƒ`ƒƒ[ƒWƒŠƒZƒbƒg
+//ãƒãƒ£ãƒ¼ã‚¸ãƒªã‚»ãƒƒãƒˆ
 void AVRActor_ver1::ResetCharged()
 {
 	Charged = false;
@@ -384,13 +384,13 @@ void AVRActor_ver1::SetMagicData(TSharedPtr<MagicDataTable> m_, AOnishi_MagicCir
 	circle = o_;
 }
 
-// –‚–@‚ğ”ò‚Î‚·ˆ—
+// é­”æ³•ã‚’é£›ã°ã™å‡¦ç†
 void AVRActor_ver1::CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_Destroy_, float s_) {
 
-	// ƒGƒtƒFƒNƒg‚ªnull‚È‚çˆ—‚È‚µ
+	// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆãŒnullãªã‚‰å‡¦ç†ãªã—
 	if (Ef_Flying_ == nullptr || Ef_Destroy_ == nullptr) return;
 
-	// –‚–@ƒAƒNƒ^[‚ğ¶¬
+	// é­”æ³•ã‚¢ã‚¯ã‚¿ãƒ¼ã‚’ç”Ÿæˆ
 	{
 		FRotator look = Arrow->GetComponentRotation();
 		FVector pos = GetActorLocation();
@@ -399,7 +399,7 @@ void AVRActor_ver1::CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_D
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 		AOnishi_MagicLauncher* magic =
-			GetWorld()->SpawnActor<AOnishi_MagicLauncher>(AOnishi_MagicLauncher::StaticClass(), pos, look); // ƒXƒ|[ƒ“ˆ—
+			GetWorld()->SpawnActor<AOnishi_MagicLauncher>(AOnishi_MagicLauncher::StaticClass(), pos, look); // ã‚¹ãƒãƒ¼ãƒ³å‡¦ç†
 
 		magic->MoveSpeed *= s_;
 		magic->LaunchMagic(look.Vector(), pos, Ef_Flying_, Ef_Destroy_);
@@ -409,10 +409,10 @@ void AVRActor_ver1::CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_D
 	}
 }
 
-// ƒJƒƒ‰ƒRƒ“ƒgƒ[ƒ‰[
+// ã‚«ãƒ¡ãƒ©ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼
 void AVRActor_ver1::Look(const FInputActionValue& Value)
 {
-	// input‚ÌValue‚ÍVector2D‚É•ÏŠ·‚Å‚«‚é
+	// inputã®Valueã¯Vector2Dã«å¤‰æ›ã§ãã‚‹
 	FVector2D v = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
@@ -421,16 +421,16 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 		AddControllerYawInput(v.X);
 		AddControllerPitchInput(v.Y);
 
-		// Pawn‚ª‚Á‚Ä‚¢‚éControl‚ÌŠp“x‚ğæ“¾‚·‚é
+		// PawnãŒæŒã£ã¦ã„ã‚‹Controlã®è§’åº¦ã‚’å–å¾—ã™ã‚‹
 		FRotator controlRotate = GetControlRotation();
 
-		// ƒJƒƒ‰‚ğ‚Ü‚í‚·
+		// ã‚«ãƒ¡ãƒ©ã‚’ã¾ã‚ã™
 		SetActorRotation(controlRotate);
 
 	}
 }
 
-// ÚG”»’è‚Ìˆ—AƒRƒ‰ƒCƒ_[“¯m‚ªÚG‚µ‚½‚Æ‚«‚ÉŒÄ‚Ño‚³‚ê‚é
+// æ¥è§¦åˆ¤å®šã®å‡¦ç†ã€ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼åŒå£«ãŒæ¥è§¦ã—ãŸã¨ãã«å‘¼ã³å‡ºã•ã‚Œã‚‹
 void AVRActor_ver1::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// pass
@@ -440,7 +440,7 @@ void AVRActor_ver1::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 
 }
 
-// ÚG”»’è‚Ìˆ—AƒRƒ‰ƒCƒ_[“¯m‚ª—£‚ê‚½‚Æ‚«‚ÉŒÄ‚Ño‚³‚ê‚é
+// æ¥è§¦åˆ¤å®šã®å‡¦ç†ã€ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼åŒå£«ãŒé›¢ã‚ŒãŸã¨ãã«å‘¼ã³å‡ºã•ã‚Œã‚‹
 void AVRActor_ver1::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) {
 
 	if (AOnishi_MagicCircleParent* Pawn = Cast<AOnishi_MagicCircleParent>(OtherActor)) {
@@ -451,7 +451,7 @@ void AVRActor_ver1::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComp, AAct
 	}
 }
 
-// ƒfƒoƒbƒO—p
+// ãƒ‡ãƒãƒƒã‚°ç”¨
 void AVRActor_ver1::DebugLogLocation(AActor* a_, FColor c)
 {
 	if (a_ == nullptr) { return; }
@@ -466,28 +466,29 @@ void AVRActor_ver1::DebugLogLocation(AActor* a_, FColor c)
 	);
 }
 
-// csvo—Í
+// csvå‡ºåŠ›
 void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 {
 	//FString MagicName = ;
 
-	//// CSV‚É‘‚«‚Ş“à—e
+	//// CSVã«æ›¸ãè¾¼ã‚€å†…å®¹
 	//FString CSVContent = MagicName + TEXT(",") + TEXT("\n");
 
-	//// ƒtƒ@ƒCƒ‹‚Ì‘¶İ‚ğŠm”F‚µA‘¶İ‚µ‚È‚¢ê‡‚Íƒwƒbƒ_[s‚ğ’Ç‰Á
+	//// ãƒ•ã‚¡ã‚¤ãƒ«ã®å­˜åœ¨ã‚’ç¢ºèªã—ã€å­˜åœ¨ã—ãªã„å ´åˆã¯ãƒ˜ãƒƒãƒ€ãƒ¼è¡Œã‚’è¿½åŠ 
 	//if (!FPaths::FileExists(MagicFilePath))
 	//{
 	//	CSVContent = TEXT("MagicName\n") + CSVContent;
 	//}
 
-	//// ƒtƒ@ƒCƒ‹‚É“à—e‚ğ‘‚«‚Ş
+	//// ãƒ•ã‚¡ã‚¤ãƒ«ã«å†…å®¹ã‚’æ›¸ãè¾¼ã‚€
 	//FFileHelper::SaveStringToFile(CSVContent, *MagicFilePath, FFileHelper::EEncodingOptions::AutoDetect,
 	//	&IFileManager::Get(), EFileWrite::FILEWRITE_Append);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------
 //sato
-// VR‹@Ší‚Ìî•ñæ“¾
+// VRæ©Ÿå™¨ã®æƒ…å ±å–å¾—
+/*
 void AVRActor_ver1::VRInformation()
 {
 	GEngine->XRSystem->HasValidTrackingPosition();
@@ -502,11 +503,44 @@ void AVRActor_ver1::VRInformation()
 		this->Sphere->SetRelativeRotation(ro);
 	}
 }
+*/
+//---------------------------------------------------------------------------------------------------------------------------------
+//lee
+// VRæ©Ÿå™¨ã®æƒ…å ±å–å¾—
+void AVRActor_ver1::VRInformation()
+{
+	// ä¿®æ­£ï¼š
+	// GEngine ãŒå­˜åœ¨ã—ã€ã‹ã¤ XRSystem (TSharedPtr) ãŒæœ‰åŠ¹(IsValid)ã§ã‚ã‚‹ã“ã¨ã‚’ç¢ºèªã™ã‚‹ã€‚
+	//ã€€ã“ã†ã—ãªã„ã¨ã€VRãŒæ¥ç¶šã•ã‚Œã¦ã„ãªã„ãƒ‘ã‚½ã‚³ãƒ³ã§playã™ã‚‹éš›ã«ã‚¯ãƒ©ãƒƒã‚·ãƒ¥ãŒç™ºç”Ÿã™ã‚‹å¯èƒ½æ€§ãŒã‚ã‚‹ã€‚
+	// å…ƒã€…ã‚ã£ãŸ GEngine->XRSystem->HasValidTrackingPosition(); ã¯
+	// IsValid() ãƒã‚§ãƒƒã‚¯ã®å¤–ã«ã‚ã£ãŸãŸã‚ã€ã‚¯ãƒ©ãƒƒã‚·ãƒ¥ã‚’å¼•ãèµ·ã“ã—ã¦ã„ãŸã€‚
+	if (GEngine && GEngine->XRSystem.IsValid())
+	{
+		GEngine->XRSystem->HasValidTrackingPosition();
+		// XRSystem ãŒæœ‰åŠ¹ãªå ´åˆã®ã¿ã€ãã®å…ˆã®é–¢æ•°ã‚’å‘¼ã³å‡ºã™ã€‚
+		if (GEngine->XRSystem->IsHeadTrackingAllowed())
+		{
+			
+			 
 
-// IA_MoveAction‚É“o˜^‚³‚ê‚½ƒ{ƒ^ƒ“‚ğ‰Ÿ‚³‚ê‚é‚Æs‚¤ˆ—iŒ»İ‚ÍJƒL[j
+			FQuat OrientationAsQuat;
+			FVector Position(0.f);
+			FRotator ro;
+
+			// ã“ã‚Œã§å®‰å…¨ã«VRãƒ‡ãƒã‚¤ã‚¹ã®æƒ…å ±ã‚’å–å¾—ã§ãã‚‹ã€‚
+			GEngine->XRSystem->GetCurrentPose(IXRTrackingSystem::HMDDeviceId, OrientationAsQuat, Position);
+			UHeadMountedDisplayFunctionLibrary::GetOrientationAndPosition(ro, Position);
+			this->Sphere->SetRelativeRotation(ro);
+		}
+	}
+	// XRSystem ãŒç„¡åŠ¹ãªå ´åˆï¼ˆVRãŒæ¥ç¶šã•ã‚Œã¦ã„ãªã„å ´åˆãªã©ï¼‰ã¯ã€
+	// ã“ã®é–¢æ•°ã¯ä½•ã‚‚ã—ãªã„ã€‚
+}
+
+// IA_MoveActionã«ç™»éŒ²ã•ã‚ŒãŸãƒœã‚¿ãƒ³ã‚’æŠ¼ã•ã‚Œã‚‹ã¨è¡Œã†å‡¦ç†ï¼ˆç¾åœ¨ã¯Jã‚­ãƒ¼ï¼‰
 //void AVRActor_ver1::kariPlayerMoveStart(const FInputActionValue& Value)
 //{
-//	//ƒXƒgƒbƒv‚µ‚Ä‚¢‚é‚Ì‚İˆ—
+//	//ã‚¹ãƒˆãƒƒãƒ—ã—ã¦ã„ã‚‹æ™‚ã®ã¿å‡¦ç†
 //	if (isStop)
 //	{
 //		UKismetSystemLibrary::PrintString(this, TEXT("ugoke"), true, true, FColor::Blue, 2.0f, NAME_None);
@@ -515,10 +549,10 @@ void AVRActor_ver1::VRInformation()
 //	}
 //}
 
-// ƒfƒoƒCƒXî•ñ‚©‚çƒsƒbƒ`‚ªˆê’èˆÈã‚É‚È‚Á‚½‚çŒÄ‚Î‚ê‚éˆ—i¡‚Ì‚Æ‚±‚ë‚Íj
+// ãƒ‡ãƒã‚¤ã‚¹æƒ…å ±ã‹ã‚‰ãƒ”ãƒƒãƒãŒä¸€å®šä»¥ä¸Šã«ãªã£ãŸã‚‰å‘¼ã°ã‚Œã‚‹å‡¦ç†ï¼ˆä»Šã®ã¨ã“ã‚ã¯ï¼‰
 void AVRActor_ver1::PlayerMoveStart()
 {
-	//ƒXƒgƒbƒv‚µ‚Ä‚¢‚é‚Ì‚İˆ—
+	//ã‚¹ãƒˆãƒƒãƒ—ã—ã¦ã„ã‚‹æ™‚ã®ã¿å‡¦ç†
 	if (isStop)
 	{
 		UKismetSystemLibrary::PrintString(this, TEXT("ugoke2"), true, true, FColor::Blue, 2.0f, NAME_None);
@@ -527,18 +561,18 @@ void AVRActor_ver1::PlayerMoveStart()
 	}
 }
 
-// w’è‚µ‚½ƒXƒvƒ‰ƒCƒ“‚Ì“_‚É“’B‚·‚é‚Æs‚í‚ê‚éˆ—
+// æŒ‡å®šã—ãŸã‚¹ãƒ—ãƒ©ã‚¤ãƒ³ã®ç‚¹ã«åˆ°é”ã™ã‚‹ã¨è¡Œã‚ã‚Œã‚‹å‡¦ç†
 void AVRActor_ver1::ArriveSplinePoint(int point_)
 {
-	if (SplineActor) // ‚½‚¾‚Ìnullƒ`ƒFƒbƒN
+	if (SplineActor) // ãŸã ã®nullãƒã‚§ãƒƒã‚¯
 	{
-		// ƒjƒAƒŠ[ƒCƒR[ƒ‹‚ğg‚¤‚½‚ß‚Ì•Ï”‚½‚¿
+		// ãƒ‹ã‚¢ãƒªãƒ¼ã‚¤ã‚³ãƒ¼ãƒ«ã‚’ä½¿ã†ãŸã‚ã®å¤‰æ•°ãŸã¡
 		FVector SplinePoint = SplineActor->Spline->GetLocationAtSplinePoint(point_, ESplineCoordinateSpace::World);
 		FTransform ATransform = FTransform(FRotator(0, 0, 0), SplinePoint, FVector(1, 1, 1));
 		FVector nowLocation = GetActorLocation();
 		FTransform BTransform = FTransform(FRotator(0, 0, 0), nowLocation, FVector(1, 1, 1));
 
-		// ƒjƒAƒŠ[ƒCƒR[ƒ‹‚ğg‚Á‚ÄƒLƒƒƒ‰ƒNƒ^[‚ğ~‚ß‚é‚©“®‚©‚·‚©”»’f
+		// ãƒ‹ã‚¢ãƒªãƒ¼ã‚¤ã‚³ãƒ¼ãƒ«ã‚’ä½¿ã£ã¦ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’æ­¢ã‚ã‚‹ã‹å‹•ã‹ã™ã‹åˆ¤æ–­
 		bool isNearPointCharacter = UKismetMathLibrary::NearlyEqual_TransformTransform(ATransform, BTransform, 5.0f, 0.0001f, 0.0001f);
 		if (isNearPointCharacter)
 		{
@@ -547,7 +581,7 @@ void AVRActor_ver1::ArriveSplinePoint(int point_)
 	}
 }
 
-// ƒfƒoƒCƒX‚©‚ç‚à‚ç‚Á‚½î•ñ‚ğTransformEulerAngles‚©‚ç‚à‚ç‚Á‚ÄAint32Œ^‚É•ÏŠ·‚µ‚Ä•Ô‚·
+// ãƒ‡ãƒã‚¤ã‚¹ã‹ã‚‰ã‚‚ã‚‰ã£ãŸæƒ…å ±ã‚’TransformEulerAnglesã‹ã‚‰ã‚‚ã‚‰ã£ã¦ã€int32å‹ã«å¤‰æ›ã—ã¦è¿”ã™
 int32 AVRActor_ver1::TransformDataToInt32(const uint8_t* Data, int Size)
 {
 	int32 Result = 0;
@@ -559,7 +593,7 @@ int32 AVRActor_ver1::TransformDataToInt32(const uint8_t* Data, int Size)
 	return Result;
 }
 
-// ƒfƒoƒCƒX‚©‚ç‚à‚ç‚Á‚½î•ñ‚ğTransformDataToInt32‚É“ü‚ê‚ÄA‚»‚ÌŒ‹‰Ê‚ğFRotator‚Å•Ô‚·
+// ãƒ‡ãƒã‚¤ã‚¹ã‹ã‚‰ã‚‚ã‚‰ã£ãŸæƒ…å ±ã‚’TransformDataToInt32ã«å…¥ã‚Œã¦ã€ãã®çµæœã‚’FRotatorã§è¿”ã™
 FRotator AVRActor_ver1::TransformEulerAngles(const uint8_t* Data, int Size)
 {
 	std::array<int32, 3> Angles;
@@ -567,7 +601,7 @@ FRotator AVRActor_ver1::TransformEulerAngles(const uint8_t* Data, int Size)
 	Angles[1] = TransformDataToInt32(Data + 4, Size);   // Y
 	Angles[2] = TransformDataToInt32(Data + 8, Size);   // Z
 
-	// FRotator‚Ìˆø”‚Íiƒsƒbƒ`Aƒˆ[Aƒ[ƒ‹j‚Ì‡‚È‚Ì‚Å‚»‚ê‚É‚ ‚í‚¹‚Ä”Ô†‚ğ•Ï‚¦‚Ä‚é
+	// FRotatorã®å¼•æ•°ã¯ï¼ˆãƒ”ãƒƒãƒã€ãƒ¨ãƒ¼ã€ãƒ­ãƒ¼ãƒ«ï¼‰ã®é †ãªã®ã§ãã‚Œã«ã‚ã‚ã›ã¦ç•ªå·ã‚’å¤‰ãˆã¦ã‚‹
 	FRotator ResultRotate = FRotator(Angles[1], Angles[2], Angles[0]);
 	return ResultRotate;
 }
@@ -584,14 +618,14 @@ void AVRActor_ver1::SpawnMagicChargeEffect()
 	{
 		//UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 		//	this,
-		//	ChargingMagicEffect,									// ƒGƒtƒFƒNƒg
+		//	ChargingMagicEffect,									// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆ
 		//	Camera->GetComponentLocation() + FVector(100, 0, 0),	// Location
 		//	Camera->GetComponentRotation(),							// Rotation
 		//	FVector(1.f),											// Scale
-		//	true,													// bAutoDestroy(Šî–{true)
+		//	true,													// bAutoDestroy(åŸºæœ¬true)
 		//	true,													// bAutoActivate
 		//	ENCPoolMethod::None,
-		//	true													// bPrecullCheck(ƒJƒŠƒ“ƒOƒ`ƒFƒbƒN)
+		//	true													// bPrecullCheck(ã‚«ãƒªãƒ³ã‚°ãƒã‚§ãƒƒã‚¯)
 		//);
 		ChargingEffect->SetHiddenInGame(false);
 		alreadyChargingMagicEffect = true;
@@ -601,14 +635,14 @@ void AVRActor_ver1::SpawnMagicChargeEffect()
 	{
 		//UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 		//	this,
-		//	ChargeFinishMagicEffect,								// ƒGƒtƒFƒNƒg
+		//	ChargeFinishMagicEffect,								// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆ
 		//	Camera->GetComponentLocation() + FVector(100, 0, 0),	// Location
 		//	Camera->GetComponentRotation(),							// Rotation
 		//	FVector(1.f),											// Scale
-		//	true,													// bAutoDestroy(Šî–{true)
+		//	true,													// bAutoDestroy(åŸºæœ¬true)
 		//	true,													// bAutoActivate
 		//	ENCPoolMethod::None,
-		//	true													// bPrecullCheck(ƒJƒŠƒ“ƒOƒ`ƒFƒbƒN)
+		//	true													// bPrecullCheck(ã‚«ãƒªãƒ³ã‚°ãƒã‚§ãƒƒã‚¯)
 		//);
 		ChargeFinishEffect->SetHiddenInGame(false);
 		alreadyChargeFinishMagicEffect = true;
