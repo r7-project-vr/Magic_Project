@@ -29,7 +29,8 @@
 // Sets default values
 AVRActor_ver1::AVRActor_ver1() :
 	magicData(nullptr),
-	circle(nullptr)
+	circle(nullptr),
+	IsInMagicZone(false)
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -43,7 +44,6 @@ AVRActor_ver1::AVRActor_ver1() :
 	Sphere->SetupAttachment(Player);
 	Sphere->SetSphereRadius(30.f);
 	Sphere->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f), false);
-
 	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AVRActor_ver1::OnSphereBeginOverlap);
 	Sphere->OnComponentEndOverlap.AddDynamic(this, &AVRActor_ver1::OnSphereEndOverlap);
 
@@ -63,12 +63,12 @@ AVRActor_ver1::AVRActor_ver1() :
 	SpringArm->SetupAttachment(Camera);
 
 	// 手のテスト用のSphereを追加する
-	Sphere_HandTest = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sphere_handtest"));
+	InGameHand = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InGameHand"));
 	UStaticMesh* HandMesh = LoadObject<UStaticMesh>(NULL, TEXT("/Game/Satou/Mesh/hand/source/hand"));
-	Sphere_HandTest->SetStaticMesh(HandMesh);
+	InGameHand->SetStaticMesh(HandMesh);
 	UMaterial* HandMeshMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Mesh/hand/source/lambert2"));
-	Sphere_HandTest->SetMaterial(0, HandMeshMaterial);
-	Sphere_HandTest->SetupAttachment(SpringArm);
+	InGameHand->SetMaterial(0, HandMeshMaterial);
+	InGameHand->SetupAttachment(SpringArm);
 
 	// チャージ中のナイアガラコンポーネントを追加
 	ChargingEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ChargingMagicEffectComponent"));
@@ -80,21 +80,12 @@ AVRActor_ver1::AVRActor_ver1() :
 
 	// Input Mapping Context「IMC_TestPad」を読み込む
 	DefaultMappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/Kanda/Input/IMC_TestPad"));
-
-	// Input Action「IA_InputMove」を読み込む
-	ControlMove = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_InputMove"));
-
-	// Input Action 「IA_MagicCharge」を読み込む
-	MagicCharge = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_ChargeMagic"));
-
-	// Input Action「IA_GoMagic」を読み込む
-	ControlMagic = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_GoMagic"));
-
-	// Input Action「IA_Look」を読み込む
-	LookAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_Look"));
-
-	// Input Action「IA_MoveAction」を読み込む
-	MoveStart = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_MoveAction"));
+	// インプットアクションの読み込み
+	ControlMove  = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_InputMove"));
+	MagicCharge  = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_ChargeMagic"));
+	ShotMagic    = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_GoMagic"));
+	LookAction   = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_Look"));
+	MoveStart    = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_MoveAction"));
 
 	// テスト用
 	{
@@ -105,7 +96,6 @@ AVRActor_ver1::AVRActor_ver1() :
 		MagicFilePath =
 			FPaths::ProjectDir() / TEXT("CSVFile/Export/MagicData_" + FormattedTime + ".csv");
 	}
-
 }
 
 // Called when the game starts or when spawned
@@ -131,14 +121,13 @@ void AVRActor_ver1::BeginPlay()
 
 	// スプラインをレベル上から取得（一個だけ） また、プレイヤーの初期位置をセット
 	SplineActor = Cast<APlayerWayRoad>(UGameplayStatics::GetActorOfClass(GetWorld(), APlayerWayRoad::StaticClass()));
-	if (SplineActor) // ただのnullチェック
+	if (SplineActor)
 	{
-		FTransform transformTemp;
-		transformTemp = SplineActor->GetSplineTransform(distance, 0.0f);
-		FVector newLocation = FVector(transformTemp.GetLocation());
-		SetActorLocation(newLocation);
+		FTransform FirstSplineTransform;
+		FirstSplineTransform = SplineActor->GetSplineTransform(distance, 0.0f);
+		FVector FirstLocation = FVector(FirstSplineTransform.GetLocation());
+		SetActorLocation(FirstLocation);
 	}
-	IsInMagicZone = false;
 
 	// 難易度によるパラメーターの調整。現在は０でノーマル、１でハード
 	UMagicGameInstance* MagicGame = Cast<UMagicGameInstance>(GetWorld()->GetGameInstance<UMagicGameInstance>());
@@ -156,8 +145,7 @@ void AVRActor_ver1::BeginPlay()
 		break;
 	}
 
-	// インスタンス化
-	//DeviceManager = NewObject<UDeviceThreadManager>(this);
+	// デバイスマネージャーのキャスト
 	DeviceManager_ = Cast<UMagicGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->DeviceManager;
 }
 
@@ -166,15 +154,8 @@ void AVRActor_ver1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	
-	//TimeAccumulator += DeltaTime;
-
-	//if (TimeAccumulator >= Interval)
-	//{
-
 	VRInformation();
 	SpawnMagicChargeEffect();
-	DeviceRotateToAverage();
 	// デバイスのピッチでSpringArmの角度を変える。SpringArmのヨーを180にしているので、ピッチにマイナスをかける
 	SpringArm->SetRelativeRotation(FRotator(-Final_Device_Rotate.Pitch, 180.f, 0));
 
@@ -182,12 +163,13 @@ void AVRActor_ver1::Tick(float DeltaTime)
 	// スプラインの上を移動していく処理
 	if (SplineActor && !isStop) // ただのnullチェック&今停止中かチェック
 	{
-		FTransform transformTemp;
-		transformTemp = SplineActor->GetSplineTransform(distance, MoveSpeedPoint * DeltaTime);
-		FVector newLocation = FVector(transformTemp.GetLocation());
+		FTransform SplineTransform;
+		SplineTransform = SplineActor->GetSplineTransform(distance, MoveSpeedPoint * DeltaTime);
+		FVector newLocation = FVector(SplineTransform.GetLocation());
 		SetActorLocation(newLocation);
 	}
 
+	// デバイスマネージャーからデバイスのデータを取得
 	Final_Device_Rotate = DeviceManager_->GetLatestData();
 
 	// デバイスの角度が0度以下になったら       (腕を下げたら)
@@ -199,7 +181,7 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 			this,
 			HandStar,									// エフェクト
-			Sphere_HandTest->GetComponentLocation(),	// Location
+			InGameHand->GetComponentLocation(),			// Location
 			FRotator(0, 0, 0),							// Rotation
 			FVector(1.f),								// Scale
 			true,										// bAutoDestroy(基本true)
@@ -214,7 +196,7 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		}
 		//手のマテリアルが変わる処理。必要ならコメントアウトを外すこと
 		//UMaterial* HandMeshDownMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Materials/M_Red"));
-		//Sphere_HandTest->SetMaterial(0, HandMeshDownMaterial);
+		//InGameHand->SetMaterial(0, HandMeshDownMaterial);
 	}
 
 	// デバイスの角度がArmUpAngle以上になったら(腕を上げたら)
@@ -227,7 +209,7 @@ void AVRActor_ver1::Tick(float DeltaTime)
 			UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 				this,
 				HandStar,									// エフェクト
-				Sphere_HandTest->GetComponentLocation(),	// Location
+				InGameHand->GetComponentLocation(),	// Location
 				FRotator(0, 0, 0),							// Rotation
 				FVector(1.f),								// Scale
 				true,										// bAutoDestroy(基本true)
@@ -244,7 +226,7 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		}
 		//手のマテリアルが変わる処理。必要ならコメントアウトを外すこと
 		//UMaterial* HandMeshUpMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Satou/Materials/M_Green"));
-		//Sphere_HandTest->SetMaterial(0, HandMeshUpMaterial);
+		//InGameHand->SetMaterial(0, HandMeshUpMaterial);
 	}
 
 	// 腕を一定回数以上上げ下げしたら動く
@@ -270,17 +252,11 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
 
 		// ControlBallとIA_ControlのTriggeredをBindする
-		EnhancedInputComponent->BindAction(ControlMove, ETriggerEvent::Triggered, this, &AVRActor_ver1::ControlPlayer);
-
-		// ControlBallとIA_ControlのTriggeredをBindする
-		EnhancedInputComponent->BindAction(MagicCharge, ETriggerEvent::Triggered, this, &AVRActor_ver1::MouseChargeMagic);
-		EnhancedInputComponent->BindAction(ControlMagic, ETriggerEvent::Completed, this, &AVRActor_ver1::GoMagic);
-
-		// LookとIA_LookのTriggeredをBindする
-		//EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
-
-		// MoveStartをバインドする
-		//EnhancedInputComponent->BindAction(MoveStart, ETriggerEvent::Triggered, this, &AVRActor_ver1::kariPlayerMoveStart);
+		EnhancedInputComponent->BindAction(ControlMove,  ETriggerEvent::Triggered, this, &AVRActor_ver1::ControlPlayer);
+		EnhancedInputComponent->BindAction(MagicCharge,  ETriggerEvent::Triggered, this, &AVRActor_ver1::MouseChargeMagic);
+		EnhancedInputComponent->BindAction(ShotMagic,    ETriggerEvent::Completed, this, &AVRActor_ver1::GoMagic);
+		EnhancedInputComponent->BindAction(LookAction,   ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
+		//EnhancedInputComponent->BindAction(MoveStart,    ETriggerEvent::Triggered, this, &AVRActor_ver1::kariPlayerMoveStart);
 	}
 }
 
@@ -412,6 +388,9 @@ void AVRActor_ver1::CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_D
 // カメラコントローラー
 void AVRActor_ver1::Look(const FInputActionValue& Value)
 {
+	//この行をコメントアウトするとマウスでカメラ操作できるようになる
+	if (true) return;
+
 	// inputのValueはVector2Dに変換できる
 	FVector2D v = Value.Get<FVector2D>();
 
@@ -437,7 +416,6 @@ void AVRActor_ver1::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 	if (AOnishi_MagicCircleParent* Pawn = Cast<AOnishi_MagicCircleParent>(OtherActor)) {
 		IsInMagicZone = true;
 	}
-
 }
 
 // 接触判定の処理、コライダー同士が離れたときに呼び出される
@@ -486,25 +464,6 @@ void  AVRActor_ver1::WritePlayerInfoToCSV(AActor* m_)
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------
-//sato
-// VR機器の情報取得
-/*
-void AVRActor_ver1::VRInformation()
-{
-	GEngine->XRSystem->HasValidTrackingPosition();
-	if (GEngine->XRSystem->IsHeadTrackingAllowed())
-	{
-		FQuat OrientationAsQuat;
-		FVector Position(0.f);
-		FRotator ro;
-
-		GEngine->XRSystem->GetCurrentPose(IXRTrackingSystem::HMDDeviceId, OrientationAsQuat, Position);
-		UHeadMountedDisplayFunctionLibrary::GetOrientationAndPosition(ro, Position);
-		this->Sphere->SetRelativeRotation(ro);
-	}
-}
-*/
-//---------------------------------------------------------------------------------------------------------------------------------
 //lee
 // VR機器の情報取得
 void AVRActor_ver1::VRInformation()
@@ -520,8 +479,8 @@ void AVRActor_ver1::VRInformation()
 		// XRSystem が有効な場合のみ、その先の関数を呼び出す。
 		if (GEngine->XRSystem->IsHeadTrackingAllowed())
 		{
-			
-			 
+
+
 
 			FQuat OrientationAsQuat;
 			FVector Position(0.f);
@@ -536,6 +495,7 @@ void AVRActor_ver1::VRInformation()
 	// XRSystem が無効な場合（VRが接続されていない場合など）は、
 	// この関数は何もしない。
 }
+
 
 // IA_MoveActionに登録されたボタンを押されると行う処理（現在はJキー）
 //void AVRActor_ver1::kariPlayerMoveStart(const FInputActionValue& Value)
@@ -581,31 +541,6 @@ void AVRActor_ver1::ArriveSplinePoint(int point_)
 	}
 }
 
-// デバイスからもらった情報をTransformEulerAnglesからもらって、int32型に変換して返す
-int32 AVRActor_ver1::TransformDataToInt32(const uint8_t* Data, int Size)
-{
-	int32 Result = 0;
-
-	for (int i = 0; i < Size; ++i)
-	{
-		Result |= (static_cast<int32>(Data[i]) << (8 * (Size - 1 - i)));
-	}
-	return Result;
-}
-
-// デバイスからもらった情報をTransformDataToInt32に入れて、その結果をFRotatorで返す
-FRotator AVRActor_ver1::TransformEulerAngles(const uint8_t* Data, int Size)
-{
-	std::array<int32, 3> Angles;
-	Angles[0] = TransformDataToInt32(Data, Size);       // X
-	Angles[1] = TransformDataToInt32(Data + 4, Size);   // Y
-	Angles[2] = TransformDataToInt32(Data + 8, Size);   // Z
-
-	// FRotatorの引数は（ピッチ、ヨー、ロール）の順なのでそれにあわせて番号を変えてる
-	FRotator ResultRotate = FRotator(Angles[1], Angles[2], Angles[0]);
-	return ResultRotate;
-}
-
 void AVRActor_ver1::DeviceGoMagic()
 {
 	GoMagic();
@@ -613,51 +548,17 @@ void AVRActor_ver1::DeviceGoMagic()
 
 void AVRActor_ver1::SpawnMagicChargeEffect()
 {
-	FVector a = Camera->GetComponentLocation() + FVector(100,0,0);
+	FVector a = Camera->GetComponentLocation() + FVector(100, 0, 0);
 	if (MagicChargeTime > 1.0f && !alreadyChargingMagicEffect)
 	{
-		//UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-		//	this,
-		//	ChargingMagicEffect,									// エフェクト
-		//	Camera->GetComponentLocation() + FVector(100, 0, 0),	// Location
-		//	Camera->GetComponentRotation(),							// Rotation
-		//	FVector(1.f),											// Scale
-		//	true,													// bAutoDestroy(基本true)
-		//	true,													// bAutoActivate
-		//	ENCPoolMethod::None,
-		//	true													// bPrecullCheck(カリングチェック)
-		//);
 		ChargingEffect->SetHiddenInGame(false);
 		alreadyChargingMagicEffect = true;
 		UKismetSystemLibrary::PrintString(this, TEXT("1secondCHAEGE"), true, false, FColor::Black, 2.0f, NAME_None);
 	}
 	if (MagicChargeTime > 2.0f && !alreadyChargeFinishMagicEffect)
 	{
-		//UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-		//	this,
-		//	ChargeFinishMagicEffect,								// エフェクト
-		//	Camera->GetComponentLocation() + FVector(100, 0, 0),	// Location
-		//	Camera->GetComponentRotation(),							// Rotation
-		//	FVector(1.f),											// Scale
-		//	true,													// bAutoDestroy(基本true)
-		//	true,													// bAutoActivate
-		//	ENCPoolMethod::None,
-		//	true													// bPrecullCheck(カリングチェック)
-		//);
 		ChargeFinishEffect->SetHiddenInGame(false);
 		alreadyChargeFinishMagicEffect = true;
 	}
-}
 
-void AVRActor_ver1::DeviceRotateToAverage()
-{
-	Average += AverageRotate.Pitch;
-	count++;
-
-	if (count == 5) {
-		AverageRotate.Pitch = Average / 5;
-		Average = 0;
-		count = 0;
-		UKismetSystemLibrary::PrintString(this, TEXT("count == 5"), true, false, FColor::Purple, 2.0f, NAME_None);
-	}
 }

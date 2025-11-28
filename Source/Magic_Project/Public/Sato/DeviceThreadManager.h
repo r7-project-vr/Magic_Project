@@ -24,6 +24,7 @@ public:
     FRotator GetLatestData() const;
 
 private:
+//#if PLATFORM_WINDOWS
     FMagicDeviceCmdSender* Runnable;
     FRunnableThread* Thread;
 
@@ -31,5 +32,5 @@ private:
     FRotator DeviceInfoResult;
 
     // ここにキャラクターへ渡す処理を書くこともできる
-
+//#endif
 };

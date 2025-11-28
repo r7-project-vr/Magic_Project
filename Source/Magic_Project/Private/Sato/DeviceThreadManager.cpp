@@ -31,7 +31,6 @@ void UDeviceThreadManager::StopManager()
 
 FRotator UDeviceThreadManager::GetLatestData() const
 {
-
     if (Runnable)
     {
         FScopeLock Lock(&Runnable->DataMutex);

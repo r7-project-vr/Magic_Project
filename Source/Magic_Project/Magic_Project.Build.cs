@@ -8,9 +8,18 @@ public class Magic_Project : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "Niagara", "HeadMountedDisplay", "ASerialCom", "XRBase", "VRM4U" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "Niagara", "HeadMountedDisplay", "XRBase", "VRM4U" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		if (Target.Platform == UnrealTargetPlatform.Win64)
+		{
+			PublicDependencyModuleNames.AddRange(new string[] { "ASerialCom" });
+		}
+		else if (Target.Platform == UnrealTargetPlatform.Android)
+		{
+			PublicDependencyModuleNames.AddRange(new string[] { });
+		}
+
+			PrivateDependencyModuleNames.AddRange(new string[] { });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

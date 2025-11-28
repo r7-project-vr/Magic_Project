@@ -14,17 +14,14 @@ FMagicDeviceCmdSender::~FMagicDeviceCmdSender()
 bool FMagicDeviceCmdSender::Init()
 {
 	// インスタンス化
-	deviceInfo_ = NewObject<UASerialPacket>();
-	device_ = NewObject<UASerialLibControllerWin>();
-	//deviceCmd_ = new FMagicDeviceCmdSender;
-	//TSharedPtr<FMagicDeviceCmdSender> deviceCmd_ = MakeShared<FMagicDeviceCmdSender>();
-	//deviceCmd_ = MakeShared<FMagicDeviceCmdSender>();
+	//deviceInfo_ = NewObject<UASerialPacket>();
+	//device_ = NewObject<UASerialLibControllerWin>();
 
 	// デバイス接続
-	device_->Initialize(this->DeviceID_, this->DeviceVersion_);
-	device_->SetInterfacePt(new WindowsSerial());
-	device_->AutoConnectDevice();
-	this->SendCmd_Cali(device_);
+	//device_->Initialize(this->DeviceID_, this->DeviceVersion_);
+	//device_->SetInterfacePt(new WindowsSerial());
+	//device_->AutoConnectDevice();
+	//this->SendCmd_Cali(device_);
 
 	return true;
 }
@@ -33,15 +30,15 @@ uint32 FMagicDeviceCmdSender::Run()
 {
 	while (StopTaskCounter.GetValue() == 0)
 	{
-		this->SendCmd_Euler(device_);
-		ASerialDataStruct::ASerialData ReceiveData;
-		int Result = device_->ReadData(&ReceiveData);
+		//this->SendCmd_Euler(device_);
+		//ASerialDataStruct::ASerialData ReceiveData;
+		//int Result = device_->ReadData(&ReceiveData);
 
-		FRotator Device_Rotate = TransformEulerAngles(ReceiveData.data, 4);
-		FRotator Rotate = FRotator(Device_Rotate.Pitch / 1000, Device_Rotate.Yaw / 1000, Device_Rotate.Roll / 1000);
+		//FRotator Device_Rotate = TransformEulerAngles(ReceiveData.data, 4);
+		//FRotator Rotate = FRotator(Device_Rotate.Pitch / 1000, Device_Rotate.Yaw / 1000, Device_Rotate.Roll / 1000);
 
 		FScopeLock Lock(&DataMutex);
-		DeviceRotate_ = Rotate;
+		//DeviceRotate_ = Rotate;
 		// ＝＝＝＝＝＝デバッグ情報＝＝＝＝＝＝
 		//uint16_t a = device_->GetLastErrorCode();
 		//UE_LOG(LogTemp, Log, TEXT("ErrorCode     = %X"), a);
@@ -62,47 +59,46 @@ void FMagicDeviceCmdSender::Stop()
 
 void FMagicDeviceCmdSender::Exit()
 {
-	device_->DisConnectDevice();
-	//delete deviceCmd_;
+	//device_->DisConnectDevice();
 }
 
 //========================================================================
 //================================デバイス================================
 //========================================================================
 
-void FMagicDeviceCmdSender::SendCmd_Cali(UASerialLibControllerWin* magicdevice_)
-{
-	if (magicdevice_)
-	{
-		magicdevice_->WriteData(Calibration_);
-	}
-}
-
-int32 FMagicDeviceCmdSender::SendCmd_Euler(UASerialLibControllerWin* magicdevice_)
-{
-	if (magicdevice_)
-	{
-		int32 Result = magicdevice_->WriteData(EulerCmd_);
-		return Result;
-	}
-	else
-	{
-		return -1;
-	}
-}
-
-int32 FMagicDeviceCmdSender::SendCmd_Quater(UASerialLibControllerWin* magicdevice_)
-{
-	if (magicdevice_)
-	{
-		int32 Result = magicdevice_->WriteData(QuaternionCmd_);
-		return Result;
-	}
-	else
-	{
-		return -1;
-	}
-}
+//void FMagicDeviceCmdSender::SendCmd_Cali(UASerialLibControllerWin* magicdevice_)
+//{
+//	if (magicdevice_)
+//	{
+//		magicdevice_->WriteData(Calibration_);
+//	}
+//}
+//
+//int32 FMagicDeviceCmdSender::SendCmd_Euler(UASerialLibControllerWin* magicdevice_)
+//{
+//	if (magicdevice_)
+//	{
+//		int32 Result = magicdevice_->WriteData(EulerCmd_);
+//		return Result;
+//	}
+//	else
+//	{
+//		return -1;
+//	}
+//}
+//
+//int32 FMagicDeviceCmdSender::SendCmd_Quater(UASerialLibControllerWin* magicdevice_)
+//{
+//	if (magicdevice_)
+//	{
+//		int32 Result = magicdevice_->WriteData(QuaternionCmd_);
+//		return Result;
+//	}
+//	else
+//	{
+//		return -1;
+//	}
+//}
 
 // デバイスからもらった情報をTransformEulerAnglesからもらって、int32型に変換して返す
 int32 FMagicDeviceCmdSender::TransformDataToInt32(const uint8_t* Data, int Size)
@@ -127,4 +123,5 @@ FRotator FMagicDeviceCmdSender::TransformEulerAngles(const uint8_t* Data, int Si
 	// FRotatorの引数は（ピッチ、ヨー、ロール）の順なのでそれにあわせて番号を変えてる
 	FRotator ResultRotate = FRotator(Angles[1], Angles[2], Angles[0]);
 	return ResultRotate;
+
 }
