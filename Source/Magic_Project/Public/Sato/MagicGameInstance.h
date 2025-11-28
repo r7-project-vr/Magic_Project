@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "Sato/DeviceThreadManager.h"
 #include "MagicGameInstance.generated.h"
 
 /**

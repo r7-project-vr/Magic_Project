@@ -10,8 +10,8 @@
 #include "Magic/Onishi_MagicCircleParent.h"
 #include "Kanda/MagicDataTable.h"
 #include "sato/PlayerWayRoad.h"
-#include "ASerialCom/Public/ASerialLibControllerWin.h"
-#include "ASerialCom/Public/ASerialCore/ASerialPacket.h"
+//#include "ASerialCom/Public/ASerialLibControllerWin.h"
+//#include "ASerialCom/Public/ASerialCore/ASerialPacket.h"
 #include "sato/MagicDeviceCmdSender.h"
 #include "Sound/SoundBase.h"
 #include "NiagaraSystem.h"
@@ -51,73 +51,152 @@ public:
 
 private:
 
-	/** Character用のStaticMesh : Sphere */
+	/// <summary>
+	/// スタティックメッシュコンポーネント
+	/// </summary>
 	UPROPERTY(VisibleAnywhere, Category = Character, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UStaticMeshComponent> Player;
 
+	/// <summary>
+	/// スフィアコンポーネント
+	/// </summary>
 	UPROPERTY(VisibleAnywhere, Category = Collider, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USphereComponent> Sphere;
 
+	/// <summary>
+	/// カメラコンポーネント
+	/// </summary>
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> Camera;
 
+	/// <summary>
+	/// アローコンポーネント
+	/// </summary>
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UArrowComponent> Arrow;
 
+	/// <summary>
+	/// スタティックメッシュコンポーネント
+	/// 現実と連動するゲーム内の手
+	/// </summary>
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UStaticMeshComponent> Sphere_HandTest;
+	TObjectPtr<UStaticMeshComponent> InGameHand;
 
+	/// <summary>
+	/// スプリングアームコンポーネント
+	/// </summary>
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USpringArmComponent> SpringArm;
 
+	/// <summary>
+	/// 魔法チャージ中のエフェクト
+	/// </summary>
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UNiagaraComponent> ChargingEffect;
 
+	/// <summary>
+	/// 魔法チャージが完了した後のエフェクト
+	/// </summary>
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UNiagaraComponent> ChargeFinishEffect;
 
-	// コントローラーのマッピング
+	//==================================================
+	//コントローラー
+	//==================================================
+
+	/// <summary>
+	/// コントローラーのマッピング
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;
 
+	/// <summary>
+	/// デバッグ用
+	/// 移動アクション
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> ControlMove;
 
+	/// <summary>
+	/// 魔法チャージアクション
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> MagicCharge;
 
+	/// <summary>
+	/// 魔法発射アクション
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> ControlMagic;
+	TObjectPtr<UInputAction> ShotMagic;
 
+	/// <summary>
+	/// デバッグ用
+	/// カメラアクション
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> LookAction;
 
+	/// <summary>
+	/// デバッグ用
+	/// 移動開始ボタンアクション
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccses = "true"))
 	TObjectPtr<UInputAction> MoveStart;
 
-	// 効果音
-	UPROPERTY(EditAnywhere, Category = Sound)
-	USoundBase* NormalMagicSound;
 
-	UPROPERTY(EditAnywhere, Category = Sound)
-	USoundBase* ChargeMagicSound;
+	//==================================================
+	//サウンド
+	//==================================================
 
+	/// <summary>
+	/// 通常魔法サウンド
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Sound)
-	USoundBase* ChargeFinishSound;
+	TObjectPtr<USoundBase> NormalMagicSound;
 
+	/// <summary>
+	/// チャージ魔法サウンド
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Sound)
-	USoundBase* HandUpSound;
+	TObjectPtr<USoundBase> ChargeMagicSound;
 
+	/// <summary>
+	/// 魔法チャージ完了サウンド
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Sound)
-	USoundBase* HandDownSound;
+	TObjectPtr<USoundBase> ChargeFinishSound;
 
-	// エフェクト
+	/// <summary>
+	/// 手が閾値まで上がった際のサウンド
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = Sound)
+	TObjectPtr<USoundBase> HandUpSound;
+
+	/// <summary>
+	/// 手が閾値まで下がった際のサウンド
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = Sound)
+	TObjectPtr<USoundBase> HandDownSound;
+
+	//==================================================
+	//エフェクト
+	//==================================================
+
+	/// <summary>
+	/// 手が閾値まで到達した際に出るエフェクト
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Niagara)
-	UNiagaraSystem* HandStar;
+	TObjectPtr<UNiagaraSystem> HandStar;
 
+	/// <summary>
+	/// 魔法チャージ中のエフェクト
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Niagara)
 	UNiagaraSystem* ChargingMagicEffect;
-	
+
+	/// <summary>
+	/// 魔法チャージ完了したエフェクト
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Niagara)
 	UNiagaraSystem* ChargeFinishMagicEffect;
 
@@ -127,33 +206,17 @@ protected:
 	TObjectPtr<APlayerWayRoad> SplineActor;
 
 private:
-	// デバイス用
-	//UPROPERTY()
-	//UASerialLibControllerWin* device_;
-
-	//UPROPERTY()
-	//UASerialPacket* deviceInfo_;
-
-	//UPROPERTY()
-	//AMagicDeviceCmdSender* deviceCmd_;
-
+	/// <summary>
+	/// デバイス
+	/// </summary>
 	UPROPERTY()
 	UDeviceThreadManager* DeviceManager_;
-
-	UFUNCTION()
-	void DeviceRotateToAverage();
 
 	// デバイスの情報を入れるとオイラー角を取得できる関数
 	// TransformDataToInt32はTransformEulerAnglesのために作られた関数です。
 	// 使う際はTransformEulerAnglesにデバイスの情報を入れればそのまま使えます。
 	int32 TransformDataToInt32(const uint8_t* Data, int Size);
 	FRotator TransformEulerAngles(const uint8_t* Data, int Size);
-
-
-	// 通信処理速度制限用の変数
-	// Interval = 1.0f / xx.xf;で何fpsか制限できる
-	float TimeAccumulator = 0.0f;
-	const float Interval = 1.0f / 30.0f;
 
 public:
 	UFUNCTION()
@@ -227,10 +290,6 @@ private:
 	// 魔法のチャージ中のエフェクト用の変数
 	bool alreadyChargingMagicEffect = false;
 	bool alreadyChargeFinishMagicEffect = false;
-
-	//
-	int count;
-	float Average;
 
 	// デバイスからもらった、今どれだけの角度を向いているかを表す変数
 	FRotator Final_Device_Rotate;
