@@ -279,7 +279,10 @@ private:
 	float ArmUpAngle;
 
 	// ˜r‚ğã‚°‰º‚°‚µ‚½‰ñ”
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	int ArmUpDownCnt = 0;
+
+	bool AlreadyMove = false;
 
 	// [“ïˆÕ“xŠÇ—]ˆÚ“®‚É•K—v‚È˜r‚ğã‚°‰º‚°‚·‚é‰ñ”
 	int Need_ArmUpDownCnt;

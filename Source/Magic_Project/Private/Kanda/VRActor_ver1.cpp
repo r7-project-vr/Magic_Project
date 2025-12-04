@@ -230,10 +230,12 @@ void AVRActor_ver1::Tick(float DeltaTime)
 	}
 
 	// 腕を一定回数以上上げ下げしたら動く
-	if (ArmUpDownCnt >= Need_ArmUpDownCnt)
+	if (ArmUpDownCnt >= Need_ArmUpDownCnt && !AlreadyMove)
 	{
 		PlayerMoveStart();
 		ArmUpDownCnt = 0;
+		AlreadyMove = true;
+		Need_ArmUpDownCnt = 10;
 	}
 
 	UKismetSystemLibrary::PrintString(this, IsInMagicZone ? TEXT("IsInMagicZone = true") : TEXT("IsInMagicZone = false"), true, false, FColor::Red, 0.05f, NAME_None);
