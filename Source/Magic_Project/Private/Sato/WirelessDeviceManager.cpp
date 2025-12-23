@@ -289,9 +289,12 @@ T UWirelessDeviceManager::TransformDataToInt32(const uint8_t* Data, int Size) co
 
 void UWirelessDeviceManager::OnReceiveData(FString ServiceUUID, FString CharacteristicUUID, TArray<uint8>& Data)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, FString::Printf(TEXT("Receive %s data"), *CharacteristicUUID));
+	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Green, FString::Printf(TEXT("Receive %s data"), *CharacteristicUUID));
 	if (ServiceUUID.Equals(IO_IMUSERVICE_UUID) && CharacteristicUUID.Equals(IO_EULER_CHARACTERISTIC_UUID))
+	{
 		HandleRotateData(Data);
+		GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Blue, TEXT("Called HandleRotateData"));
+	}
 	//else if (ServiceUUID.Equals(IO_BATTERYSERVICE_UUID) && CharacteristicUUID.Equals(IO_BATTERY_CHARACTERISTIC_UUID))
 		//HandleBatteryData(Data);
 	//else if (ServiceUUID.Equals(IO_PAIRINGSERVICE_UUID) && CharacteristicUUID.Equals())
@@ -300,10 +303,9 @@ void UWirelessDeviceManager::OnReceiveData(FString ServiceUUID, FString Characte
 void UWirelessDeviceManager::HandleRotateData(TArray<uint8>& Data)
 {
 	FRotator WirelessDeviceRotate = TransformEulerAngles(Data.GetData(), Data.Num());
-
-	FIMUEulerAngles* IMURulerAngles = reinterpret_cast<FIMUEulerAngles*>(&Data[1]);
-	devicepitch = IMURulerAngles->pitch;
-	GEngine->AddOnScreenDebugMessage(0, 2.0f, FColor::Cyan, FString::Printf(TEXT("pitch = %f"), devicepitch));
+	
+	devicepitch = WirelessDeviceRotate.Pitch;
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Cyan, FString::Printf(TEXT("Devicepitch = %f"), devicepitch));
 }
 
 void UWirelessDeviceManager::HandleBatteryData(const FIMUData& Data)
@@ -333,13 +335,34 @@ float UWirelessDeviceManager::DevicePitchAngleGetter()
 // デバイスからもらった情報をTransformDataToInt32に入れて、その結果をFRotatorで返す
 FRotator UWirelessDeviceManager::TransformEulerAngles(const uint8_t* Data, int Size)
 {
-	std::array<int32, 3> Angles;
-	//Angles[0] = TransformDataToInt32(Data, Size);       // X
-	//Angles[1] = TransformDataToInt32(Data + 4, Size);   // Y
-	//Angles[2] = TransformDataToInt32(Data + 8, Size);   // Z
+	// バイト配列をfloat配列としてキャスト
+	float* FloatData = reinterpret_cast<float*>(const_cast<uint8_t*>(Data));
 
-	// FRotatorの引数は（ピッチ、ヨー、ロール）の順なのでそれにあわせて番号を変えてる
-	FRotator ResultRotate = FRotator(Angles[1], Angles[2], Angles[0]);
+	float Roll = FloatData[0];
+	float Pitch = FloatData[1];
+	float Yaw = FloatData[2];
+
+	// floatの生データを表示
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow,
+		FString::Printf(TEXT("Float Values - Roll: %f, Pitch:  %f, Yaw: %f"),
+			Roll, Pitch, Yaw));
+
+	// ラジアンから度数法に変換
+	float RollDeg = Roll * (180.0f / PI);
+	float PitchDeg = Pitch * (180.0f / PI);
+	float YawDeg = Yaw * (180.0f / PI);
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Cyan,
+		FString::Printf(TEXT("Degree Values - Roll: %f, Pitch: %f, Yaw: %f"),
+			RollDeg, PitchDeg, YawDeg));
+
+	// FRotatorの引数は（ピッチ、ヨー、ロール）の順
+	// まずはラジアンから度に変換した値を使用
+	FRotator ResultRotate = FRotator(PitchDeg, YawDeg, RollDeg);
 	return ResultRotate;
+}
 
+void UWirelessDeviceManager::RadianToDegree(float& Radian)
+{
+	devicepitch = Radian * (180.0f / PI);
 }

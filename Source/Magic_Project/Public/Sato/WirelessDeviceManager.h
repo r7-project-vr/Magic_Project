@@ -246,6 +246,12 @@ private:
 	UPROPERTY()
 	int devicepitch;
 
+	/// <summary>
+	/// ƒ‰ƒWƒAƒ“‚ğ“x‚É•ÏŠ·‚·‚é’è”
+	/// </summary>
+	UFUNCTION()
+	void RadianToDegree(float& Radian);
+
 //#if PLATFORM_ANDROID
 //	FBleOnDeviceFoundDelegate Function;
 //#endif
