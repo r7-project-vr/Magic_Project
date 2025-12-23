@@ -21,7 +21,6 @@
 #include "Kismet/KismetMathLibrary.h"
 #include <array>
 #include "HeadMountedDisplayFunctionLibrary.h"
-#include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
 #include "sato/MagicGameInstance.h"
 
@@ -55,7 +54,8 @@ AVRActor_ver1::AVRActor_ver1() :
 	Arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
 	Arrow->SetRelativeLocation(FVector(50.f, 0.f, 30.f));
 	Arrow->SetupAttachment(Camera);
-	//Arrow->SetHiddenInGame(false);// この行のコメントアウトを解除するとArrowが見えるようになります※変更後プロジェクトの再起動が必要です
+	// 下の行のコメントアウトを解除するとArrowが見えるようになります※変更後プロジェクトの再起動が必要です
+	//Arrow->SetHiddenInGame(false);
 
 	// スプリングアームコンポーネントの追加と設定
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
@@ -146,7 +146,14 @@ void AVRActor_ver1::BeginPlay()
 	}
 
 	// デバイスマネージャーのキャスト
-	DeviceManager_ = Cast<UMagicGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->DeviceManager;
+	//DeviceManager_ = Cast<UMagicGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->DeviceManager;
+
+#if PLATFORM_ANDROID
+	// 無線デバイスのインスタンス化
+	WirelessDevice = NewObject<UWirelessDeviceManager>(this);
+	if (!WirelessDevice) return;
+	WirelessDevice->Init();
+#endif
 }
 
 // Called every frame
@@ -170,7 +177,12 @@ void AVRActor_ver1::Tick(float DeltaTime)
 	}
 
 	// デバイスマネージャーからデバイスのデータを取得
-	Final_Device_Rotate = DeviceManager_->GetLatestData();
+	//Final_Device_Rotate = DeviceManager_->GetLatestData();
+#if PLATFORM_ANDROID
+	// 無線デバイスからデバイスのデータを取得
+	Final_Device_Rotate.Pitch = WirelessDevice->DevicePitchAngleGetter();
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, FString::Printf(TEXT("pitch = %f"), Final_Device_Rotate.Pitch));
+#endif
 
 	// デバイスの角度が0度以下になったら       (腕を下げたら)
 	if (Final_Device_Rotate.Pitch < 0 && IsArmUp)
@@ -238,11 +250,11 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		Need_ArmUpDownCnt = 10;
 	}
 
-	UKismetSystemLibrary::PrintString(this, IsInMagicZone ? TEXT("IsInMagicZone = true") : TEXT("IsInMagicZone = false"), true, false, FColor::Red, 0.05f, NAME_None);
+	//UKismetSystemLibrary::PrintString(this, IsInMagicZone ? TEXT("IsInMagicZone = true") : TEXT("IsInMagicZone = false"), true, false, FColor::Red, 0.1f, NAME_None);
 	//UKismetSystemLibrary::PrintString(this, IsArmUp ? TEXT("true") : TEXT("false"), true, false, FColor::Red, 0.05f, NAME_None);
 	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.05f, NAME_None);
 	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicScore = %d"), Magic_Score), true, false, FColor::Blue, 0.05f, NAME_None);
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicChargeTime = %f"), MagicChargeTime), true, false, FColor::Yellow, 0.05f, NAME_None);
+	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicChargeTime = %f"), MagicChargeTime), true, false, FColor::Yellow, 0.1f, NAME_None);
 }
 
 // Called to bind functionality to input
@@ -254,10 +266,10 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
 
 		// ControlBallとIA_ControlのTriggeredをBindする
-		EnhancedInputComponent->BindAction(ControlMove,  ETriggerEvent::Triggered, this, &AVRActor_ver1::ControlPlayer);
-		EnhancedInputComponent->BindAction(MagicCharge,  ETriggerEvent::Triggered, this, &AVRActor_ver1::MouseChargeMagic);
-		EnhancedInputComponent->BindAction(ShotMagic,    ETriggerEvent::Completed, this, &AVRActor_ver1::GoMagic);
-		EnhancedInputComponent->BindAction(LookAction,   ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
+		EnhancedInputComponent->BindAction(ControlMove, ETriggerEvent::Triggered, this, &AVRActor_ver1::ControlPlayer);
+		EnhancedInputComponent->BindAction(MagicCharge, ETriggerEvent::Triggered, this, &AVRActor_ver1::MouseChargeMagic);
+		EnhancedInputComponent->BindAction(ShotMagic,   ETriggerEvent::Completed, this, &AVRActor_ver1::GoMagic);
+		EnhancedInputComponent->BindAction(LookAction,  ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
 		//EnhancedInputComponent->BindAction(MoveStart,    ETriggerEvent::Triggered, this, &AVRActor_ver1::kariPlayerMoveStart);
 	}
 }
