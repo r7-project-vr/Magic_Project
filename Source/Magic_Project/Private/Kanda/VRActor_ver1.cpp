@@ -135,11 +135,12 @@ void AVRActor_ver1::BeginPlay()
 	{
 	case 0:
 		ArmUpAngle = 30.0f;
-		Need_ArmUpDownCnt = 3;
+		Need_ArmUpDownCnt = MagicGame->Setting_ArmUpDownCnt;
+		//Need_ArmUpDownCnt = 3;
 		break;
 	case 1:
 		ArmUpAngle = 45.0f;
-		Need_ArmUpDownCnt = 5;
+		//Need_ArmUpDownCnt = 5;
 		break;
 	default:
 		break;
@@ -247,14 +248,14 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		PlayerMoveStart();
 		ArmUpDownCnt = 0;
 		AlreadyMove = true;
-		Need_ArmUpDownCnt = 10;
+		//Need_ArmUpDownCnt = 10;
 	}
 
-	//UKismetSystemLibrary::PrintString(this, IsInMagicZone ? TEXT("IsInMagicZone = true") : TEXT("IsInMagicZone = false"), true, false, FColor::Red, 0.1f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, IsInMagicZone ? TEXT("IsInMagicZone = true") : TEXT("IsInMagicZone = false"), true, false, FColor::Red, 0.1f, NAME_None);
 	//UKismetSystemLibrary::PrintString(this, IsArmUp ? TEXT("true") : TEXT("false"), true, false, FColor::Red, 0.05f, NAME_None);
-	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.05f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.05f, NAME_None);
 	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicScore = %d"), Magic_Score), true, false, FColor::Blue, 0.05f, NAME_None);
-	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicChargeTime = %f"), MagicChargeTime), true, false, FColor::Yellow, 0.1f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicChargeTime = %f"), MagicChargeTime), true, false, FColor::Yellow, 0.1f, NAME_None);
 }
 
 // Called to bind functionality to input
@@ -294,9 +295,9 @@ void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
 void AVRActor_ver1::ChargeMagic()
 {
 	MagicChargeTime += GetWorld()->GetDeltaSeconds();
-	if (MagicChargeTime >= 2.0f && !Charged)
+	if (MagicChargeTime >= 5.0f && !Charged)
 	{
-		UKismetSystemLibrary::PrintString(this, TEXT("2byoutattayo!!!!!!!!!!!!!!!"), true, false, FColor::Cyan, 0.3f);
+		UKismetSystemLibrary::PrintString(this, TEXT("5byoutattayo!!!!!!!!!!!!!!!"), true, false, FColor::Cyan, 0.3f);
 		Charged = true;
 		UGameplayStatics::PlaySound2D(this, ChargeFinishSound);
 	}

@@ -332,7 +332,7 @@ float UWirelessDeviceManager::DevicePitchAngleGetter()
 	return devicepitch;
 }
 
-// デバイスからもらった情報をTransformDataToInt32に入れて、その結果をFRotatorで返す
+// デバイスからもらった情報を計算してFRotatorに変換する
 FRotator UWirelessDeviceManager::TransformEulerAngles(const uint8_t* Data, int Size)
 {
 	// バイト配列をfloat配列としてキャスト
@@ -341,11 +341,6 @@ FRotator UWirelessDeviceManager::TransformEulerAngles(const uint8_t* Data, int S
 	float Roll = FloatData[0];
 	float Pitch = FloatData[1];
 	float Yaw = FloatData[2];
-
-	// floatの生データを表示
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow,
-		FString::Printf(TEXT("Float Values - Roll: %f, Pitch:  %f, Yaw: %f"),
-			Roll, Pitch, Yaw));
 
 	// ラジアンから度数法に変換
 	float RollDeg = Roll * (180.0f / PI);
@@ -356,13 +351,7 @@ FRotator UWirelessDeviceManager::TransformEulerAngles(const uint8_t* Data, int S
 		FString::Printf(TEXT("Degree Values - Roll: %f, Pitch: %f, Yaw: %f"),
 			RollDeg, PitchDeg, YawDeg));
 
-	// FRotatorの引数は（ピッチ、ヨー、ロール）の順
-	// まずはラジアンから度に変換した値を使用
+	// FRotatorの引数は（ピッチ、ヨー、ロール）の順なのでそれにあわせている
 	FRotator ResultRotate = FRotator(PitchDeg, YawDeg, RollDeg);
 	return ResultRotate;
-}
-
-void UWirelessDeviceManager::RadianToDegree(float& Radian)
-{
-	devicepitch = Radian * (180.0f / PI);
 }
