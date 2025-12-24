@@ -243,14 +243,11 @@ private:
 	UPROPERTY()
 	EDeviceConnectType State;
 
-	UPROPERTY()
-	int devicepitch;
-
 	/// <summary>
-	/// ラジアンを度に変換する定数
+	/// プレイヤーに渡すピッチ角
 	/// </summary>
-	UFUNCTION()
-	void RadianToDegree(float& Radian);
+	UPROPERTY()
+	float devicepitch;
 
 //#if PLATFORM_ANDROID
 //	FBleOnDeviceFoundDelegate Function;

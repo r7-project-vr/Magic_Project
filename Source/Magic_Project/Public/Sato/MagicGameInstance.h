@@ -26,4 +26,11 @@ public:
 
 	UPROPERTY(BluePrintReadWrite)
 	int Difficulty;
+
+	/// <summary>
+	/// タイトルで設定する腕の上下運動回数
+	/// 初期値として1を設定
+	/// </summary>
+	UPROPERTY(BluePrintReadWrite)
+	int Setting_ArmUpDownCnt = 1;
 };

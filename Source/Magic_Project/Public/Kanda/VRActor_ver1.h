@@ -280,12 +280,13 @@ private:
 	float ArmUpAngle;
 
 	// 腕を上げ下げした回数
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int ArmUpDownCnt = 0;
 
 	bool AlreadyMove = false;
 
 	// [難易度管理]移動に必要な腕を上げ下げする回数
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int Need_ArmUpDownCnt;
 
 	// 今腕を上げているか下げているか。trueで上げている。
