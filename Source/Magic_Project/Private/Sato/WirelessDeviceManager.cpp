@@ -87,6 +87,7 @@ bool UWirelessDeviceManager::Disconnect()
 	ErrFunction.BindUFunction(this, FName("OnDisconnectError"));
 	MyDevice.GetInterface()->Disconnect(SuccFunction, ErrFunction);
 	State = EDeviceConnectType::Disconnecting;
+	//delete FloatData;
 #endif
 	return true;
 }
@@ -246,12 +247,21 @@ void UWirelessDeviceManager::OnConnectSucc()
 	//Name = MyDevice->GetDeviceName();
 	//UUID = MyDevice->GetDeviceId();
 	State = EDeviceConnectType::Connected;
-	FBleCharacteristicDataDelegate ReceiveFunction;
+
+	FBleCharacteristicDelegate WriteFunction;
+	WriteFunction.BindUFunction(this, FName("OnWriteData"));
+	MyDevice.GetInterface()->BindToCharacteristicWriteEvent(WriteFunction);
+	TArray<uint8> Datas;
+	Datas.Add(1);
+	MyDevice.GetInterface()->WriteCharacteristic(IO_PAIRINGSERVICE_UUID, IO_PAIRINGREQUEST_CHARACTERISTIC_UUID, Datas);
+
+
+	/*FBleCharacteristicDataDelegate ReceiveFunction;
 	ReceiveFunction.BindUFunction(this, FName("OnReceiveData"));
 	MyDevice.GetInterface()->BindToCharacteristicNotificationEvent(ReceiveFunction);
 	MyDevice.GetInterface()->SubscribeToCharacteristic(IO_IMUSERVICE_UUID, IO_EULER_CHARACTERISTIC_UUID, false);
 	FString BatteryUUID = UBleUtils::HexToUUID(IO_BATTERY_CHARACTERISTIC_UUID);
-	MyDevice.GetInterface()->SubscribeToCharacteristic(IO_IMUSERVICE_UUID, BatteryUUID, false);
+	MyDevice.GetInterface()->SubscribeToCharacteristic(IO_IMUSERVICE_UUID, BatteryUUID, false);*/
 #endif
 }
 
@@ -287,6 +297,18 @@ T UWirelessDeviceManager::TransformDataToInt32(const uint8_t* Data, int Size) co
 	return Result;
 }
 
+void UWirelessDeviceManager::OnWriteData(FString ServiceUUID, FString CharacteristicUUID, bool bSuccess)
+{
+#if PLATFORM_ANDROID
+	FBleCharacteristicDataDelegate ReceiveFunction;
+	ReceiveFunction.BindUFunction(this, FName("OnReceiveData"));
+	MyDevice.GetInterface()->BindToCharacteristicNotificationEvent(ReceiveFunction);
+	MyDevice.GetInterface()->SubscribeToCharacteristic(IO_IMUSERVICE_UUID, IO_EULER_CHARACTERISTIC_UUID, false);
+	FString BatteryUUID = UBleUtils::HexToUUID(IO_BATTERY_CHARACTERISTIC_UUID);
+	MyDevice.GetInterface()->SubscribeToCharacteristic(IO_IMUSERVICE_UUID, BatteryUUID, false);
+#endif
+}
+
 void UWirelessDeviceManager::OnReceiveData(FString ServiceUUID, FString CharacteristicUUID, TArray<uint8>& Data)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Green, FString::Printf(TEXT("Receive %s data"), *CharacteristicUUID));
@@ -295,8 +317,8 @@ void UWirelessDeviceManager::OnReceiveData(FString ServiceUUID, FString Characte
 		HandleRotateData(Data);
 		GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Blue, TEXT("Called HandleRotateData"));
 	}
-	//else if (ServiceUUID.Equals(IO_BATTERYSERVICE_UUID) && CharacteristicUUID.Equals(IO_BATTERY_CHARACTERISTIC_UUID))
-		//HandleBatteryData(Data);
+	else if (ServiceUUID.Equals(IO_PAIRINGSERVICE_UUID) && CharacteristicUUID.Equals(IO_PAIRINGREQUEST_CHARACTERISTIC_UUID))
+		HandleBatteryData(Data); // バッテリーの処理していない。仮のもの。接続リクエストを送っている。
 	//else if (ServiceUUID.Equals(IO_PAIRINGSERVICE_UUID) && CharacteristicUUID.Equals())
 }
 
@@ -305,13 +327,12 @@ void UWirelessDeviceManager::HandleRotateData(TArray<uint8>& Data)
 	FRotator WirelessDeviceRotate = TransformEulerAngles(Data.GetData(), Data.Num());
 	
 	devicepitch = WirelessDeviceRotate.Pitch;
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Cyan, FString::Printf(TEXT("Devicepitch = %f"), devicepitch));
+	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Cyan, FString::Printf(TEXT("Devicepitch = %f"), devicepitch));
 }
 
-void UWirelessDeviceManager::HandleBatteryData(const FIMUData& Data)
+void UWirelessDeviceManager::HandleBatteryData(TArray<uint8>& Data)
 {
-	//uint8 Battery = TransformDataToInt<uint8>(Data.GetData(), Data.Num());
-	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("Battery: %d%%"), Battery));
+
 }
 
 void UWirelessDeviceManager::DebugReceiveData(const FIMUData& Data)
@@ -347,7 +368,7 @@ FRotator UWirelessDeviceManager::TransformEulerAngles(const uint8_t* Data, int S
 	float PitchDeg = Pitch * (180.0f / PI);
 	float YawDeg = Yaw * (180.0f / PI);
 
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Cyan,
+	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Cyan,
 		FString::Printf(TEXT("Degree Values - Roll: %f, Pitch: %f, Yaw: %f"),
 			RollDeg, PitchDeg, YawDeg));
 

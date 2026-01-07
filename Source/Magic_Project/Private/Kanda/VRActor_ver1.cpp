@@ -182,7 +182,7 @@ void AVRActor_ver1::Tick(float DeltaTime)
 #if PLATFORM_ANDROID
 	// 無線デバイスからデバイスのデータを取得
 	Final_Device_Rotate.Pitch = WirelessDevice->DevicePitchAngleGetter();
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, FString::Printf(TEXT("pitch = %f"), Final_Device_Rotate.Pitch));
+	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Cyan, FString::Printf(TEXT("pitch = %f"), Final_Device_Rotate.Pitch));
 #endif
 
 	// デバイスの角度が0度以下になったら       (腕を下げたら)
@@ -322,9 +322,9 @@ void AVRActor_ver1::GoMagic()
 	if (magicData == nullptr) { return; }
 	const int cnt = magicData->GetMagicCnt();
 
-	UNiagaraSystem* f = magicData->GetFlyNiagaraSystem(0);
-	UNiagaraSystem* d = magicData->GetDeathNiagaraSystem(0);
-	UNiagaraSystem* ff = magicData->GetFlyNiagaraSystem(1);
+	TObjectPtr<UNiagaraSystem> f = magicData->GetFlyNiagaraSystem(0);
+	TObjectPtr<UNiagaraSystem> d = magicData->GetDeathNiagaraSystem(0);
+	TObjectPtr<UNiagaraSystem> ff = magicData->GetFlyNiagaraSystem(1);
 
 	// 魔法のチャージ時間を計って何の魔法を出すか決める
 	// else外したら多分破棄されたポインタ「d」を使うことになるのでクラッシュする
@@ -564,13 +564,13 @@ void AVRActor_ver1::DeviceGoMagic()
 void AVRActor_ver1::SpawnMagicChargeEffect()
 {
 	FVector a = Camera->GetComponentLocation() + FVector(100, 0, 0);
-	if (MagicChargeTime > 1.0f && !alreadyChargingMagicEffect)
+	if (MagicChargeTime > 2.0f && !alreadyChargingMagicEffect)
 	{
 		ChargingEffect->SetHiddenInGame(false);
 		alreadyChargingMagicEffect = true;
-		UKismetSystemLibrary::PrintString(this, TEXT("1secondCHAEGE"), true, false, FColor::Black, 2.0f, NAME_None);
+		UKismetSystemLibrary::PrintString(this, TEXT("2secondCHAEGE"), true, false, FColor::Black, 2.0f, NAME_None);
 	}
-	if (MagicChargeTime > 2.0f && !alreadyChargeFinishMagicEffect)
+	if (MagicChargeTime > 5.0f && !alreadyChargeFinishMagicEffect)
 	{
 		ChargeFinishEffect->SetHiddenInGame(false);
 		alreadyChargeFinishMagicEffect = true;
