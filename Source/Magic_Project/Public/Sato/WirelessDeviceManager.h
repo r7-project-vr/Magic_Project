@@ -180,6 +180,10 @@ private:
 	template<typename T>
 	T TransformDataToInt32(const uint8_t* Data, int Size) const;
 
+	// 仮の関数
+	UFUNCTION()
+	void OnWriteData(FString ServiceUUID, FString CharacteristicUUID, bool bSuccess);
+
 	/// <summary>
 	/// 通知が来た時
 	/// </summary>
@@ -199,7 +203,7 @@ private:
 	/// バッテリーデータを処理
 	/// </summary>
 	/// <param name="Data">データ</param>
-	void HandleBatteryData(const FIMUData& Data);
+	void HandleBatteryData(TArray<uint8>& Data);
 
 	/// <summary>
 	/// もらったデータを表示する(デバッグ用)
@@ -248,6 +252,8 @@ private:
 	/// </summary>
 	UPROPERTY()
 	float devicepitch;
+
+	//volatile float* FloatData;
 
 //#if PLATFORM_ANDROID
 //	FBleOnDeviceFoundDelegate Function;
