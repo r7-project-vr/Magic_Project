@@ -131,20 +131,8 @@ void AVRActor_ver1::BeginPlay()
 
 	// 難易度によるパラメーターの調整。現在は０でノーマル、１でハード
 	UMagicGameInstance* MagicGame = Cast<UMagicGameInstance>(GetWorld()->GetGameInstance<UMagicGameInstance>());
-	switch (MagicGame->Difficulty)
-	{
-	case 0:
-		ArmUpAngle = 30.0f;
-		Need_ArmUpDownCnt = MagicGame->Setting_ArmUpDownCnt;
-		//Need_ArmUpDownCnt = 3;
-		break;
-	case 1:
-		ArmUpAngle = 45.0f;
-		//Need_ArmUpDownCnt = 5;
-		break;
-	default:
-		break;
-	}
+	ArmUpAngle = 30.0f;
+	Need_ArmUpDownCnt = MagicGame->Setting_ArmUpDownCnt;
 
 	// デバイスマネージャーのキャスト
 	//DeviceManager_ = Cast<UMagicGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->DeviceManager;
@@ -392,6 +380,7 @@ void AVRActor_ver1::CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_D
 		AOnishi_MagicLauncher* magic =
 			GetWorld()->SpawnActor<AOnishi_MagicLauncher>(AOnishi_MagicLauncher::StaticClass(), pos, look); // スポーン処理
 
+		if (!magic) return;
 		magic->MoveSpeed *= s_;
 		magic->LaunchMagic(look.Vector(), pos, Ef_Flying_, Ef_Destroy_);
 
@@ -404,7 +393,7 @@ void AVRActor_ver1::CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_D
 void AVRActor_ver1::Look(const FInputActionValue& Value)
 {
 	//この行をコメントアウトするとマウスでカメラ操作できるようになる
-	if (true) return;
+	//if (true) return;
 
 	// inputのValueはVector2Dに変換できる
 	FVector2D v = Value.Get<FVector2D>();
