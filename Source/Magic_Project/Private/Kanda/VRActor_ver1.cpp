@@ -21,7 +21,6 @@
 #include "Kismet/KismetMathLibrary.h"
 #include <array>
 #include "HeadMountedDisplayFunctionLibrary.h"
-#include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
 #include "sato/MagicGameInstance.h"
 
@@ -55,7 +54,8 @@ AVRActor_ver1::AVRActor_ver1() :
 	Arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
 	Arrow->SetRelativeLocation(FVector(50.f, 0.f, 30.f));
 	Arrow->SetupAttachment(Camera);
-	//Arrow->SetHiddenInGame(false);// この行のコメントアウトを解除するとArrowが見えるようになります※変更後プロジェクトの再起動が必要です
+	// 下の行のコメントアウトを解除するとArrowが見えるようになります※変更後プロジェクトの再起動が必要です
+	//Arrow->SetHiddenInGame(false);
 
 	// スプリングアームコンポーネントの追加と設定
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
@@ -131,22 +131,18 @@ void AVRActor_ver1::BeginPlay()
 
 	// 難易度によるパラメーターの調整。現在は０でノーマル、１でハード
 	UMagicGameInstance* MagicGame = Cast<UMagicGameInstance>(GetWorld()->GetGameInstance<UMagicGameInstance>());
-	switch (MagicGame->Difficulty)
-	{
-	case 0:
-		ArmUpAngle = 30.0f;
-		Need_ArmUpDownCnt = 3;
-		break;
-	case 1:
-		ArmUpAngle = 45.0f;
-		Need_ArmUpDownCnt = 5;
-		break;
-	default:
-		break;
-	}
+	ArmUpAngle = 30.0f;
+	Need_ArmUpDownCnt = MagicGame->Setting_ArmUpDownCnt;
 
 	// デバイスマネージャーのキャスト
-	DeviceManager_ = Cast<UMagicGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->DeviceManager;
+	//DeviceManager_ = Cast<UMagicGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->DeviceManager;
+
+#if PLATFORM_ANDROID
+	// 無線デバイスのインスタンス化
+	WirelessDevice = NewObject<UWirelessDeviceManager>(this);
+	if (!WirelessDevice) return;
+	WirelessDevice->Init();
+#endif
 }
 
 // Called every frame
@@ -170,7 +166,12 @@ void AVRActor_ver1::Tick(float DeltaTime)
 	}
 
 	// デバイスマネージャーからデバイスのデータを取得
-	Final_Device_Rotate = DeviceManager_->GetLatestData();
+	//Final_Device_Rotate = DeviceManager_->GetLatestData();
+#if PLATFORM_ANDROID
+	// 無線デバイスからデバイスのデータを取得
+	Final_Device_Rotate.Pitch = WirelessDevice->DevicePitchAngleGetter();
+	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Cyan, FString::Printf(TEXT("pitch = %f"), Final_Device_Rotate.Pitch));
+#endif
 
 	// デバイスの角度が0度以下になったら       (腕を下げたら)
 	if (Final_Device_Rotate.Pitch < 0 && IsArmUp)
@@ -235,14 +236,14 @@ void AVRActor_ver1::Tick(float DeltaTime)
 		PlayerMoveStart();
 		ArmUpDownCnt = 0;
 		AlreadyMove = true;
-		Need_ArmUpDownCnt = 10;
+		//Need_ArmUpDownCnt = 10;
 	}
 
-	UKismetSystemLibrary::PrintString(this, IsInMagicZone ? TEXT("IsInMagicZone = true") : TEXT("IsInMagicZone = false"), true, false, FColor::Red, 0.05f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, IsInMagicZone ? TEXT("IsInMagicZone = true") : TEXT("IsInMagicZone = false"), true, false, FColor::Red, 0.1f, NAME_None);
 	//UKismetSystemLibrary::PrintString(this, IsArmUp ? TEXT("true") : TEXT("false"), true, false, FColor::Red, 0.05f, NAME_None);
-	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.05f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.05f, NAME_None);
 	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicScore = %d"), Magic_Score), true, false, FColor::Blue, 0.05f, NAME_None);
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicChargeTime = %f"), MagicChargeTime), true, false, FColor::Yellow, 0.05f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicChargeTime = %f"), MagicChargeTime), true, false, FColor::Yellow, 0.1f, NAME_None);
 }
 
 // Called to bind functionality to input
@@ -254,10 +255,10 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
 
 		// ControlBallとIA_ControlのTriggeredをBindする
-		EnhancedInputComponent->BindAction(ControlMove,  ETriggerEvent::Triggered, this, &AVRActor_ver1::ControlPlayer);
-		EnhancedInputComponent->BindAction(MagicCharge,  ETriggerEvent::Triggered, this, &AVRActor_ver1::MouseChargeMagic);
-		EnhancedInputComponent->BindAction(ShotMagic,    ETriggerEvent::Completed, this, &AVRActor_ver1::GoMagic);
-		EnhancedInputComponent->BindAction(LookAction,   ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
+		EnhancedInputComponent->BindAction(ControlMove, ETriggerEvent::Triggered, this, &AVRActor_ver1::ControlPlayer);
+		EnhancedInputComponent->BindAction(MagicCharge, ETriggerEvent::Triggered, this, &AVRActor_ver1::MouseChargeMagic);
+		EnhancedInputComponent->BindAction(ShotMagic,   ETriggerEvent::Completed, this, &AVRActor_ver1::GoMagic);
+		EnhancedInputComponent->BindAction(LookAction,  ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
 		//EnhancedInputComponent->BindAction(MoveStart,    ETriggerEvent::Triggered, this, &AVRActor_ver1::kariPlayerMoveStart);
 	}
 }
@@ -282,9 +283,9 @@ void AVRActor_ver1::ControlPlayer(const FInputActionValue& Value)
 void AVRActor_ver1::ChargeMagic()
 {
 	MagicChargeTime += GetWorld()->GetDeltaSeconds();
-	if (MagicChargeTime >= 2.0f && !Charged)
+	if (MagicChargeTime >= 5.0f && !Charged)
 	{
-		UKismetSystemLibrary::PrintString(this, TEXT("2byoutattayo!!!!!!!!!!!!!!!"), true, false, FColor::Cyan, 0.3f);
+		UKismetSystemLibrary::PrintString(this, TEXT("5byoutattayo!!!!!!!!!!!!!!!"), true, false, FColor::Cyan, 0.3f);
 		Charged = true;
 		UGameplayStatics::PlaySound2D(this, ChargeFinishSound);
 	}
@@ -309,9 +310,9 @@ void AVRActor_ver1::GoMagic()
 	if (magicData == nullptr) { return; }
 	const int cnt = magicData->GetMagicCnt();
 
-	UNiagaraSystem* f = magicData->GetFlyNiagaraSystem(0);
-	UNiagaraSystem* d = magicData->GetDeathNiagaraSystem(0);
-	UNiagaraSystem* ff = magicData->GetFlyNiagaraSystem(1);
+	TObjectPtr<UNiagaraSystem> f = magicData->GetFlyNiagaraSystem(0);
+	TObjectPtr<UNiagaraSystem> d = magicData->GetDeathNiagaraSystem(0);
+	TObjectPtr<UNiagaraSystem> ff = magicData->GetFlyNiagaraSystem(1);
 
 	// 魔法のチャージ時間を計って何の魔法を出すか決める
 	// else外したら多分破棄されたポインタ「d」を使うことになるのでクラッシュする
@@ -379,6 +380,7 @@ void AVRActor_ver1::CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_D
 		AOnishi_MagicLauncher* magic =
 			GetWorld()->SpawnActor<AOnishi_MagicLauncher>(AOnishi_MagicLauncher::StaticClass(), pos, look); // スポーン処理
 
+		if (!magic) return;
 		magic->MoveSpeed *= s_;
 		magic->LaunchMagic(look.Vector(), pos, Ef_Flying_, Ef_Destroy_);
 
@@ -391,7 +393,7 @@ void AVRActor_ver1::CreateMagic(UNiagaraSystem* Ef_Flying_, UNiagaraSystem* Ef_D
 void AVRActor_ver1::Look(const FInputActionValue& Value)
 {
 	//この行をコメントアウトするとマウスでカメラ操作できるようになる
-	if (true) return;
+	//if (true) return;
 
 	// inputのValueはVector2Dに変換できる
 	FVector2D v = Value.Get<FVector2D>();
@@ -551,13 +553,13 @@ void AVRActor_ver1::DeviceGoMagic()
 void AVRActor_ver1::SpawnMagicChargeEffect()
 {
 	FVector a = Camera->GetComponentLocation() + FVector(100, 0, 0);
-	if (MagicChargeTime > 1.0f && !alreadyChargingMagicEffect)
+	if (MagicChargeTime > 2.0f && !alreadyChargingMagicEffect)
 	{
 		ChargingEffect->SetHiddenInGame(false);
 		alreadyChargingMagicEffect = true;
-		UKismetSystemLibrary::PrintString(this, TEXT("1secondCHAEGE"), true, false, FColor::Black, 2.0f, NAME_None);
+		UKismetSystemLibrary::PrintString(this, TEXT("2secondCHAEGE"), true, false, FColor::Black, 2.0f, NAME_None);
 	}
-	if (MagicChargeTime > 2.0f && !alreadyChargeFinishMagicEffect)
+	if (MagicChargeTime > 5.0f && !alreadyChargeFinishMagicEffect)
 	{
 		ChargeFinishEffect->SetHiddenInGame(false);
 		alreadyChargeFinishMagicEffect = true;

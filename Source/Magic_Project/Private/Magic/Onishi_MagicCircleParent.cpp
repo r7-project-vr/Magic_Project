@@ -17,7 +17,7 @@ AOnishi_MagicCircleParent::AOnishi_MagicCircleParent()
 	//スフィアコリジョン作成
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 	RootComponent = SphereComponent;
-	SphereComponent->SetSphereRadius(200.0f);
+	SphereComponent->SetSphereRadius(400.0f);
 
 	//オーバーラップ時の動作をバインド
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AOnishi_MagicCircleParent::OnOverlapBegin);

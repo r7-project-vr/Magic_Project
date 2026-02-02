@@ -16,6 +16,7 @@
 #include "Sound/SoundBase.h"
 #include "NiagaraSystem.h"
 #include "Sato/DeviceThreadManager.h"
+#include "sato/WirelessDeviceManager.h"
 #include "VRActor_ver1.generated.h"
 
 class UStaticMeshComponent;
@@ -279,12 +280,13 @@ private:
 	float ArmUpAngle;
 
 	// 腕を上げ下げした回数
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int ArmUpDownCnt = 0;
 
 	bool AlreadyMove = false;
 
 	// [難易度管理]移動に必要な腕を上げ下げする回数
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int Need_ArmUpDownCnt;
 
 	// 今腕を上げているか下げているか。trueで上げている。
@@ -293,6 +295,12 @@ private:
 	// 魔法のチャージ中のエフェクト用の変数
 	bool alreadyChargingMagicEffect = false;
 	bool alreadyChargeFinishMagicEffect = false;
+
+	/// <summary>
+	/// 無線通信のデバイス
+	/// </summary>
+	UPROPERTY()
+	TObjectPtr<UWirelessDeviceManager> WirelessDevice;
 
 	// デバイスからもらった、今どれだけの角度を向いているかを表す変数
 	FRotator Final_Device_Rotate;
