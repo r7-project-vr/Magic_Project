@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Magic/Onishi_MagicLauncher.h"
@@ -16,25 +16,26 @@ AOnishi_MagicLauncher::AOnishi_MagicLauncher()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// ‰Šú‰»
+	// åˆæœŸåŒ–
 	DestroyEffect = nullptr;
 	_NiagaraComponent = nullptr;
 
-	// StaticMeshComponent‚ğ’Ç‰Á‚µARootComponent‚Éİ’è‚·‚é
+	// StaticMeshComponentã‚’è¿½åŠ ã—ã€RootComponentã«è¨­å®šã™ã‚‹
 	Magic = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	RootComponent = Magic;
 
-	//ƒXƒtƒBƒAƒRƒŠƒWƒ‡ƒ“ì¬
+	//ã‚¹ãƒ•ã‚£ã‚¢ã‚³ãƒªã‚¸ãƒ§ãƒ³ä½œæˆ
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 	SphereComponent->SetCollisionProfileName("OverlapAll");
 	SphereComponent->SetupAttachment(RootComponent);
-	SphereComponent->SetSphereRadius(50.0f);
+	SphereComponent->SetSphereRadius(80.0f);
 
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AOnishi_MagicLauncher::OnHit);
 
 
-}
+	SphereComponent->bHiddenInGame = false;
 
+}
 // Called when the game starts or when spawned
 void AOnishi_MagicLauncher::BeginPlay()
 {
@@ -49,16 +50,16 @@ void AOnishi_MagicLauncher::BeginPlay()
 		LaunchMagic(PreloadDirection, PreloadLocation, PreloadFlyingEffect, PreloadDestroyEffect);
 	}
 #if false
-	// ’Ç‹L_5_16
+	// è¿½è¨˜_5_16
 	{
-		//”j‰ó‚Ü‚Å‚Ìƒ^ƒCƒ}[‚ğn‚ß‚éi3‚Â–Ú‚Ìˆø”‚Åw’èi’PˆÊ‚Í•bjj
+		//ç ´å£Šã¾ã§ã®ã‚¿ã‚¤ãƒãƒ¼ã‚’å§‹ã‚ã‚‹ï¼ˆ3ã¤ç›®ã®å¼•æ•°ã§æŒ‡å®šï¼ˆå˜ä½ã¯ç§’ï¼‰ï¼‰
 		FTimerHandle DestroyTimerHandle;
 		GetWorldTimerManager().SetTimer(DestroyTimerHandle, this, &AOnishi_MagicLauncher::HandleAutoDestroy, 2.0f, false);
 
-		//Å‰‚ÌˆÊ’u‚ğŒˆ’è
+		//æœ€åˆã®ä½ç½®ã‚’æ±ºå®š
 		SetActorLocation(StartLocation);
 
-		//”ò‚ÔƒGƒtƒFƒNƒg‚ÌÄ¶
+		//é£›ã¶ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã®å†ç”Ÿ
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 			GetWorld(),
 			FlyingEffect,
@@ -74,12 +75,12 @@ void AOnishi_MagicLauncher::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//©“®‚Å‘O‚Éi‚Ş
+	//è‡ªå‹•ã§å‰ã«é€²ã‚€
 	FVector NewLocation = GetActorLocation() + (MoveDirection.GetSafeNormal() * MoveSpeed * DeltaTime);
 
 	SetActorLocation(NewLocation);
 
-	// RootComponent‚É•¹‚¹‚Ä”ò‚Î‚·
+	// RootComponentã«ä½µã›ã¦é£›ã°ã™
 	MoveMagic();
 }
 
@@ -88,11 +89,11 @@ void AOnishi_MagicLauncher::LaunchMagic(FVector Facing, FVector NowLocation, UNi
 	StartLocation = NowLocation;
 	DestroyEffect = Ef_Destroy;
 
-	// ’Ç‹L_5_16
+	// è¿½è¨˜_5_16
 	{
 		CreateMagicEffect(Ef_Flying);
 
-		//”j‰ó‚Ü‚Å‚Ìƒ^ƒCƒ}[‚ğn‚ß‚éi3‚Â–Ú‚Ìˆø”‚Åw’èi’PˆÊ‚Í•bjj
+		//ç ´å£Šã¾ã§ã®ã‚¿ã‚¤ãƒãƒ¼ã‚’å§‹ã‚ã‚‹ï¼ˆ3ã¤ç›®ã®å¼•æ•°ã§æŒ‡å®šï¼ˆå˜ä½ã¯ç§’ï¼‰ï¼‰
 		FTimerHandle DestroyTimerHandle;
 		GetWorldTimerManager().SetTimer(DestroyTimerHandle, this, &AOnishi_MagicLauncher::HandleAutoDestroy, 2.0f, false);
 	}
@@ -100,18 +101,18 @@ void AOnishi_MagicLauncher::LaunchMagic(FVector Facing, FVector NowLocation, UNi
 
 void AOnishi_MagicLauncher::CreateMagicEffect(UNiagaraSystem* Effect) {
 
-	// ƒtƒ@ƒCƒ‹‚ªw’è‚³‚ê‚Ä‚È‚¯‚ê‚Îˆ—‚È‚µ
+	// ãƒ•ã‚¡ã‚¤ãƒ«ãŒæŒ‡å®šã•ã‚Œã¦ãªã‘ã‚Œã°å‡¦ç†ãªã—
 	if (Effect == nullptr) { return; }
 
 	UNiagaraSystem* ns = Effect;
 
-	// ƒRƒ“ƒ|[ƒlƒ“ƒg‚Æ‚µ‚ÄNiagaraComponent‚ğ’Ç‰Á
+	// ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã¨ã—ã¦NiagaraComponentã‚’è¿½åŠ 
 	_NiagaraComponent = NewObject<UNiagaraComponent>(this);
-	// ƒRƒ“ƒ|[ƒlƒ“ƒg‚ÉNiagaraSystem‚ğƒZƒbƒg‚µ‚ÄAƒV[ƒ“‚É’Ç‰Á
+	// ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã«NiagaraSystemã‚’ã‚»ãƒƒãƒˆã—ã¦ã€ã‚·ãƒ¼ãƒ³ã«è¿½åŠ 
 	_NiagaraComponent->SetAsset(ns);
 	_NiagaraComponent->RegisterComponent();
 
-	// ˆÊ’u‚È‚Ç‚Ìİ’è‚ª‚ ‚ê‚ÎATransform‚ğİ’è
+	// ä½ç½®ãªã©ã®è¨­å®šãŒã‚ã‚Œã°ã€Transformã‚’è¨­å®š
 	FRotator rotation = GetActorRotation();
 	FVector location = GetActorLocation();
 
@@ -120,13 +121,13 @@ void AOnishi_MagicLauncher::CreateMagicEffect(UNiagaraSystem* Effect) {
 
 	_NiagaraComponent->SetupAttachment(RootComponent);
 
-	// ƒGƒtƒFƒNƒg‚ÌÄ¶
+	// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã®å†ç”Ÿ
 	_NiagaraComponent->Activate();
 }
 
 void AOnishi_MagicLauncher::HandleAutoDestroy()
 {
-	// ƒGƒtƒFƒNƒgÄ¶i‚ ‚ê‚Îj
+	// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆå†ç”Ÿï¼ˆã‚ã‚Œã°ï¼‰
 	if (DestroyEffect)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
@@ -139,7 +140,7 @@ void AOnishi_MagicLauncher::HandleAutoDestroy()
 
 	DebugLogLocation(this, FColor::Blue);
 
-	// ƒAƒNƒ^[‚ğíœ
+	// ã‚¢ã‚¯ã‚¿ãƒ¼ã‚’å‰Šé™¤
 	Destroy();
 }
 
@@ -147,7 +148,7 @@ void AOnishi_MagicLauncher::MoveMagic(){
 
 	if (_NiagaraComponent == nullptr) { return; }
 
-	// ˆÊ’u‚È‚Ç‚Ìİ’è‚ª‚ ‚ê‚ÎATransform‚ğİ’è
+	// ä½ç½®ãªã©ã®è¨­å®šãŒã‚ã‚Œã°ã€Transformã‚’è¨­å®š
 	FRotator rotation = GetActorRotation();
 	FVector location = GetActorLocation();
 
