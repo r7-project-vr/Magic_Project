@@ -14,6 +14,12 @@ void UMagicGameInstance::Init()
 	DeviceManager = NewObject<UDeviceThreadManager>(this);
 	DeviceManager->StartManager();
 #endif
+
+#if PLATFORM_ANDROID
+	// インスタンス化
+	WirelessDeviceManager = NewObject<UWirelessDeviceManager>(this);
+	WirelessDeviceManager->Init();
+#endif
 }
 
 void UMagicGameInstance::Shutdown()

@@ -32,8 +32,8 @@ AOnishi_MagicLauncher::AOnishi_MagicLauncher()
 
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AOnishi_MagicLauncher::OnHit);
 
-
-	SphereComponent->bHiddenInGame = false;
+	// 魔法の当たり判定可視化
+	//SphereComponent->bHiddenInGame = false;
 
 }
 // Called when the game starts or when spawned
