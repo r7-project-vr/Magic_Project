@@ -136,12 +136,10 @@ void AVRActor_ver1::BeginPlay()
 
 	// デバイスマネージャーのキャスト
 	//DeviceManager_ = Cast<UMagicGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->DeviceManager;
-
+	
 #if PLATFORM_ANDROID
 	// 無線デバイスのインスタンス化
-	WirelessDevice = NewObject<UWirelessDeviceManager>(this);
-	if (!WirelessDevice) return;
-	WirelessDevice->Init();
+	WirelessDevice = MagicGame->WirelessDeviceManager;
 #endif
 }
 
@@ -234,7 +232,7 @@ void AVRActor_ver1::Tick(float DeltaTime)
 	if (ArmUpDownCnt >= Need_ArmUpDownCnt && !AlreadyMove)
 	{
 		PlayerMoveStart();
-		ArmUpDownCnt = 0;
+		//ArmUpDownCnt = 0;
 		AlreadyMove = true;
 		//Need_ArmUpDownCnt = 10;
 	}
@@ -347,6 +345,7 @@ void AVRActor_ver1::GoMagic()
 		magicData = nullptr;
 
 		// 魔法陣を破壊
+		if (circle == nullptr) { return; }
 		circle->Ef_MagicCircle = nullptr;
 		circle->Destroy();
 	}

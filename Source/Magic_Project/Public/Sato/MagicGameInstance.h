@@ -5,11 +5,13 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "Sato/DeviceThreadManager.h"
+#include "Sato/WirelessDeviceManager.h"
 #include "MagicGameInstance.generated.h"
 
 /**
  * デバイスのマルチスレッドの管理
  * ゲーム難易度の管理
+ * 無線デバイスの起動
  */
 UCLASS()
 class MAGIC_PROJECT_API UMagicGameInstance : public UGameInstance
@@ -33,4 +35,10 @@ public:
 	/// </summary>
 	UPROPERTY(BluePrintReadWrite)
 	int Setting_ArmUpDownCnt = 1;
+
+	/// <summary>
+	/// 無線デバイスの起動を担当している
+	/// </summary>
+	UPROPERTY()
+	TObjectPtr<UWirelessDeviceManager> WirelessDeviceManager;
 };
