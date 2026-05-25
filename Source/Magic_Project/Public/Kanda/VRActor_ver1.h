@@ -119,6 +119,12 @@ private:
 	TObjectPtr<UInputAction> ControlMove;
 
 	/// <summary>
+	/// キャリブレーション開始アクション
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> CalibrationStart;
+
+	/// <summary>
 	/// 魔法チャージアクション
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -250,6 +256,9 @@ protected:
 	// カメラコントロール
 	void Look(const FInputActionValue& Value);
 
+	// キャリブレーション開始
+	void CalibrationInitialize(const FInputActionValue& Value);
+
 	// プレイヤーの移動開始
 	//void kariPlayerMoveStart(const FInputActionValue& Value);
 	UFUNCTION(BlueprintCallable)
@@ -276,8 +285,53 @@ private:
 	bool isStop = true;
 
 
-	// [難易度管理]腕をどれだけ上げる必要があるか
+	// 腕をどれだけ上げる必要があるか(キャリブレーション済み)
 	float ArmUpAngle;
+
+	UPROPERTY()
+	bool bIsCalibrationStart = false;
+
+	// チュートリアルのキャリブレーションに必要な腕の上下回数
+	UPROPERTY()
+	int Need_Calibration_ArmUpDownCnt = 3;
+
+	// チュートリアルのキャリブレーションに必要な腕の角度
+	UPROPERTY()
+	float Need_Calibration_ArmUpAngle = -70.0f;
+
+	// キャリブレーションで取った腕の最高到達点
+	UPROPERTY()
+	int Calibration_ArmUpMaxAngle[3] = { -70,-70,-70 };
+
+	/// <summary>
+	/// キャリブレーションのために腕を上げ下げした回数。キャリブレーションの処理が終わるまではこの回数を数える
+	/// </summary>
+	UPROPERTY()
+	int CalibrationCnt = 0;
+
+	/// <summary>
+	/// キャリブレーションのために腕を上げているかどうか
+	/// </summary>
+	UPROPERTY()
+	bool bIsArmUpCalibration = false;
+
+	/// <summary>
+	/// キャリブレーションの合計角度を保持する
+	/// </summary>
+	UPROPERTY()
+	float CalibrationTotalAngle = 0.f;
+
+	/// <summary>
+	/// キャリブレーションの計算が終わったかどうか
+	/// </summary>
+	UPROPERTY()
+	bool bIsCalibrated;
+
+	/// <summary>
+	/// チュートリアルの最初に行うキャリブレーションの処理
+	/// </summary>
+	UFUNCTION()
+	void FirstCalibration();
 
 	// 腕を上げ下げした回数
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))

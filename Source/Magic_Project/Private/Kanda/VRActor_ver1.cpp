@@ -81,11 +81,12 @@ AVRActor_ver1::AVRActor_ver1() :
 	// Input Mapping Context「IMC_TestPad」を読み込む
 	DefaultMappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/Kanda/Input/IMC_TestPad"));
 	// インプットアクションの読み込み
-	ControlMove  = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_InputMove"));
-	MagicCharge  = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_ChargeMagic"));
-	ShotMagic    = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_GoMagic"));
-	LookAction   = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_Look"));
-	MoveStart    = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_MoveAction"));
+	ControlMove = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_InputMove"));
+	MagicCharge = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_ChargeMagic"));
+	ShotMagic = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_GoMagic"));
+	LookAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_Look"));
+	MoveStart = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_MoveAction"));
+	CalibrationStart = LoadObject<UInputAction>(nullptr, TEXT("/Game/Kanda/Input/IA_CalibrationStart"));
 
 	// テスト用
 	{
@@ -129,14 +130,21 @@ void AVRActor_ver1::BeginPlay()
 		SetActorLocation(FirstLocation);
 	}
 
-	// 難易度によるパラメーターの調整。現在は０でノーマル、１でハード
+	// ゲームインスタンスから設定を取得
 	UMagicGameInstance* MagicGame = Cast<UMagicGameInstance>(GetWorld()->GetGameInstance<UMagicGameInstance>());
-	ArmUpAngle = 30.0f;
+	ArmUpAngle = MagicGame->ArmUpAngle_GameInstance;
+	bIsCalibrated = MagicGame->bIsCalibrated_GameInstance;
 	Need_ArmUpDownCnt = MagicGame->Setting_ArmUpDownCnt;
+
+	// キャリブレーション済みだったらそのまま進む
+	if (bIsCalibrated)
+	{
+		PlayerMoveStart();
+	}
 
 	// デバイスマネージャーのキャスト
 	//DeviceManager_ = Cast<UMagicGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->DeviceManager;
-	
+
 #if PLATFORM_ANDROID
 	// 無線デバイスのインスタンス化
 	WirelessDevice = MagicGame->WirelessDeviceManager;
@@ -171,8 +179,8 @@ void AVRActor_ver1::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Cyan, FString::Printf(TEXT("pitch = %f"), Final_Device_Rotate.Pitch));
 #endif
 
-	// デバイスの角度が0度以下になったら       (腕を下げたら)
-	if (Final_Device_Rotate.Pitch < 0 && IsArmUp)
+	// デバイスの角度が70度以下になったら       (腕を下げたら)
+	if (Final_Device_Rotate.Pitch < -70.0 && IsArmUp)
 	{
 		IsArmUp = false;
 		ArmUpDownCnt++;
@@ -229,19 +237,22 @@ void AVRActor_ver1::Tick(float DeltaTime)
 	}
 
 	// 腕を一定回数以上上げ下げしたら動く
-	if (ArmUpDownCnt >= Need_ArmUpDownCnt && !AlreadyMove)
-	{
-		PlayerMoveStart();
+	// ここをキャリブレーションの処理にする
+	FirstCalibration();
+	//if (ArmUpDownCnt >= Need_Calibration_ArmUpDownCnt && !AlreadyMove)
+	//{
+		//PlayerMoveStart();
 		//ArmUpDownCnt = 0;
-		AlreadyMove = true;
+		//AlreadyMove = true;
 		//Need_ArmUpDownCnt = 10;
-	}
+	//}
 
-	UKismetSystemLibrary::PrintString(this, IsInMagicZone ? TEXT("IsInMagicZone = true") : TEXT("IsInMagicZone = false"), true, false, FColor::Red, 0.1f, NAME_None);
+	//UKismetSystemLibrary::PrintString(this, IsInMagicZone ? TEXT("IsInMagicZone = true") : TEXT("IsInMagicZone = false"), true, false, FColor::Red, 0.1f, NAME_None);
 	//UKismetSystemLibrary::PrintString(this, IsArmUp ? TEXT("true") : TEXT("false"), true, false, FColor::Red, 0.05f, NAME_None);
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.05f, NAME_None);
+	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("updownCNT = %d"), ArmUpDownCnt), true, false, FColor::Green, 0.05f, NAME_None);
 	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicScore = %d"), Magic_Score), true, false, FColor::Blue, 0.05f, NAME_None);
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicChargeTime = %f"), MagicChargeTime), true, false, FColor::Yellow, 0.1f, NAME_None);
+	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("MagicChargeTime = %f"), MagicChargeTime), true, false, FColor::Yellow, 0.1f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("ArmUpAngle = %f"), ArmUpAngle), true, false, FColor::Cyan, 0.1f, NAME_None);
 }
 
 // Called to bind functionality to input
@@ -255,9 +266,10 @@ void AVRActor_ver1::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		// ControlBallとIA_ControlのTriggeredをBindする
 		EnhancedInputComponent->BindAction(ControlMove, ETriggerEvent::Triggered, this, &AVRActor_ver1::ControlPlayer);
 		EnhancedInputComponent->BindAction(MagicCharge, ETriggerEvent::Triggered, this, &AVRActor_ver1::MouseChargeMagic);
-		EnhancedInputComponent->BindAction(ShotMagic,   ETriggerEvent::Completed, this, &AVRActor_ver1::GoMagic);
-		EnhancedInputComponent->BindAction(LookAction,  ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
+		EnhancedInputComponent->BindAction(ShotMagic, ETriggerEvent::Completed, this, &AVRActor_ver1::GoMagic);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVRActor_ver1::Look);
 		//EnhancedInputComponent->BindAction(MoveStart,    ETriggerEvent::Triggered, this, &AVRActor_ver1::kariPlayerMoveStart);
+		EnhancedInputComponent->BindAction(CalibrationStart, ETriggerEvent::Triggered, this, &AVRActor_ver1::CalibrationInitialize);
 	}
 }
 
@@ -412,6 +424,14 @@ void AVRActor_ver1::Look(const FInputActionValue& Value)
 	}
 }
 
+void AVRActor_ver1::CalibrationInitialize(const FInputActionValue& Value)
+{
+	// キャリブレーション開始の処理
+	bIsCalibrationStart = true;
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Calibration Start!")), true, false, FColor::Cyan, 10.0f, NAME_None);
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("ArmUpAngle = %d"), bIsCalibrationStart), true, false, FColor::Cyan, 10.1f, NAME_None);
+}
+
 // 接触判定の処理、コライダー同士が接触したときに呼び出される
 void AVRActor_ver1::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -563,5 +583,47 @@ void AVRActor_ver1::SpawnMagicChargeEffect()
 		ChargeFinishEffect->SetHiddenInGame(false);
 		alreadyChargeFinishMagicEffect = true;
 	}
+}
 
+void AVRActor_ver1::FirstCalibration()
+{
+	if (bIsCalibrated) return;
+	if (bIsCalibrationStart == false) return;
+	if (CalibrationCnt < 3)
+	{
+		// 腕を上げたときの最高到達点を配列に入れる
+		if (Final_Device_Rotate.Pitch >= Need_Calibration_ArmUpAngle)
+		{
+			// 最高点を更新したときにだけ配列を更新する
+			if (Calibration_ArmUpMaxAngle[CalibrationCnt] < Final_Device_Rotate.Pitch)
+			{
+				Calibration_ArmUpMaxAngle[CalibrationCnt] = Final_Device_Rotate.Pitch;
+			}
+			bIsArmUpCalibration = true;
+		}
+		// 腕を下げたときにキャリブレーションの回数をカウントする
+		if (Final_Device_Rotate.Pitch < Need_Calibration_ArmUpAngle && bIsArmUpCalibration)
+		{
+			CalibrationCnt++;
+			bIsArmUpCalibration = false;
+		}
+	}
+	else // キャリブレーションに必要な回数腕を上下したら平均を計算する
+	{
+		for (int i = 0; i < sizeof(Calibration_ArmUpMaxAngle) / sizeof(int); i++)
+		{
+			CalibrationTotalAngle += Calibration_ArmUpMaxAngle[i];
+		}
+		// 計算結果を腕を上げる角度として保存する
+		ArmUpAngle = CalibrationTotalAngle / 3;
+
+		PlayerMoveStart();
+		AlreadyMove = true;
+		bIsCalibrated = true;
+
+		// キャリブレーションの結果をゲームインスタンスに保存する
+		UMagicGameInstance* MagicGame = Cast<UMagicGameInstance>(GetWorld()->GetGameInstance<UMagicGameInstance>());
+		MagicGame->ArmUpAngle_GameInstance = ArmUpAngle;
+		MagicGame->bIsCalibrated_GameInstance = bIsCalibrated;
+	}
 }
