@@ -34,11 +34,18 @@ public:
 	/// 初期値として1を設定
 	/// </summary>
 	UPROPERTY(BluePrintReadWrite)
-	int Setting_ArmUpDownCnt = 1;
+	int Setting_ArmUpDownCnt = 10;
 
 	/// <summary>
 	/// 無線デバイスの起動を担当している
 	/// </summary>
 	UPROPERTY()
 	TObjectPtr<UWirelessDeviceManager> WirelessDeviceManager;
+
+	// 腕をどれだけ上げる必要があるか(キャリブレーション済み)
+	float ArmUpAngle_GameInstance;
+
+	// キャリブレーションが完了しているかどうか
+	UPROPERTY()
+	bool bIsCalibrated_GameInstance = false;
 };
