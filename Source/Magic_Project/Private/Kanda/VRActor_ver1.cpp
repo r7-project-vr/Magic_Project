@@ -23,6 +23,7 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "NiagaraFunctionLibrary.h"
 #include "sato/MagicGameInstance.h"
+#include "Components/WidgetComponent.h"
 
 
 // Sets default values
@@ -587,6 +588,9 @@ void AVRActor_ver1::SpawnMagicChargeEffect()
 
 void AVRActor_ver1::FirstCalibration()
 {
+	// ここにウィジェットコンポーネントを無効化する処理を入れる
+	//GetOwner()->FindComponentByClass<UWidgetComponent>()->SetVisibility(false);
+	//TArray WidgetCom = this->K2_GetComponentsByClass<UWidgetComponent>
 	if (bIsCalibrated) return;
 	if (bIsCalibrationStart == false) return;
 	if (CalibrationCnt < 3)
